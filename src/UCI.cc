@@ -47,7 +47,6 @@ void UCI::position_received(char* input) {
     //print_table();
 }
 
-
 void UCI::processCommands() {
     char input[1001];
     int movestogo = 40;

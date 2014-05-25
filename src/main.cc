@@ -23,7 +23,7 @@ int main( int argc, char* argv[] ) {
     while (1) {
         ret = fgets(input, 1000, stdin);
         if (ret && strstr(input, "uci")) {
-	    UCI *uci = new UCI();
+	    UCI *uci = new UCI(chess);
 	    uci->processCommands();
         delete uci;
 	}

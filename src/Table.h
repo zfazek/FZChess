@@ -9,6 +9,9 @@ public:
 	Table(Chess* chess);
 	~Table();
 	void reset_movelist();
+	void update_table(int move, int print);
+	void print_table();
+
 
 	//Stores the parameters of the given position
 	struct move movelist[1000];
