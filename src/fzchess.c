@@ -247,11 +247,6 @@ inline int get_ms()
     return (timebuffer.time * 1000) + timebuffer.millitm;
 }
 
-//Flushes the output stream
-inline void flush() {
-    fflush(stdout);
-}
-
 inline void checkup() {
     if ((max_time != 0 && get_ms() >= stop_time) || stop_received == TRUE) {
         stop_search = TRUE;
@@ -2021,7 +2016,7 @@ void* make_move(void *threadid) {
     if (strstr(engine, "uci")) make_move_uci();
 }
 
-void start_game() { // new
+void Chess::start_game() { // new
     reset_movelist();
     player_to_move = WHITE;
     //print_table();
@@ -2199,73 +2194,6 @@ void process_input() {
     if (strstr(input, "position fen")) setboard(input);
 }
 
-void uci() {
-    int movestogo = 40;
-    int wtime, btime;
-    int  winc = 0;
-    int  binc = 0;
-    char* ret;
-    gui_depth = 0;
-    if (strstr(input, "uci")) {
-        printf("id name FZChess\n");
-        printf("id author Zoltan FAZEKAS\n");
-        printf("option name OwnBook type check defult false\n");
-        printf("option name Ponder type check default false\n");
-        printf("option name MultiPV type spin default 1 min 1 max 1\n");
-        printf("uciok\n");
-        flush();
-    }
-    strcpy(engine, "uci");
-    if (DEBUG) {
-        debugfile=fopen("./debug.txt", "w");
-        fclose(debugfile);
-    }
-    strcpy(engine, "uci");
-    //    thread_running = FALSE;
-    input_valid = FALSE;
-    while (1) {
-        ret =fgets(input, 1000, stdin);
-        if (ret && strstr(input, "stop")) {
-            stop_received = TRUE;
-        }
-        process_input();
-        if (strstr(input, "go")) {
-            FZChess=player_to_move;
-            //if (strstr(input, "ponder")) continue;
-            movetime = 0;
-            if (strstr(input, "movetime"))  {
-                sscanf(strstr(input, "movetime"),  "movetime %d",  &max_time);
-                movetime = max_time;
-            }
-            else {
-                if (strstr(input, "movestogo")) sscanf(strstr(input, "movestogo"),
-						       "movestogo %d", &movestogo);
-                if (strstr(input, "wtime")) sscanf(strstr(input, "wtime"), "wtime %d", &wtime);
-                if (strstr(input, "btime")) sscanf(strstr(input, "btime"), "btime %d", &btime);
-                if (strstr(input, "winc")) sscanf(strstr(input, "winc"), "winc %d", &winc);
-                if (strstr(input, "binc")) sscanf(strstr(input, "binc"), "binc %d", &binc);
-                if (FZChess == WHITE) max_time = (wtime + movestogo * winc) / movestogo;
-                else max_time = (btime + movestogo * binc) / movestogo;
-                if (strstr(input, "depth")) {
-                    sscanf(strstr(input, "depth"), "depth %d", &gui_depth);
-                    max_time = 0;
-                }
-                if (strstr(input, "infinite")) {
-                    gui_depth = 99;
-                    max_time = 0;
-                }
-            }
-            if (DEBUG) {
-                debugfile = fopen("./debug.txt", "a");
-                fprintf(debugfile, "max time: %d wtime: %d btime: %d winc: %d binc: %d movestogo: %d\n", max_time, wtime, btime, winc, binc, movestogo);flush();
-                fclose(debugfile);
-            }
-            stop_received = FALSE;
-	    rc = pthread_create(&threads, NULL, make_move, (void *)t);
-        }
-    }
-}
-
 unsigned long long rand64() {
     unsigned long long output = 9999999999999999999LLU;
     output = rand();
@@ -2326,21 +2254,3 @@ void init_hash_inner() {
     }
 }
 
-int main( int argc, char* argv[] ) {
-    // Start here
-    // Waiting for GUI
-    char* ret;
-#ifdef HASH
-    init_hash();
-    printf("hashsize: %d\n", HASHSIZE);flush();
-#endif
-#ifdef HASH_INNER
-    init_hash_inner();
-    printf("hashsize_inner: %d\n", HASHSIZE_INNER);flush();
-#endif
-    start_game();
-    while (1) {
-        ret = fgets(input, 1000, stdin);
-        if (ret && strstr(input, "uci")) uci();
-    }
-}

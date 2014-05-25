@@ -1,6 +1,12 @@
-add_executable(fzchess++ FZChessPlus.cc UCI.cc)
+project(FZChessPlusPlus)
 
-set (CMAKE_CXX_FLAGS "-std=c++11 -O2")
+cmake_minimum_required(VERSION 2.8)
 
-FIND_PACKAGE(Threads)
-TARGET_LINK_LIBRARIES(fzchess++ ${CMAKE_THREAD_LIBS_INIT})
+subdirs("src")
+
+#add_executable(fzchess++ main.cc Chess.cc UCI.cc)
+
+#set (CMAKE_CXX_FLAGS "-std=c++11 -O2")
+
+#FIND_PACKAGE(Threads)
+#TARGET_LINK_LIBRARIES(fzchess++ ${CMAKE_THREAD_LIBS_INIT})
