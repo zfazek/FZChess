@@ -4,14 +4,13 @@
 class Table;
 
 class Chess {
-    private:
-        Table *table;
 
     public:
         Chess();
         ~Chess();
         void start_game();
 
+        Table *table;
         int move_number;
         int player_to_move; // 1:white, -1:black
 

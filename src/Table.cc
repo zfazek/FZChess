@@ -2,6 +2,7 @@
 #include "Move.h"
 #include "Evaulate.h"
 #include <cstdlib>
+#include <cstring>
 
 Table::Table(Chess* ch) {
 	chess = ch;
@@ -261,5 +262,141 @@ void Table::print_table() {
     printf("\n");
     flush();
 }
+
+// FEN interpreter
+void Table::setboard(char fen_position[255]) {
+    unsigned int n = 13;
+    int x = 1;
+    int y = 9;
+    int m, j;
+    int factor;
+    char move_old[6]="     ";
+    chess->start_game();
+    m = 5;
+    for (j = 0; j < m; j++) {
+        while (fen_position[n] != ' ') {
+            n++;
+        }
+        n++;
+    }
+    factor = 1;
+    chess->move_number = 0;
+    while (fen_position[n] != ' ' && n < strlen(input) - 1) {
+	/*
+        printf("move_number: %d, factor: %d, n: %d, fen_position[n]: %d, strlen(input): %d\n",
+	       move_number, factor, n, (int)(fen_position[n] - '0'), strlen(input));
+	*/
+        fflush(stdout);
+        chess->move_number = chess->move_number * factor +
+        		(int)(fen_position[n] - '0');
+        factor =factor * 10;
+        n++;
+    }
+    n = 13;
+    while (fen_position[n] != ' ') {
+        if (fen_position[n] > '0' && fen_position[n] < '9') {
+            for(m = 0; m < (int)(fen_position[n] - '0'); m++) {
+            	chess->tablelist[chess->move_number][y * 10 + x] = 0;
+                x++;
+            }
+            --x;
+        }
+        if (fen_position[n] != '/') {
+            for (m = 0; m < 14; m++) {
+                if (fen_position[n] == graphical_figure[m][1]) {
+                	chess->tablelist[chess->move_number][y * 10 + x] =
+                			graphical_figure[m][0];
+                    break;
+                }
+            }
+            x++;
+        }
+        if (fen_position[n] == '/') {
+            y--;
+            x = 1;
+        }
+        n++;
+    }
+    n++;
+    if (fen_position[n] == 'w') {
+    	chess->player_to_move = WHITE;
+        FZChess = WHITE;
+        movelist[chess->move_number].color = WHITE;
+    } else {
+    	chess->player_to_move = BLACK;
+        FZChess = BLACK;
+        movelist[chess->move_number].color = BLACK;
+    }
+    n++;
+    n++;
+    movelist[chess->move_number].castle = 0;
+    while  (fen_position[n] != ' ') {
+        if (fen_position[n] == '-') movelist[chess->move_number].castle = 0;
+        if (fen_position[n] == 'K') movelist[chess->move_number].castle =
+        		movelist[chess->move_number].castle | 1;
+        if (fen_position[n] == 'Q') movelist[chess->move_number].castle =
+        		movelist[chess->move_number].castle | 2;
+        if (fen_position[n] == 'k') movelist[chess->move_number].castle =
+        		movelist[chess->move_number].castle | 4;
+        if (fen_position[n] == 'q') movelist[chess->move_number].castle =
+        		movelist[chess->move_number].castle | 8;
+        n++;
+    }
+    movelist[chess->move_number - 1].castle =
+    		movelist[chess->move_number].castle;
+    n++;
+    if (fen_position[n] == '-') movelist[chess->move_number].en_passant = 0;
+    if (fen_position[n] >= 'a' && fen_position[n] <= 'h') { // en passant possible, target square
+        movelist[chess->move_number].en_passant = 1 +
+        		fen_position[n] - 'a' + (fen_position[n+1] - '1' + 2) * 10;
+        n++;
+    }
+    n++;
+    n++;
+    movelist[chess->move_number].not_pawn_move = 0;
+    factor = 1;
+    while (fen_position[n] != ' ') {
+        movelist[chess->move_number].not_pawn_move =
+        		movelist[chess->move_number].not_pawn_move * factor +
+        		(int)(fen_position[n] - '0');
+        factor = factor * 10;
+        n++;
+    }
+    for (int i = 0; i < 120; ++i)
+    	if ((chess->tablelist[chess->move_number][i] & 127) == King) {
+    		if (chess->tablelist[chess->move_number][i] == WhiteKing)
+    			movelist[chess->move_number].pos_white_king = i;
+    		if (chess->tablelist[chess->move_number][i] == BlackKing)
+    			movelist[chess->move_number].pos_black_king = i;
+    	}
+    if (strstr(input, "moves")) {
+        m = strlen(input) - 1;
+        for (int i = (int) (strstr(input, "moves") - input + 6); i < m; i++) {
+            //printf("i: %d, input[i]: %c\n", i, input[i]);flush();
+            move_old[0] = input[i++];
+            //i++;
+            move_old[1] = input[i++];
+            //i++;
+            move_old[2] = input[i++];
+            //i++;
+            move_old[3] = input[i++];
+            //i++;
+            if (input[i] != ' ' && input[i] != '\n') {
+                move_old[4] = input[i++];
+                //i++;
+            } else {
+                move_old[4] = '\0';
+            }
+            //printf("move: %s\n", move);flush();
+            update_table(str2move(move_old), FALSE);
+            invert_player_to_move();
+        }
+    }
+#ifdef HASH
+    //set_hash();
+#endif
+    //print_table();
+}
+
 
 

@@ -42,7 +42,7 @@ void UCI::position_received(char* input) {
             move_old[4] = '\0';
         }
         update_table(str2move(move_old), FALSE);
-        invert_player_to_move();
+        chess->invert_player_to_move();
     }
     //print_table();
 }
@@ -93,9 +93,9 @@ void UCI::processCommands() {
         if (strstr(input, "position startpos")) {
             position_received(input);
         }
-        if (strstr(input, "position fen")) setboard(input);
+        if (strstr(input, "position fen")) chess->table->setboard(input);
         if (strstr(input, "go")) {
-            FZChess=player_to_move;
+            FZChess=chess->player_to_move;
             //if (strstr(input, "ponder")) continue;
             movetime = 0;
             if (strstr(input, "movetime"))  {

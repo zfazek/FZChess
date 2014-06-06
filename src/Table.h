@@ -11,6 +11,7 @@ public:
 	void reset_movelist();
 	void update_table(int move, int print);
 	void print_table();
+	void setboard(char fen_position[255]);
 
 
 	//Stores the parameters of the given position
