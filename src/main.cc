@@ -1,5 +1,4 @@
 #include "Chess.h"
-#include "UCI.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -18,14 +17,13 @@ int main( int argc, char* argv[] ) {
     printf("hashsize_inner: %d\n", HASHSIZE_INNER);flush();
 #endif
      */
-    Chess *chess = new Chess();
-    chess->start_game();
     while (1) {
         ret = fgets(input, 1000, stdin);
         if (ret && strstr(input, "uci")) {
-            UCI uci(chess);
-            uci.processCommands(input);
+            break;
         }
     }
-    delete chess;
+    Chess chess;
+    chess.start_game();
+    chess.processCommands(input);
 }

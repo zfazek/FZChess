@@ -4,6 +4,7 @@
 #include <time.h>
 #include <setjmp.h>
 #include <stdio.h>
+#include <thread>
 
 class Chess {
 
@@ -77,6 +78,7 @@ public:
     int mate_score;
     int end_direction;
     unsigned long long knodes = 9999999999999999999LLU;
+    std::thread th_make_move;
 
 
     struct move_t {
@@ -143,6 +145,8 @@ public:
     void setboard(char fen_position[255]);
     void flush();
     int get_ms();
+    void position_received(char* input);
+    void processCommands(char* input);
 
 
 
