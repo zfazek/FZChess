@@ -1,7 +1,6 @@
 #include "Chess.h"
 #include "Hash.h"
 #include <cstring>
-#include <sys/timeb.h>
 #include <pthread.h>
 
 #define HASH
@@ -12,18 +11,20 @@ Chess::Chess() {
 #ifdef HASH
     hash = new Hash();
     hash->init_hash();
-    printf("hashsize: %d\n", hash->HASHSIZE);flush();
+    printf("hashsize: %d\n", hash->HASHSIZE);util->flush();
 #endif
 #ifdef HASH_INNER
     hash->init_hash_inner();
-    printf("hashsize_inner: %d\n", hash->HASHSIZE_INNER);flush();
+    printf("hashsize_inner: %d\n", hash->HASHSIZE_INNER);util->flush();
 #endif
+    util = new Util();
 }
 
 Chess::~Chess() {
 #ifdef HASH
     delete hash;
 #endif
+    delete util;
 }
 
 void Chess::start_game() { // new
@@ -92,7 +93,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     int uu; // Evaluation if checkmate is found
     int alfarray[255];
     value = -22767;
-    //if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);flush();
+    //if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);util->flush();
 #ifdef HASH_INNER
     hash_index = hash_inner % HASHSIZE_INNER;
 
@@ -116,11 +117,11 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     if (legal_pointer == -1) {
         if (is_attacked(player_to_move == WHITE ? (movelist + move_number) -> pos_white_king :
                     (movelist + move_number) -> pos_black_king, player_to_move) == FALSE) {
-            //printf("DRAW: ");flush();
+            //printf("DRAW: ");util->flush();
             return DRAW;
         }
         else {
-            //printf("LOST: ");flush();
+            //printf("LOST: ");util->flush();
             return LOST;
         }
     }
@@ -141,11 +142,11 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         curr_seldepth = dpt;
         if (dpt == 1) {
             move2str(alfarray[i]);
-            printf("info currmove %s currmovenumber %d\n", move_str, i + 1);flush();
+            printf("info currmove %s currmovenumber %d\n", move_str, i + 1);util->flush();
         }
         update_table(alfarray[i], FALSE);
         curr_line[dpt] = alfarray[i];
-        //printf("\ncurrent line:");for (b=1; b<=dpt; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf("");flush();
+        //printf("\ncurrent line:");for (b=1; b<=dpt; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf("");util->flush();
 
         // If last ply -> evaluating
         if ((dpt >= depth && movelist[move_number].further == 0) ||
@@ -171,7 +172,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     list_legal_moves();
                     //legal_pointer=1;
                     u=evaluation(legal_pointer, dpt);
-                    //for (b=1; b<=curr_seldepth; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf(" u: %d\n", u);flush();
+                    //for (b=1; b<=curr_seldepth; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf(" u: %d\n", u);util->flush();
                     --move_number;
                 }
 #ifdef HASH
@@ -211,7 +212,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 
         // Better move is found
         if (u > value) {
-            //printf("dpt: %d, %d > %d\n", dpt, u, value);flush();
+            //printf("dpt: %d, %d > %d\n", dpt, u, value);util->flush();
             value = u;
             for(b = 1; b <= curr_seldepth; b++)
                 best_line[dpt].moves[b] = curr_line[b];
@@ -236,12 +237,12 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             (hashtable_inner + hash_index) -> move = curr_line[dpt];
             //print_hash_inner(hash_inner, dpt);
 #endif
-            //printf("Best line[%d], value: %d, moves: ", dpt, best_line[dpt].value);for (b=1; b<=best_line[dpt].length; ++b) { move2str(best_line[dpt].moves[b]); printf("%s ", move_str); } printf("\n");flush();
+            //printf("Best line[%d], value: %d, moves: ", dpt, best_line[dpt].value);for (b=1; b<=best_line[dpt].length; ++b) { move2str(best_line[dpt].moves[b]); printf("%s ", move_str); } printf("\n");util->flush();
             if (dpt == 1) {
                 best_move = alfarray[i];
 #ifdef HASH
                 printf("Hash found %d, inner found %d times, hash collision: %d, has collision_inner: %d, hash/nodes: %d%%\n",
-                        hash->hash_nodes, hash->hash_inner_nodes, hash->hash_collision, hash->hash_collision_inner, 100 * hash->hash_nodes/nodes);flush();
+                        hash->hash_nodes, hash->hash_inner_nodes, hash->hash_collision, hash->hash_collision_inner, 100 * hash->hash_nodes/nodes);util->flush();
 #endif
                 // If checkmate is found
                 if (abs(u) > 20000) {
@@ -252,21 +253,21 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     if (uu == 0 && u < 0)
                         uu = -1;
                     printf("info multipv 1 depth %d seldepth %d score mate %d nodes %d pv ",
-                            curr_depth, curr_seldepth, uu, nodes);flush();
+                            curr_depth, curr_seldepth, uu, nodes);util->flush();
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         move2str(best_line[dpt].moves[b]);
                         printf("%s ", move_str);
                     }
-                    printf("\n");flush();
+                    printf("\n");util->flush();
                     mate_score = abs(u);
                 } else {
                     printf("info multipv 1 depth %d seldepth %d score cp %d nodes %d pv ",
-                            curr_depth, curr_seldepth, u, nodes);flush();
+                            curr_depth, curr_seldepth, u, nodes);util->flush();
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         move2str(best_line[dpt].moves[b]);
                         printf("%s ", move_str);
                     }
-                    printf("\n");flush();
+                    printf("\n");util->flush();
                     mate_score = 0;
                 }
             }
@@ -607,8 +608,6 @@ void Chess::list_legal_moves() {
     }
 }
 
-
-
 void Chess::make_move() {
     int a = 0;
     int alfa = -22767;
@@ -620,7 +619,7 @@ void Chess::make_move() {
     hash->reset_counters();
     (void) time(&t1);
     //max_time = 20 * 1000;
-    start_time = get_ms();
+    start_time = util->get_ms();
     stop_time = start_time + max_time;
     init_depth = 1;
     //gui_depth = 2; max_time=0;
@@ -640,21 +639,21 @@ void Chess::make_move() {
            if (depth > 3) seldepth = depth + 8;
            */
         seldepth = depth + 8;
-        printf("%d %d\n", depth, seldepth);flush();
+        printf("%d %d\n", depth, seldepth);util->flush();
         //Calculates the time of the move
         //Searches the best move with negamax algorithm with alfa-beta cut off
         //mate_score = 0;
         (void) time(&t1_last);
-        time_current_depth_start = get_ms();
-        printf("info depth %d\n", init_depth);flush();
+        time_current_depth_start = util->get_ms();
+        printf("info depth %d\n", init_depth);util->flush();
         a = alfabeta(1, alfa, beta);
         setjmp(env);
         if (stop_search == TRUE) {
             for (int i = 0; i < curr_seldepth - 1; i++) --move_number;
         }
         (void) time(&t2_last);
-        time_elapsed = get_ms() - start_time;
-        time_current_depth_stop = get_ms();
+        time_elapsed = util->get_ms() - start_time;
+        time_current_depth_stop = util->get_ms();
         time_remaining = stop_time - time_current_depth_stop;
         //If there is no time for another depth search
         if (movetime == 0 && max_time != 0)
@@ -665,8 +664,8 @@ void Chess::make_move() {
         knodes = 1000LLU * nodes;
         printf("info depth %d seldepth %d time %d nodes %d nps %lld\n",
                 init_depth, seldepth, time_elapsed, nodes,
-                (time_elapsed==0)?0:(knodes/time_elapsed));flush();
-        printf("nodes: %d, knodes: %lld\n", nodes, knodes);flush();
+                (time_elapsed==0)?0:(knodes/time_elapsed));util->flush();
+        printf("nodes: %d, knodes: %lld\n", nodes, knodes);util->flush();
         if (DEBUG) {
             debugfile=fopen("./debug.txt", "a");
             fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %d nps %d\n",
@@ -675,8 +674,8 @@ void Chess::make_move() {
             fclose(debugfile);
         }
         //Prints statistics
-        //printf("alfabeta: %d\n", a);flush();
-        //printf("best %s\n", best_move);flush();
+        //printf("alfabeta: %d\n", a);util->flush();
+        //printf("best %s\n", best_move);util->flush();
         best_iterative[init_depth] = best_move;
         if (stop_search == TRUE) break;
         if (mate_score > 20000) break;
@@ -686,9 +685,9 @@ void Chess::make_move() {
     }
     (void) time(&t2);
     move2str(best_move);
-    printf( "\nbestmove %s\n", move_str);flush();
+    printf( "\nbestmove %s\n", move_str);util->flush();
 #ifdef HASH
-    printf("Hash found %d, inner found %d times\n", hash->hash_nodes, hash->hash_inner_nodes);flush();
+    printf("Hash found %d, inner found %d times\n", hash->hash_nodes, hash->hash_inner_nodes);util->flush();
 #endif
     update_table(best_move, FALSE); //Update the table without printing it
     invert_player_to_move();
@@ -735,15 +734,14 @@ int Chess::is_attacked(int field, int color) {
 inline void Chess::calculate_evarray() {
     int i, j, v;
     int tempmove;
-    //pl = legal_moves;
-    if (init_depth == 1)
-        for (i = 0; i <= legal_pointer; i++/*, ++pl*/) {
+    if (init_depth == 1) {
+        for (i = 0; i <= legal_pointer; i++) {
             (root_moves + i) -> move = legal_moves[i];
             (root_moves + i) -> value = 0;
         }
-    else {
-        for (i = 0; i <= legal_pointer; i++)
-            for (j = i + 1; j <= legal_pointer; j++)
+    } else {
+        for (i = 0; i <= legal_pointer; i++) {
+            for (j = i + 1; j <= legal_pointer; j++) {
                 if (root_moves[j].value > root_moves[i].value) {
                     tempmove = root_moves[j].move;
                     root_moves[j].move = root_moves[i].move;
@@ -752,11 +750,13 @@ inline void Chess::calculate_evarray() {
                     root_moves[j].value = root_moves[i].value;
                     root_moves[i].value = v;
                 }
+            }
+        }
     }
 }
 
 void Chess::checkup() {
-    if ((max_time != 0 && get_ms() >= stop_time) || stop_received == TRUE) {
+    if ((max_time != 0 && util->get_ms() >= stop_time) || stop_received == TRUE) {
         stop_search = TRUE;
         longjmp(env, 0);
     }
@@ -954,7 +954,7 @@ int Chess::third_occurance() {
     if (move_number < 6) return FALSE;
     i = move_number - 2;
     while (i >= 0 && occurance < 2) {
-        //printf("Third occurance: i: %d\n", i);flush();
+        //printf("Third occurance: i: %d\n", i);util->flush();
         equal = TRUE;
         for (j = 0; j < 120; ++j) {
             if (tablelist[move_number][j] != tablelist[i][j]) {
@@ -1007,7 +1007,7 @@ int Chess::not_enough_material() {
     if (black_bishop == 2) return FALSE;
     if (white_knight + white_bishop > 1) return FALSE;
     if (black_knight + black_bishop > 1) return FALSE;
-    //printf("not enough material\n");flush();
+    //printf("not enough material\n");util->flush();
     return TRUE;
 }
 
@@ -1025,11 +1025,11 @@ int Chess::evaluation(int e_legal_pointer, int dpt) {
     if (legal_pointer == -1) { //No legal move
         if (is_attacked(player_to_move == WHITE ? (movelist + move_number) -> pos_black_king :
                     (movelist + move_number) -> pos_white_king, -player_to_move) == FALSE) {
-            //printf("DRAW: ");flush();
+            //printf("DRAW: ");util->flush();
             return DRAW;
         }
         else {
-            //printf("WON: ");flush();
+            //printf("WON: ");util->flush();
             //dpt : #1 (checkmate in one move) is better than #2
             return WON - dpt;
         }
@@ -1050,13 +1050,13 @@ int Chess::evaluation_only_end_game(int dpt) {
                     (movelist + move_number) -> pos_white_king, -player_to_move) == FALSE) {
 
             //Stalemate
-            //printf("DRAW: ");flush();
+            //printf("DRAW: ");util->flush();
             return DRAW;
         }
         else {
 
             //Mate
-            //printf("WON: ");flush();
+            //printf("WON: ");util->flush();
             return WON - dpt;
         }
     }
@@ -1075,7 +1075,7 @@ void Chess::is_really_legal() {
 #ifdef SORT_ALFARRAY
     else
         if (global_dpt != 1 && sort_alfarray == TRUE) {
-            //printf("EVA\n");flush();
+            //printf("EVA\n");util->flush();
             eva_alfabeta_temp[legal_pointer] = evaluation_material(global_dpt);
         }
 #endif
@@ -1213,13 +1213,13 @@ void Chess::print_table() {
     printf("Black2bishops  : %d\n", movelist[move_number].black_double_bishops);
     printf("Further invest.: %d\n", movelist[move_number].further);
     printf("\n");
-    flush();
+    util->flush();
 }
 
 
 //Evaluates material and king position, pawn structure, etc
 int Chess::evaluation_material(int dpt) {
-    int i, c, e, figure;
+    int c, e, figure;
     int evaking;
     e = 0;
     int* pt = tablelist[move_number];
@@ -1227,7 +1227,7 @@ int Chess::evaluation_material(int dpt) {
     //sm = sum_material(player_to_move);
     int random_window = 10;
     //Goes through the table
-    for (i = 0; i < 120; ++i) {
+    for (int i = 0; i < 120; ++i) {
         int figure = *(pt + i);
         if (figure > 0 && figure < 255) {
             //c=1 : own figure is found, c=-1 opposite figure is found
@@ -1266,7 +1266,7 @@ int Chess::evaluation_material(int dpt) {
         if ((player_to_move == BLACK) && ((dpt % 2) == 1))
             evaking =  5 * (abs(5 - ((movelist + move_number) -> pos_white_king / 10)) + abs(5 - ((movelist + move_number) -> pos_white_king % 10)));
         e += evaking;
-        //printf("player_to_move: %d, dpt: %d, pos_white_king: %d, pos_black_king: %d, evaking: %d\n", player_to_move, dpt, pm -> pos_white_king, pm -> pos_black_king, evaking);flush();
+        //printf("player_to_move: %d, dpt: %d, pos_white_king: %d, pos_black_king: %d, evaking: %d\n", player_to_move, dpt, pm -> pos_white_king, pm -> pos_black_king, evaking);util->flush();
     } else {
 #ifdef CASTLING_PUNISHMENT
         //Punishment if can not castle
@@ -1330,10 +1330,9 @@ int Chess::conv0(int k) {
 //Bonus for king's adjacent own pawns
 int Chess::evaluation_king(int field, int figure) {
     int e = 0;
-    int k;
     int* pt = tablelist[move_number];
     pdir = dir_king;
-    for (k = 0; k < 8; ++k, ++pdir)
+    for (int k = 0; k < 8; ++k, ++pdir)
         if (*(pt + field + *pdir) == (figure & 128) + Pawn)
             e += friendly_pawn;
     return e;
@@ -1367,7 +1366,6 @@ int Chess::evaluation_pawn(int field, int figure, int sm) {
 
 //Resets the parameters and the table
 void Chess::reset_movelist() {
-    int i;
     for (int move_number = 0 ; move_number < 255 ; move_number++) {
         movelist[move_number].color = 0;
         movelist[move_number].move_from = 0;
@@ -1388,12 +1386,12 @@ void Chess::reset_movelist() {
         movelist[move_number].black_double_bishops = double_bishops;
         movelist[move_number].further = 0;
 #ifdef POS_FIGURE
-        for ( i = 0; i < 16; i++)
+        for (int i = 0; i < 16; i++) {
             movelist[move_number].pos_white_figure[i] = new_pos_white_figure[i];
-        for ( i = 0; i < 16; i++)
             movelist[move_number].pos_black_figure[i] = new_pos_black_figure[i];
+        }
 #endif
-        for ( i = 0; i < 120; i++ ) {
+        for (int i = 0; i < 120; i++ ) {
             tablelist[move_number][i] = new_table[i];
         }
     }
@@ -1406,12 +1404,11 @@ void Chess::setboard(char fen_position[255]) {
     int n = 13;
     int x = 1;
     int y = 9;
-    int m, j;
     int factor;
     char move_old[6]="     ";
     start_game();
-    m = 5;
-    for (j = 0; j < m; j++) {
+    int m = 5;
+    for (int j = 0; j < m; j++) {
         while (fen_position[n] != ' ') {
             n++;
         }
@@ -1421,7 +1418,7 @@ void Chess::setboard(char fen_position[255]) {
     move_number = 0;
     while (fen_position[n] != ' ' && n < strlen(input) - 1) {
         //printf("move_number: %d, factor: %d, n: %d, fen_position[n]: %d, strlen(input): %d\n", move_number, factor, n, (int)(fen_position[n] - '0'), strlen(input));
-        fflush(stdout);
+        util->flush();
         move_number = move_number * factor + (int)(fen_position[n] - '0');
         factor =factor * 10;
         n++;
@@ -1494,22 +1491,17 @@ void Chess::setboard(char fen_position[255]) {
     if (strstr(input, "moves")) {
         m = strlen(input) - 1;
         for (int i = (int) (strstr(input, "moves") - input + 6); i < m; i++) {
-            //printf("i: %d, input[i]: %c\n", i, input[i]);flush();
+            //printf("i: %d, input[i]: %c\n", i, input[i]);util->flush();
             move_old[0] = input[i++];
-            //i++;
             move_old[1] = input[i++];
-            //i++;
             move_old[2] = input[i++];
-            //i++;
             move_old[3] = input[i++];
-            //i++;
             if (input[i] != ' ' && input[i] != '\n') {
                 move_old[4] = input[i++];
-                //i++;
             } else {
                 move_old[4] = '\0';
             }
-            //printf("move: %s\n", move);flush();
+            //printf("move: %s\n", move);util->flush();
             update_table(str2move(move_old), FALSE);
             invert_player_to_move();
         }
@@ -1517,30 +1509,14 @@ void Chess::setboard(char fen_position[255]) {
     //print_table();
 }
 
-
-//Flushes the output stream
-void Chess::flush() {
-    fflush(stdout);
-}
-
-int Chess::get_ms() {
-    struct timeb timebuffer;
-    ftime(&timebuffer);
-    if (timebuffer.millitm != 0)
-        return (timebuffer.time * 1000) + timebuffer.millitm;
-    return 0;
-}
-
 void Chess::position_received(char* input) {
-    int i;
-    int m;
     char move_old[6];
     strcpy(move_old,"     ");
     start_game();
     player_to_move = WHITE;
     if (! strstr(input, "move")) return;
-    m = strlen(input) - 1;
-    for (i = 24; i < m; i++) {
+    int m = strlen(input) - 1;
+    for (int i = 24; i < m; i++) {
         move_old[0] = input[i];
         i++;
         move_old[1] = input[i];
@@ -1575,7 +1551,7 @@ void Chess::processCommands(char* input) {
         printf("option name Ponder type check default false\n");
         printf("option name MultiPV type spin default 1 min 1 max 1\n");
         printf("uciok\n");
-        flush();
+        util->flush();
     }
     if (DEBUG) {
         debugfile=fopen("./debug.txt", "w");
@@ -1589,7 +1565,7 @@ void Chess::processCommands(char* input) {
         if (th_make_move.joinable()) {
             th_make_move.join();
         }
-        //printf("Process input: %s\n", input);flush();
+        //printf("Process input: %s\n", input);util->flush();
         if (DEBUG) {
             debugfile = fopen("./debug.txt", "w");
             fclose(debugfile);
@@ -1601,7 +1577,7 @@ void Chess::processCommands(char* input) {
         }
         if (strstr(input, "isready")) {
             printf("readyok\n");
-            flush();
+            util->flush();
         }
         if (strstr(input, "position startpos")) {
             position_received(input);
@@ -1643,7 +1619,7 @@ void Chess::processCommands(char* input) {
                 fprintf(debugfile, 
                         "max time: %d wtime: %d btime: %d winc: %d binc: %d movestogo: %d\n",
                         max_time, wtime, btime, winc, binc, movestogo);
-                flush();
+                util->flush();
                 fclose(debugfile);
             }
             stop_received = FALSE;

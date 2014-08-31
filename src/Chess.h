@@ -7,6 +7,7 @@
 #include <thread>
 #include <pthread.h>
 #include "Hash.h"
+#include "Util.h"
 
 class Chess {
 
@@ -15,6 +16,7 @@ class Chess {
         ~Chess();
 
         Hash* hash;
+        Util* util;
 
         //Parameters of the given position
         struct move {
