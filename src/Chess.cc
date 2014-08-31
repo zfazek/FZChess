@@ -1,4 +1,5 @@
 #include "Chess.h"
+#include "Hash.h"
 #include <cstring>
 #include <sys/timeb.h>
 #include <pthread.h>
@@ -9,16 +10,20 @@
 
 Chess::Chess() {
 #ifdef HASH
-    init_hash();
-    printf("hashsize: %d\n", HASHSIZE);flush();
+    hash = new Hash();
+    hash->init_hash();
+    printf("hashsize: %d\n", hash->HASHSIZE);flush();
 #endif
 #ifdef HASH_INNER
-    init_hash_inner();
-    printf("hashsize_inner: %d\n", HASHSIZE_INNER);flush();
+    hash->init_hash_inner();
+    printf("hashsize_inner: %d\n", hash->HASHSIZE_INNER);flush();
 #endif
 }
 
 Chess::~Chess() {
+#ifdef HASH
+    delete hash;
+#endif
 }
 
 void Chess::start_game() { // new
@@ -147,84 +152,57 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                 dpt >= seldepth) {
             last_ply = TRUE;
 #ifdef HASH
-            set_hash();
-            hash_index = hash % HASHSIZE;
-
-            // if this position is in the hashtable
-            if ( (hashtable + hash_index) -> lock != hash &&
-                    (hashtable + hash_index) -> lock != 0)
-                hash_collision++;
-            if ( (hashtable + hash_index) -> lock == hash) {
-                u = (hashtable + hash_index) -> u;
+            hash->set_hash(this);
+            if (hash->posInHashtable()) {
+                u = hash->getU();
                 --move_number;
-                hash_nodes++;
-                //printf("##Last Ply HASH FOUND##"); print_hash(hash, dpt);
+                hash->hash_nodes++;
             }
 
             //not in the hashtable. normal evaluating
             else {
 #endif
-                if (third_occurance() == TRUE) {
+                if (third_occurance() == TRUE ||
+                        not_enough_material() == TRUE ||
+                        movelist[move_number].not_pawn_move >= 100) {
                     u=DRAW;
                     --move_number;
+                } else {
+                    list_legal_moves();
+                    //legal_pointer=1;
+                    u=evaluation(legal_pointer, dpt);
+                    //for (b=1; b<=curr_seldepth; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf(" u: %d\n", u);flush();
+                    --move_number;
                 }
-                else
-                    if (not_enough_material() == TRUE) {
-                        u=DRAW;
-                        --move_number;
-                    }
-                    else
-                        if (movelist[move_number].not_pawn_move >= 100) {
-                            //printf("Fifty pawn move (last ply): move_number: %d, not_pawn_move: %d\n ", move_number, movelist[move_number].not_pawn_move);
-                            u=DRAW;
-                            --move_number;
-                        }
-                        else {
-                            list_legal_moves();
-                            //legal_pointer=1;
-                            u=evaluation(legal_pointer, dpt);
-                            //for (b=1; b<=curr_seldepth; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf(" u: %d\n", u);flush();
-                            --move_number;
-                        }
 #ifdef HASH
                 //if this position is not in the hashtable -> insert it to hashtable
-                (hashtable + hash_index) -> lock = hash;
-                (hashtable + hash_index) -> u = u;
-                //printf("last ply, insert into hash: "); print_hash(hash, dpt);
+                hash->setU(u);
             }
 #endif
         }
         //Not last ply
         else {
-            if (third_occurance() == TRUE) {
+            if (third_occurance() == TRUE ||
+                    not_enough_material() == TRUE ||
+                    movelist[move_number].not_pawn_move >= 100) {
                 u = DRAW;
                 --move_number;
-            } else
-                if (not_enough_material() == TRUE) {
-                    u = DRAW;
-                    --move_number;
-                } else
-                    if (movelist[move_number].not_pawn_move >= 100) {
-                        //printf("Fifty pawn move: move_number: %d, not_pawn_move: %d\n", move_number, movelist[move_number].not_pawn_move);
-                        u = DRAW;
-                        --move_number;
-                    }
-                    else {
-                        u = evaluation_only_end_game(dpt);
-                        if (u == 32767) { //not end
+            } else {
+                u = evaluation_only_end_game(dpt);
+                if (u == 32767) { //not end
 #ifdef HASH_INNER
-                            set_hash_inner();
+                    set_hash_inner();
 #endif
-                            invert_player_to_move();
-                            u = -alfabeta(dpt + 1, -beta, -alfa);
-                            last_ply = FALSE;
-                            invert_player_to_move();
-                        }
-                        --move_number;
+                    invert_player_to_move();
+                    u = -alfabeta(dpt + 1, -beta, -alfa);
+                    last_ply = FALSE;
+                    invert_player_to_move();
+                }
+                --move_number;
 #ifdef HASH_INNER
-                        set_hash_inner();
+                set_hash_inner();
 #endif
-                    }
+            }
         }
         if (dpt == 1) {
             root_moves[i].move  = alfarray[i];
@@ -263,7 +241,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                 best_move = alfarray[i];
 #ifdef HASH
                 printf("Hash found %d, inner found %d times, hash collision: %d, has collision_inner: %d, hash/nodes: %d%%\n",
-                        hash_nodes, hash_inner_nodes, hash_collision, hash_collision_inner, 100 * hash_nodes/nodes);flush();
+                        hash->hash_nodes, hash->hash_inner_nodes, hash->hash_collision, hash->hash_collision_inner, 100 * hash->hash_nodes/nodes);flush();
 #endif
                 // If checkmate is found
                 if (abs(u) > 20000) {
@@ -639,10 +617,7 @@ void Chess::make_move() {
     int time_current_depth_start, time_current_depth_stop, time_remaining;
     sort_alfarray = FALSE;
     nodes = 0;
-    hash_nodes = 0;
-    hash_inner_nodes = 0;
-    hash_collision = 0;
-    hash_collision_inner = 0;
+    hash->reset_counters();
     (void) time(&t1);
     //max_time = 20 * 1000;
     start_time = get_ms();
@@ -713,7 +688,7 @@ void Chess::make_move() {
     move2str(best_move);
     printf( "\nbestmove %s\n", move_str);flush();
 #ifdef HASH
-    printf("Hash found %d, inner found %d times\n", hash_nodes, hash_inner_nodes);flush();
+    printf("Hash found %d, inner found %d times\n", hash->hash_nodes, hash->hash_inner_nodes);flush();
 #endif
     update_table(best_move, FALSE); //Update the table without printing it
     invert_player_to_move();
@@ -1539,9 +1514,6 @@ void Chess::setboard(char fen_position[255]) {
             invert_player_to_move();
         }
     }
-#ifdef HASH
-    //set_hash();
-#endif
     //print_table();
 }
 
@@ -1681,90 +1653,3 @@ void Chess::processCommands(char* input) {
         }
     }
 }
-
-//Set the hash variable of the current position
-void Chess::set_hash() {
-    int i, k;
-    int field, figure;
-    hash = 0;
-    // XOR the side to move
-    if (player_to_move == WHITE) {
-        hash ^= hash_side_white;
-    }
-    else {
-        hash ^= hash_side_black;
-    }
-    // XOR the figures;
-    for (k = 0; k < 120; k++) {
-        field = tablelist[move_number][k];
-        if (field > 0 && field < 255) {
-            figure = (field & 127);
-            if ((field & 128) == 128) i = 1; else i = 0;
-            hash ^= hash_piece[i][figure][k];
-        }
-    }
-    // XOR the enpassant position
-    hash ^= hash_enpassant[movelist[move_number].en_passant];
-    // XOR the castling possibilities
-    hash ^= hash_castle[movelist[move_number].castle];
-}
-
-unsigned long long Chess::rand64() {
-    unsigned long long output = 9999999999999999999LLU;
-    output = rand();
-    output <<= 15;
-    output ^= rand();
-    output <<= 15;
-    output ^= rand();
-    output <<= 15;
-    output ^= rand();
-    output <<= 15;
-    output ^= rand();
-    return output;
-}
-
-unsigned long long Chess::hash_rand() {
-    int i;
-    unsigned long long r = 0LLU;
-    for (i = 0; i < 32; i++) r ^= rand64() << i;
-    return r;
-}
-
-void Chess::init_hash() {
-    int i, j, k;
-    srand(0);
-    //WHITE: i = 0, BLACK: i = 1
-    for (i = 0; i < 2; i++)
-        //PAWN = 1, KNIGHT = 2, ..., KING = 7
-        for (j = 1; j < 7; j++)
-            for (k = 0; k < 120; k++)
-                hash_piece[i][j][k] = hash_rand();
-    hash_side_white = hash_rand();
-    hash_side_black = hash_rand();
-    for (i = 0; i < 120; i++) hash_enpassant[i] = hash_rand();
-    for (i = 0; i < 15; i++) hash_castle[i] = hash_rand();
-    if ((hashtable = (hash_t*)malloc(sizeof(hash_t[HASHSIZE]))) == NULL) {
-        printf("HASH memory fault!\n");
-        exit(-2);
-    }
-}
-
-void Chess::init_hash_inner() {
-    int i, j, k;
-    srand(0);
-    //WHITE: i = 0, BLACK: i = 1
-    for (i = 0; i < 2; i++)
-        //PAWN = 1, KNIGHT = 2, ..., KING = 7
-        for (j = 1; j < 7; j++)
-            for (k = 0; k < 120; k++)
-                hash_piece[i][j][k] = hash_rand();
-    hash_side_white = hash_rand();
-    hash_side_black = hash_rand();
-    for (i = 0; i < 120; i++) hash_enpassant[i] = hash_rand();
-    for (i = 0; i < 15; i++) hash_castle[i] = hash_rand();
-    if ((hashtable_inner = (hash_inner_t*)malloc(sizeof(hash_inner_t[HASHSIZE_INNER]))) == NULL) {
-        printf("HASH_INNER memory fault!\n");
-        exit(-2);
-    }
-}
-

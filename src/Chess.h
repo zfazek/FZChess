@@ -1,17 +1,20 @@
 #ifndef CHESS_H
 #define CHESS_H
 
-#include <time.h>
+#include <ctime>
 #include <setjmp.h>
-#include <stdio.h>
+#include <cstdio>
 #include <thread>
 #include <pthread.h>
+#include "Hash.h"
 
 class Chess {
 
     public:
         Chess();
         ~Chess();
+
+        Hash* hash;
 
         //Parameters of the given position
         struct move {
@@ -59,10 +62,6 @@ class Chess {
         int FZChess; // 1:white, -1:black
 
         unsigned int nodes;
-        unsigned int hash_nodes;
-        unsigned int hash_inner_nodes;
-        unsigned int hash_collision;
-        unsigned int hash_collision_inner;
         time_t t1, t2, t1_last, t2_last;
         jmp_buf env;
         int start_time, stop_time, max_time, movetime;
@@ -152,14 +151,6 @@ class Chess {
         int get_ms();
         void position_received(char* input);
         void processCommands(char* input);
-        void set_hash();
-        unsigned long long rand64();
-        unsigned long long hash_rand();
-        void init_hash();
-        void init_hash_inner();
-
-
-
 
         int Pawn   = 1;
         int Knight = 2;
@@ -236,39 +227,6 @@ class Chess {
         int double_pawn        =   15;
         int friendly_pawn      =    5;
         int pawn_advantage     =   10;
-
-
-        unsigned long long hash = 9999999999999999999LLU;
-        unsigned long long hash_inner = 9999999999999999999LLU;
-        unsigned long long hash_side_white = 9999999999999999999LLU;
-        unsigned long long hash_side_black = 9999999999999999999LLU;
-        unsigned long long hash_piece[2][7][120];
-        unsigned long long hash_enpassant[120];
-        unsigned long long hash_castle[15];
-        unsigned long long hash_index = 9999999999999999999LLU;
-
-        typedef struct {
-            unsigned long long lock;
-            int u;
-        } hash_t;
-
-        typedef struct {
-            unsigned long long lock;
-            int u;
-            int depth;
-            int move;
-            //byte beta;
-        } hash_inner_t;
-
-        hash_t *hashtable;
-        hash_inner_t *hashtable_inner;
-        unsigned int HASHSIZE = 1024 * 1024 * 128;
-        unsigned int HASHSIZE_INNER = 1024 * 1024 * 128;
-
-
-
-
-    private:
 
 };
 
