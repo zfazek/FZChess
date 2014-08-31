@@ -1,0 +1,4 @@
+uci
+position startpos moves h2h4
+go wtime 900000 btime 900000
+
