@@ -11,8 +11,8 @@ void test_move_h2h4() {
     chess.max_time = 300000 / 40;
     chess.make_move();
     assert(strcmp(chess.move_str, "e7e6 ") == 0);
-    assert(chess.nodes > 120000);
-    assert(27425 == chess.hash->hash_nodes);
+    assert(chess.nodes > 100000);
+    assert(20000 < chess.hash->hash_nodes);
 }
 
 void test() {

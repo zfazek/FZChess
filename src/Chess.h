@@ -8,6 +8,9 @@
 #include <pthread.h>
 #include "Hash.h"
 #include "Util.h"
+#include "Eval.h"
+
+class Eval;
 
 class Chess {
 
@@ -17,6 +20,7 @@ class Chess {
 
         Hash* hash;
         Util* util;
+        Eval* eval;
 
         //Parameters of the given position
         struct move {
@@ -41,7 +45,6 @@ class Chess {
 #endif
         };
 
-
         int move_number;
         int player_to_move; // 1:white, -1:black
 
@@ -64,62 +67,29 @@ class Chess {
         int FZChess; // 1:white, -1:black
 
         unsigned int nodes;
-        time_t t1, t2, t1_last, t2_last;
         jmp_buf env;
         int start_time, stop_time, max_time, movetime;
         int stop_search;
         int depth, seldepth, init_depth, curr_depth, curr_seldepth, gui_depth;
         int sm;
         int legal_pointer;
-        int *pt, *ptt, *pt1, *pt2;
-        int *ptablelist;
-        int *pdir, *pdir1;
-        int *pl;
-        int last_ply;
+        int *pt, *ptt;
         int best_move;
         int mate_score;
         int end_direction;
-        unsigned long long knodes = 9999999999999999999LLU;
+        //unsigned long long knodes = 9999999999999999999LLU;
         std::thread th_make_move;
-        pthread_t threads;
-        int rc;
-        long t;
         int sort_alfarray;
-
 
         struct move_t {
             int move;
             int value;
         };
 
-        struct move_t root_moves[255], *proot_moves;
+        struct move_t root_moves[255];
 
         //Stores the parameters of the given position
-        struct move movelist[1000], *pm, *pm1, *pm2;
-
-        struct best_lines {
-            int length;
-            int value;
-            int moves[1000];
-        } best_line[99];
-
-
-        //Startup position
-        int new_table[120] =
-        {
-            0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-            0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-            0xff,0x04,0x02,0x03,0x05,0x06,0x03,0x02,0x04,0xff,  // white - first row
-            0xff,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0xff,
-            0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-            0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-            0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-            0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-            0xff,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0xff, // black - seventh row
-            0xff,0x84,0x82,0x83,0x85,0x86,0x83,0x82,0x84,0xff,
-            0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-            0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
-        };
+        struct move movelist[1000];
 
         void start_game();
         void make_move();
@@ -138,13 +108,13 @@ class Chess {
         void append_legal_moves(int dir_piece, int i, int j, int kk);
         void append_legal_moves_inner(int dir_piece, int i, int j, int kk);
         void print_table();
-        int evaluation_material(int dpt);
         int convA(int k);
         int conv0(int k);
+        int sum_material(int color);
+        int evaluation_material(int dpt);
         int evaluation_king(int field, int figure);
         int evaluation_pawn(int field, int figure, int sm);
         void invert_player_to_move();
-        int sum_material(int color);
         int str2move(char move_old[6]);
         void move2str(int move);
         void reset_movelist();
@@ -218,10 +188,6 @@ class Chess {
         const int LOST = -22000;
         const int WON  =  22000;
 
-
-        //Values for evaluation
-        //empty, pawn, knight, bishop, rook, queen, king
-        int figure_value[7] = {0, 100, 330, 330, 500, 900, 0};
         int end_game_threshold = 1200;
         int king_castled       =   40;
         int cant_castle        =  -10;
