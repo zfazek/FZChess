@@ -1515,8 +1515,7 @@ void Chess::position_received(char* input) {
     start_game();
     player_to_move = WHITE;
     if (! strstr(input, "move")) return;
-    int m = strlen(input) - 1;
-    for (int i = 24; i < m; i++) {
+    for (int i = 24; i < strlen(input) - 1; i++) {
         move_old[0] = input[i];
         i++;
         move_old[1] = input[i];
