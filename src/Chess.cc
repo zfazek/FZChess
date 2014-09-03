@@ -4,10 +4,13 @@
 #include "Util.h"
 #include <cstring>
 #include <pthread.h>
+#include <cmath>
 
-#define HASH
+//#define HASH
 #define ALFABETA
 //#define SORT_ALFARRAY
+
+using namespace std;
 
 Chess::Chess() {
 #ifdef HASH
@@ -727,8 +730,9 @@ int Chess::is_attacked(int field, int color) {
     return FALSE;
 }
 
-//Sorts legal moves
-inline void Chess::calculate_evarray() {
+// Sorts legal moves
+// Bubble sort
+void Chess::calculate_evarray() {
     int i, j, v;
     int tempmove;
     if (init_depth == 1) {
@@ -747,6 +751,33 @@ inline void Chess::calculate_evarray() {
                     root_moves[j].value = root_moves[i].value;
                     root_moves[i].value = v;
                 }
+            }
+        }
+    }
+}
+
+// Sorts legal moves
+// Insertion sort
+void Chess::calculate_evarray_new() {
+    int i, j, v;
+    int tempmove;
+    if (init_depth == 1) {
+        for (i = 0; i <= legal_pointer; i++) {
+            (root_moves + i)->move = legal_moves[i];
+            (root_moves + i)->value = 0;
+        }
+    } else {
+        for (i = 1; i <= legal_pointer; i++) {
+            for (j = i;
+                    j > 0 && root_moves[j].value > root_moves[j-1].value;
+                    j--) {
+                printf("%2d %2d\n", i, j);
+                tempmove = root_moves[j].move;
+                root_moves[j].move = root_moves[i].move;
+                root_moves[i].move = tempmove;
+                v = root_moves[j].value;
+                root_moves[j].value = root_moves[i].value;
+                root_moves[i].value = v;
             }
         }
     }
@@ -1538,17 +1569,17 @@ void Chess::processCommands(char* input) {
                 movetime = max_time;
             }
             else {
-                if (strstr(input, "movestogo")) 
+                if (strstr(input, "movestogo"))
                     sscanf(strstr(input, "movestogo"), "movestogo %d", &movestogo);
-                if (strstr(input, "wtime")) 
+                if (strstr(input, "wtime"))
                     sscanf(strstr(input, "wtime"), "wtime %d", &wtime);
-                if (strstr(input, "btime")) 
+                if (strstr(input, "btime"))
                     sscanf(strstr(input, "btime"), "btime %d", &btime);
-                if (strstr(input, "winc")) 
+                if (strstr(input, "winc"))
                     sscanf(strstr(input, "winc"), "winc %d", &winc);
-                if (strstr(input, "binc")) 
+                if (strstr(input, "binc"))
                     sscanf(strstr(input, "binc"), "binc %d", &binc);
-                if (FZChess == WHITE) 
+                if (FZChess == WHITE)
                     max_time = (wtime + movestogo * winc) / movestogo;
                 else max_time = (btime + movestogo * binc) / movestogo;
                 if (strstr(input, "depth")) {
@@ -1562,7 +1593,7 @@ void Chess::processCommands(char* input) {
             }
             if (DEBUG) {
                 debugfile = fopen("./debug.txt", "a");
-                fprintf(debugfile, 
+                fprintf(debugfile,
                         "max time: %d wtime: %d btime: %d winc: %d binc: %d movestogo: %d\n",
                         max_time, wtime, btime, winc, binc, movestogo);
                 util->flush();

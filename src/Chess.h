@@ -97,6 +97,7 @@ class Chess {
         void list_legal_moves();
         int is_attacked(int field, int color);
         void calculate_evarray();
+        void calculate_evarray_new();
         void checkup();
         void update_table(int move, int print);
         int third_occurance();

@@ -7,6 +7,7 @@ Hash::Hash() {
 }
 
 Hash::~Hash() {
+    free(hashtable);
 }
 
 void Hash::reset_counters() {
@@ -67,8 +68,10 @@ unsigned long long Hash::hash_rand() {
 void Hash::init_hash() {
     int i, j, k;
     srand(0);
+
     //WHITE: i = 0, BLACK: i = 1
     for (i = 0; i < 2; i++)
+
         //PAWN = 1, KNIGHT = 2, ..., KING = 7
         for (j = 1; j < 7; j++)
             for (k = 0; k < 120; k++)
@@ -86,8 +89,10 @@ void Hash::init_hash() {
 void Hash::init_hash_inner() {
     int i, j, k;
     srand(0);
+
     //WHITE: i = 0, BLACK: i = 1
     for (i = 0; i < 2; i++)
+
         //PAWN = 1, KNIGHT = 2, ..., KING = 7
         for (j = 1; j < 7; j++)
             for (k = 0; k < 120; k++)
@@ -96,7 +101,8 @@ void Hash::init_hash_inner() {
     hash_side_black = hash_rand();
     for (i = 0; i < 120; i++) hash_enpassant[i] = hash_rand();
     for (i = 0; i < 15; i++) hash_castle[i] = hash_rand();
-    if ((hashtable_inner = (hash_inner_t*)malloc(sizeof(hash_inner_t[HASHSIZE_INNER]))) == NULL) {
+    if ((hashtable_inner = (hash_inner_t*)malloc(
+                    sizeof(hash_inner_t[HASHSIZE_INNER]))) == NULL) {
         printf("HASH_INNER memory fault!\n");
         exit(-2);
     }

@@ -15,7 +15,52 @@ void test_move_h2h4() {
     assert(20000 < chess.hash->hash_nodes);
 }
 
+void test_calculate_evarray(Chess &chess) {
+    for (int i = 0; i <= chess.legal_pointer; i++) {
+        chess.root_moves[i].move = 100 - i;
+        chess.root_moves[i].value = 100 - i;
+    }
+    chess.calculate_evarray();
+    /*
+    for (int i = 0; i <= chess.legal_pointer; i++) {
+        printf("%2d. %2d %2d\n",
+                i + 1,
+                chess.root_moves[i].move,
+                chess.root_moves[i].value);
+    }
+    */
+    for (int i = 0; i < chess.legal_pointer; i++) {
+        assert(chess.root_moves[i].value >= chess.root_moves[i+1].value);
+    }
+}
+
+void test_calculate_evarray_new(Chess &chess) {
+    for (int i = 0; i <= chess.legal_pointer; i++) {
+        chess.root_moves[i].move = 100 - i;
+        chess.root_moves[i].value = 100 - i;
+    }
+    chess.calculate_evarray_new();
+    for (int i = 0; i <= chess.legal_pointer; i++) {
+        /*
+        printf("%2d. %2d %2d\n",
+                i + 1,
+                chess.root_moves[i].move,
+                chess.root_moves[i].value);
+        */
+    }
+    for (int i = 0; i < chess.legal_pointer; i++) {
+        assert(chess.root_moves[i].value >= chess.root_moves[i+1].value);
+    }
+}
+
 void test() {
+    {
+        Chess chess;
+        chess.legal_pointer = 40;
+        chess.init_depth = 2;
+        test_calculate_evarray(chess);
+        test_calculate_evarray_new(chess);
+    }
     test_move_h2h4();
 }
 
