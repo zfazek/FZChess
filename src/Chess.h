@@ -196,7 +196,7 @@ class Chess {
         int double_pawn        =   15;
         int friendly_pawn      =    5;
         int pawn_advantage     =   10;
-
+        int n;
 };
 
 #endif

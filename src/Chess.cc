@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <cmath>
 
-//#define HASH
+#define HASH
 #define ALFABETA
 //#define SORT_ALFARRAY
 
@@ -128,7 +128,11 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     // Sorts legal moves
     if (dpt == 1) {
         calculate_evarray();
-        for (i = 0; i <= legal_pointer; i++) alfarray[i] = root_moves[i].move;
+        for (i = 0; i <= legal_pointer; i++) {
+            alfarray[i] = root_moves[i].move;
+            printf("%d ", root_moves[i].value);
+        }
+        puts("");
     }
     else {
         for (i = 0; i <= nbr_legal; ++i) alfarray[i] = legal_moves[i];
@@ -616,7 +620,9 @@ void Chess::make_move() {
     time_t t1, t2, t1_last, t2_last;
     sort_alfarray = FALSE;
     nodes = 0;
+#ifdef HASH
     hash->reset_counters();
+#endif
     (void) time(&t1);
     //max_time = 20 * 1000;
     start_time = util->get_ms();
@@ -771,7 +777,6 @@ void Chess::calculate_evarray_new() {
             for (j = i;
                     j > 0 && root_moves[j].value > root_moves[j-1].value;
                     j--) {
-                printf("%2d %2d\n", i, j);
                 tempmove = root_moves[j].move;
                 root_moves[j].move = root_moves[i].move;
                 root_moves[i].move = tempmove;
