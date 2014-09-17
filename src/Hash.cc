@@ -42,6 +42,7 @@ void Hash::set_hash(Chess* chess) {
     hash ^= hash_enpassant[chess->movelist[chess->move_number].en_passant];
     // XOR the castling possibilities
     hash ^= hash_castle[chess->movelist[chess->move_number].castle];
+    hash_index = hash % HASHSIZE;
 }
 
 unsigned long long Hash::rand64() {
@@ -109,13 +110,14 @@ void Hash::init_hash_inner() {
 }
 
 bool Hash::posInHashtable() {
-    hash_index = hash % HASHSIZE;
 
     // if this position is in the hashtable
-    if ( (hashtable + hash_index) -> lock != hash &&
-            (hashtable + hash_index) -> lock != 0)
+    if ((hashtable + hash_index) -> lock != hash &&
+            (hashtable + hash_index) -> lock != 0) {
         hash_collision++;
-    if ( (hashtable + hash_index) -> lock == hash) {
+        return false;
+    }
+    if ((hashtable + hash_index) -> lock == hash) {
         //printf("##Last Ply HASH FOUND##"); print_hash(hash, dpt);
         return true;
     }

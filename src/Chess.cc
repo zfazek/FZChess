@@ -130,7 +130,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         calculate_evarray();
         for (i = 0; i <= legal_pointer; i++) {
             alfarray[i] = root_moves[i].move;
-            printf("%d ", root_moves[i].value);
+            move2str(root_moves[i].move);
+            printf("(%s:%d) ", move_str, root_moves[i].value);
         }
         puts("");
     }
