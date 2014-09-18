@@ -60,6 +60,7 @@ void test_calculate_evarray_new(Chess &chess) {
 }
 
 void test() {
+    /*
     {
         Chess chess;
         chess.legal_pointer = 40;
@@ -67,6 +68,7 @@ void test() {
         test_calculate_evarray(chess);
         test_calculate_evarray_new(chess);
     }
+    */
     test_move_h2h4();
 }
 

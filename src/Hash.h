@@ -32,9 +32,6 @@ class Hash {
 
         hash_t *hashtable;
         hash_inner_t *hashtable_inner;
-        unsigned int HASHSIZE = 1024 * 1024 * 1;
-        //unsigned int HASHSIZE = 1024 * 1024 * 128;
-        unsigned int HASHSIZE_INNER = 1024 * 1024 * 128;
         unsigned int hash_nodes;
         unsigned int hash_inner_nodes;
         unsigned int hash_collision;

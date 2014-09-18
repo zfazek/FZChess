@@ -1,4 +1,4 @@
 uci
 position startpos moves h2h4
-go depth 4
+go depth 5
 

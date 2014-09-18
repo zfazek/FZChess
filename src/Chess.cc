@@ -12,15 +12,18 @@
 
 using namespace std;
 
+struct best_lines {
+    int length;
+    int value;
+    int moves[1000];
+} best_line[99];
+
 Chess::Chess() {
 #ifdef HASH
     hash = new Hash();
-    hash->init_hash();
-    printf("hashsize: %d\n", hash->HASHSIZE);util->flush();
 #endif
 #ifdef HASH_INNER
     hash->init_hash_inner();
-    printf("hashsize_inner: %d\n", hash->HASHSIZE_INNER);util->flush();
 #endif
     util = new Util();
     eval = new Eval();
@@ -84,12 +87,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     int uu; // Evaluation if checkmate is found
     int alfarray[255];
     value = -22767;
-    int last_ply;
-    struct best_lines {
-        int length;
-        int value;
-        int moves[1000];
-    } best_line[99];
 
     //if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);util->flush();
 #ifdef HASH_INNER
@@ -155,6 +152,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         if ((dpt >= depth && movelist[move_number].further == 0) ||
                 dpt >= seldepth) {
             last_ply = TRUE;
+            n++;
 #ifdef HASH
             hash->set_hash(this);
             if (hash->posInHashtable()) {
@@ -220,13 +218,15 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             for(b = 1; b <= curr_seldepth; b++)
                 best_line[dpt].moves[b] = curr_line[b];
             best_line[dpt].value = u;
-            if (last_ply == TRUE)
+            if (last_ply == TRUE) {
                 best_line[dpt].length = dpt;
+            }
             if (last_ply == FALSE) {
                 best_line[dpt].length = best_line[dpt + 1].length;
                 best_line[dpt].value = best_line[dpt + 1].value;
                 for (b = 1; b <= best_line[dpt + 1].length; b++)
                     best_line[dpt].moves[b] = best_line[dpt + 1].moves[b];
+                //printf("best_line[%d].length: %d\n", dpt, best_line[dpt].length);util->flush();
             }
 #ifdef HASH_INNER
 
@@ -256,7 +256,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     if (uu == 0 && u < 0)
                         uu = -1;
                     printf("info multipv 1 depth %d seldepth %d score mate %d nodes %d pv ",
-                            curr_depth, curr_seldepth, uu, nodes);util->flush();
+                            curr_depth, curr_seldepth, uu, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         move2str(best_line[dpt].moves[b]);
                         printf("%s ", move_str);
@@ -265,7 +265,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     mate_score = abs(u);
                 } else {
                     printf("info multipv 1 depth %d seldepth %d score cp %d nodes %d pv ",
-                            curr_depth, curr_seldepth, u, nodes);util->flush();
+                            curr_depth, curr_seldepth, u, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         move2str(best_line[dpt].moves[b]);
                         printf("%s ", move_str);

@@ -71,6 +71,7 @@ class Chess {
         int start_time, stop_time, max_time, movetime;
         int stop_search;
         int depth, seldepth, init_depth, curr_depth, curr_seldepth, gui_depth;
+        int last_ply;
         int sm;
         int legal_pointer;
         int *pt, *ptt;

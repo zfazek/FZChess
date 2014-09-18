@@ -3,7 +3,11 @@
 #include <cstdlib>
 #include <cstdio>
 
+const unsigned int HASHSIZE = 1024 * 1024 * 1;
+const unsigned int HASHSIZE_INNER = 1024 * 1024 * 1;
+
 Hash::Hash() {
+    init_hash();
 }
 
 Hash::~Hash() {
@@ -83,8 +87,9 @@ void Hash::init_hash() {
     for (i = 0; i < 15; i++) hash_castle[i] = hash_rand();
     if ((hashtable = (hash_t*)malloc(sizeof(hash_t[HASHSIZE]))) == NULL) {
         printf("HASH memory fault!\n");
-        exit(-2);
+        exit(2);
     }
+    printf("hashsize: %d, sizeof: %d\n", HASHSIZE, sizeof(hash_t[HASHSIZE]));fflush(stdout);
 }
 
 void Hash::init_hash_inner() {
@@ -105,8 +110,9 @@ void Hash::init_hash_inner() {
     if ((hashtable_inner = (hash_inner_t*)malloc(
                     sizeof(hash_inner_t[HASHSIZE_INNER]))) == NULL) {
         printf("HASH_INNER memory fault!\n");
-        exit(-2);
+        exit(2);
     }
+    printf("hashsize_inner: %d\n", HASHSIZE_INNER);fflush(stdout);
 }
 
 bool Hash::posInHashtable() {
