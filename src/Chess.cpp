@@ -307,8 +307,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             if (dpt == 1) {
                 best_move = alfarray[i];
 #ifdef HASH
-                printf("Hash found %d, inner found %d times, hash collision: %d, has collision_inner: %d, hash/nodes: %d%%\n",
-                        hash->hash_nodes, hash->hash_inner_nodes, hash->hash_collision, hash->hash_collision_inner, 100 * hash->hash_nodes/nodes);util->flush();
+                hash->printStatistics(nodes);
 #endif
                 // If checkmate is found
                 if (abs(u) > 20000) {
@@ -756,7 +755,7 @@ void Chess::make_move() {
     move2str(best_move);
     printf( "\nbestmove %s\n", move_str);util->flush();
 #ifdef HASH
-    printf("Hash found %d, inner found %d times\n", hash->hash_nodes, hash->hash_inner_nodes);util->flush();
+    hash->printStatistics(nodes);
 #endif
     update_table(best_move, FALSE); //Update the table without printing it
     invert_player_to_move();
@@ -1452,8 +1451,8 @@ void Chess::setboard(char fen_position[255]) {
     int factor;
     char move_old[6]="     ";
     start_game();
-    int m = 5;
-    for (int j = 0; j < m; j++) {
+    size_t m = 5;
+    for (size_t j = 0; j < m; j++) {
         while (fen_position[n] != ' ') {
             n++;
         }
@@ -1471,14 +1470,14 @@ void Chess::setboard(char fen_position[255]) {
     n = 13;
     while (fen_position[n] != ' ') {
         if (fen_position[n] > '0' && fen_position[n] < '9') {
-            for(m = 0; m < (int)(fen_position[n] - '0'); m++) {
+            for(int m = 0; m < fen_position[n] - '0'; m++) {
                 tablelist[move_number][y * 10 + x] = 0;
                 x++;
             }
             --x;
         }
         if (fen_position[n] != '/') {
-            for (m = 0; m < 14; m++) {
+            for (int m = 0; m < 14; m++) {
                 if (fen_position[n] == graphical_figure[m][1]) {
                     tablelist[move_number][y * 10 + x]=graphical_figure[m][0];
                     break;
@@ -1525,17 +1524,22 @@ void Chess::setboard(char fen_position[255]) {
     movelist[move_number].not_pawn_move = 0;
     factor = 1;
     while (fen_position[n] != ' ') {
-        movelist[move_number].not_pawn_move=movelist[move_number].not_pawn_move * factor + (int)(fen_position[n] - '0');
+        movelist[move_number].not_pawn_move =
+            movelist[move_number].not_pawn_move * factor +
+            (int)(fen_position[n] - '0');
         factor = factor * 10;
         n++;
     }
-    for (int i = 0; i < 120; ++i) if ((tablelist[move_number][i] & 127) == King) {
-        if (tablelist[move_number][i] == WhiteKing) movelist[move_number].pos_white_king = i;
-        if (tablelist[move_number][i] == BlackKing) movelist[move_number].pos_black_king = i;
-    }
+    for (int i = 0; i < 120; ++i)
+        if ((tablelist[move_number][i] & 127) == King) {
+            if (tablelist[move_number][i] == WhiteKing)
+                movelist[move_number].pos_white_king = i;
+            if (tablelist[move_number][i] == BlackKing)
+                movelist[move_number].pos_black_king = i;
+        }
     if (strstr(input, "moves")) {
         m = strlen(input) - 1;
-        for (int i = (int) (strstr(input, "moves") - input + 6); i < m; i++) {
+        for (size_t i = strstr(input, "moves") - input + 6; i < m; i++) {
             //printf("i: %d, input[i]: %c\n", i, input[i]);util->flush();
             move_old[0] = input[i++];
             move_old[1] = input[i++];
@@ -1660,8 +1664,7 @@ void Chess::processCommands(char* input) {
             }
             if (DEBUG) {
                 debugfile = fopen("./debug.txt", "a");
-                fprintf(debugfile,
-                        "max time: %d wtime: %d btime: %d winc: %d binc: %d movestogo: %d\n",
+                fprintf(debugfile, "max time: %d wtime: %d btime: %d winc: %d binc: %d movestogo: %d\n",
                         max_time, wtime, btime, winc, binc, movestogo);
                 util->flush();
                 fclose(debugfile);

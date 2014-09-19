@@ -7,14 +7,14 @@ class Hash {
         Hash();
         ~Hash();
 
-        unsigned long long hash = 9999999999999999999LLU;
-        unsigned long long hash_inner = 9999999999999999999LLU;
-        unsigned long long hash_side_white = 9999999999999999999LLU;
-        unsigned long long hash_side_black = 9999999999999999999LLU;
+        unsigned long long hash;
+        unsigned long long hash_inner;
+        unsigned long long hash_side_white;
+        unsigned long long hash_side_black;
         unsigned long long hash_piece[2][7][120];
         unsigned long long hash_enpassant[120];
         unsigned long long hash_castle[15];
-        unsigned long long hash_index = 9999999999999999999LLU;
+        unsigned long long hash_index;
 
         typedef struct {
             unsigned long long lock;
@@ -45,5 +45,6 @@ class Hash {
         bool posInHashtable();
         int getU();
         void setU(int u);
+        void printStatistics(int nodes);
 };
 
