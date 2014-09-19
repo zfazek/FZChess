@@ -255,18 +255,20 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             } else {
                 u = evaluation_only_end_game(dpt);
                 if (u == 32767) { //not end
-#ifdef HASH_INNER
-                    set_hash_inner();
-#endif
-                    invert_player_to_move();
-                    u = -alfabeta(dpt + 1, -beta, -alfa);
-                    last_ply = FALSE;
-                    invert_player_to_move();
+                    /*
+                    hash->set_hash(this);
+                    if (hash->posInHashtable()) {
+                        u = hash->getU();
+                        hash->hash_inner_nodes++;
+                    } else {
+                    */
+                        invert_player_to_move();
+                        u = -alfabeta(dpt + 1, -beta, -alfa);
+                        last_ply = FALSE;
+                        invert_player_to_move();
+                    //}
                 }
                 --move_number;
-#ifdef HASH_INNER
-                set_hash_inner();
-#endif
             }
         }
         if (dpt == 1) {
@@ -693,6 +695,9 @@ void Chess::make_move() {
     //gui_depth = 2; max_time=0;
     stop_search = FALSE;
     for (;;) {
+#ifdef HASH
+        hash->hashes.clear();
+#endif
 #ifdef HASH_INNER
         set_hash_inner();
         print_hash_inner(hash_inner, 0);
@@ -707,6 +712,8 @@ void Chess::make_move() {
            if (depth > 3) seldepth = depth + 8;
            */
         seldepth = depth + 8;
+        if (depth > 4) seldepth = depth + 4;
+        seldepth = depth + 0;
         printf("%d %d\n", depth, seldepth);util->flush();
         //Calculates the time of the move
         //Searches the best move with negamax algorithm with alfa-beta cut off

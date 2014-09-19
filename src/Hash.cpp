@@ -98,7 +98,9 @@ void Hash::set_hash(Chess* chess) {
 }
 
 bool Hash::posInHashtable() {
+    return hashes.find(hash) != hashes.end();
 
+    /*
     // if this position is in the hashtable
     if ((hashtable + hash_index)->lock != hash &&
             (hashtable + hash_index)->lock != 0) {
@@ -110,15 +112,20 @@ bool Hash::posInHashtable() {
         return true;
     }
     return false;
+    */
 }
 
 int Hash::getU() {
-    return (hashtable + hash_index)->u;
+    return hashes[hash];
+    //return (hashtable + hash_index)->u;
 }
 
 void Hash::setU(int u) {
+    hashes[hash] = u;
+    /*
     (hashtable + hash_index)->lock = hash;
     (hashtable + hash_index)->u = u;
+    */
 }
 
 unsigned long long Hash::rand64() {
@@ -143,10 +150,9 @@ unsigned long long Hash::hash_rand() {
 }
 
 void Hash :: printStatistics(int nodes) {
-    printf("Hash found %d, hash collision: %d (%.0f%%), hash/nodes: %d%%\n",
+    printf("Hash found %d, hash inner nodes: %d, hash/nodes: %d%%\n",
             hash_nodes,
-            hash_collision,
-            100 * (double)hash_collision / hash_nodes,
+            hash_inner_nodes,
             100 * hash_nodes/nodes);
     fflush(stdout);
 }
