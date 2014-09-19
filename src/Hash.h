@@ -1,5 +1,4 @@
-#ifndef HASH_H
-#define HASH_H
+#pragma once
 
 class Chess;
 
@@ -48,4 +47,3 @@ class Hash {
         void setU(int u);
 };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 class Util {
     public:
@@ -8,4 +7,3 @@ class Util {
 
 };
 
-#endif

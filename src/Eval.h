@@ -1,7 +1,4 @@
-#ifndef EVAL_H
-#define EVAL_H
-
-class Chess;
+#pragma once
 
 class Eval {
     public:
@@ -14,4 +11,3 @@ class Eval {
 
 };
 
-#endif
