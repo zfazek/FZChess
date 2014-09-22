@@ -108,6 +108,7 @@ void Table::setboard(char* input) {
     chess->start_game();
     size_t m = 5;
     int move_number = 1;
+    chess->move_number = 1;
     n = 13;
     while (input[n] != ' ') {
         if (input[n] > '0' && input[n] < '9') {
