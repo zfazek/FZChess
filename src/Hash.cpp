@@ -1,5 +1,6 @@
 #include "Hash.h"
 #include "Chess.h"
+#include "Util.h"
 #include <cstdlib>
 #include <cstdio>
 
@@ -43,7 +44,7 @@ void Hash::init_hash() {
     printf("hashsize: %d, sizeof: %d\n",
             HASHSIZE,
             sizeof(hash_t[HASHSIZE]));
-    fflush(stdout);
+    Util::flush();
 }
 
 void Hash::init_hash_inner() {

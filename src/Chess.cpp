@@ -9,54 +9,8 @@
 
 using namespace std;
 
-int Pawn   = 1;
-int Knight = 2;
-int Bishop = 3;
-int Rook   = 4;
-int Queen  = 5;
-int King   = 6;
-
-//Values representing the figures in the table
-const int WhitePawn   = 1;
-const int WhiteKnight = 2;
-const int WhiteBishop = 3;
-const int WhiteRook   = 4;
-const int WhiteQueen  = 5;
-const int WhiteKing   = 6;
-
-const int BlackPawn   = 0x81;
-const int BlackKnight = 0x82;
-const int BlackBishop = 0x83;
-const int BlackRook   = 0x84;
-const int BlackQueen  = 0x85;
-const int BlackKing   = 0x86;
-
-//For printing and for notation
-int graphical_figure[14][2] = {
-    { 000,  46 }, // "."
-    { 001,  80 }, // "P"
-    { 002,  78 }, // "N"
-    { 003,  66 }, // "B"
-    { 004,  82 }, // "R"
-    { 005,  81 }, // "Q"
-    { 006,  75 }, // "K"
-    { 129, 112 }, // "p"
-    { 130, 110 }, // "n"
-    { 131,  98 }, // "b"
-    { 132, 114 }, // "r"
-    { 133, 113 }, // "q"
-    { 134, 107 }, // "k"
-    { 191,  88 }, // "X"
-};
-
 enum figures { PAWN1, PAWN2, PAWN3, PAWN4, PAWN5, PAWN6, PAWN7, PAWN8,
     KNIGHT1, KNIGHT2, BISHOP1, BISHOP2, ROOK1, ROOK2, QUEEN, KING};
-
-//Possible direction of figure's move
-int dir_rook[4] = { -10,  -1,   1,  10 };
-int dir_knight[8] = { -21, -19, -12,  -8,  8, 12, 19, 21 };
-int dir_bishop[4] = { -11,  -9,   9,  11 };
-int dir_king[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
 
 struct best_lines {
     int length;
@@ -71,7 +25,6 @@ Chess::Chess() {
 #ifdef HASH_INNER
     hash->init_hash_inner();
 #endif
-    util = new Util();
     uci = new Uci(this);
     table = new Table(this);
     stop_received = false;
@@ -84,53 +37,19 @@ Chess::~Chess() {
 #ifdef HASH
     delete hash;
 #endif
-    delete util;
     delete uci;
     delete table;
 }
 
 void Chess::start_game() { // new
-    reset_movelist();
+    table->reset_movelist();
     player_to_move = WHITE;
-    //print_table();
+    //table->print_table();
 }
-
 
 //Inverts who the next player is
 void Chess::invert_player_to_move() {
     player_to_move = -player_to_move;
-}
-
-int Chess::str2move(char move_old[6]) {
-    int x_from, y_from, x_to, y_to, move_hi, move_lo;
-    x_from = move_old[0] - 'a';
-    y_from = move_old[1] - '1';
-    x_to   = move_old[2] - 'a';
-    y_to   = move_old[3] - '1';
-    move_hi = x_from * 32 + y_from * 4;
-    move_lo = x_to * 32 + y_to * 4;
-    switch (move_old[4]) {
-        case 'q': case 'Q': move_hi += 2; break;
-        case 'r': case 'R': move_hi += 1; break;
-        case 'b': case 'B': move_lo += 2; break;
-        case 'n': case 'N': move_lo += 1; break;
-        default: break;
-    }
-    return move_hi * 256 + move_lo;
-}
-
-void Chess::move2str(int move) {
-    strcpy(move_str,"     ");
-    move_str[0] = (move & 0xe000) / 256 / 32 + 'a';
-    move_str[1] = (move & 0x1c00) / 256 /  4 + '1';
-    move_str[2] = (move & 0x00e0) % 256 / 32 + 'a';
-    move_str[3] = (move & 0x001c) % 256 /  4 + '1';
-    if ((move & 0x0303) > 0) {
-        if ((move & 0x0200) == 0x0200) move_str[4]='q';
-        else if ((move & 0x0100) == 0x0100) move_str[4]='r';
-        else if ((move & 0x0002) == 0x0002) move_str[4]='b';
-        else if ((move & 0x0001) == 0x0001) move_str[4]='n';
-    }
 }
 
 int Chess::alfabeta(int dpt, int alfa, int beta) {
@@ -140,7 +59,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     int alfarray[255];
     value = -22767;
 
-    //if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);util->flush();
+    //if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);Util::flush();
 #ifdef HASH_INNER
     hash_index = hash_inner % HASHSIZE_INNER;
 
@@ -162,13 +81,13 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     list_legal_moves();
     //printf("nbr_legal: %d\n", nbr_legal);
     if (legal_pointer == -1) {
-        if (is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_white_king :
+        if (table->is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_white_king :
                     (movelist + move_number)->pos_black_king, player_to_move) == false) {
-            //printf("DRAW: ");util->flush();
+            //printf("DRAW: ");Util::flush();
             return table->eval->DRAW;
         }
         else {
-            //printf("LOST: ");util->flush();
+            //printf("LOST: ");Util::flush();
             return table->eval->LOST;
         }
     }
@@ -179,8 +98,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         calculate_evarray();
         for (i = 0; i <= legal_pointer; i++) {
             alfarray[i] = root_moves[i].move;
-            move2str(root_moves[i].move);
-            printf("(%s:%d) ", move_str, root_moves[i].value);
+            printf("(%s:%d) ", Util::move2str(move_str, root_moves[i].move), root_moves[i].value);
         }
         puts("");
     }
@@ -193,12 +111,10 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         if (dpt > depth) curr_depth = depth; else curr_depth = dpt;
         curr_seldepth = dpt;
         if (dpt == 1) {
-            move2str(alfarray[i]);
-            printf("info currmove %s currmovenumber %d\n", move_str, i + 1);util->flush();
+            printf("info currmove %s currmovenumber %d\n", Util::move2str(move_str, alfarray[i]), i + 1);Util::flush();
         }
         update_table(alfarray[i], false);
         curr_line[dpt] = alfarray[i];
-        //printf("\ncurrent line:");for (b=1; b<=dpt; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf("");util->flush();
 
         // If last ply->evaluating
         if ((dpt >= depth && movelist[move_number].further == 0) ||
@@ -217,7 +133,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             else {
 #endif
                 if (third_occurance() == true ||
-                        not_enough_material() == true ||
+                        table->not_enough_material() == true ||
                         movelist[move_number].not_pawn_move >= 100) {
                     u = table->eval->DRAW;
                     --move_number;
@@ -226,7 +142,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     //legal_pointer=1;
                     u=evaluation(legal_pointer, dpt);
                     //u=evaluation_material(dpt);
-                    //for (b=1; b<=curr_seldepth; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf(" u: %d\n", u);util->flush();
                     --move_number;
                 }
 #ifdef HASH
@@ -238,7 +153,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         //Not last ply
         else {
             if (third_occurance() == true ||
-                    not_enough_material() == true ||
+                    table->not_enough_material() == true ||
                     movelist[move_number].not_pawn_move >= 100) {
                 u = table->eval->DRAW;
                 --move_number;
@@ -268,7 +183,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 
         // Better move is found
         if (u > value) {
-            //printf("dpt: %d, %d > %d\n", dpt, u, value);util->flush();
+            //printf("dpt: %d, %d > %d\n", dpt, u, value);Util::flush();
             value = u;
             for(b = 1; b <= curr_seldepth; b++)
                 best_line[dpt].moves[b] = curr_line[b];
@@ -281,7 +196,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                 best_line[dpt].value = best_line[dpt + 1].value;
                 for (b = 1; b <= best_line[dpt + 1].length; b++)
                     best_line[dpt].moves[b] = best_line[dpt + 1].moves[b];
-                //printf("best_line[%d].length: %d\n", dpt, best_line[dpt].length);util->flush();
+                //printf("best_line[%d].length: %d\n", dpt, best_line[dpt].length);Util::flush();
             }
 #ifdef HASH_INNER
 
@@ -295,7 +210,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             (hashtable_inner + hash_index)->move = curr_line[dpt];
             //print_hash_inner(hash_inner, dpt);
 #endif
-            //printf("Best line[%d], value: %d, moves: ", dpt, best_line[dpt].value);for (b=1; b<=best_line[dpt].length; ++b) { move2str(best_line[dpt].moves[b]); printf("%s ", move_str); } printf("\n");util->flush();
             if (dpt == 1) {
                 best_move = alfarray[i];
 #ifdef HASH
@@ -312,19 +226,17 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     printf("info multipv 1 depth %d seldepth %d score mate %d nodes %llu pv ",
                             curr_depth, curr_seldepth, uu, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
-                        move2str(best_line[dpt].moves[b]);
-                        printf("%s ", move_str);
+                        printf("%s ", Util::move2str(move_str, best_line[dpt].moves[b]));
                     }
-                    printf("\n");util->flush();
+                    printf("\n");Util::flush();
                     mate_score = abs(u);
                 } else {
                     printf("info multipv 1 depth %d seldepth %d score cp %d nodes %llu pv ",
                             curr_depth, curr_seldepth, u, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
-                        move2str(best_line[dpt].moves[b]);
-                        printf("%s ", move_str);
+                        printf("%s ", Util::move2str(move_str, best_line[dpt].moves[b]));
                     }
-                    printf("\n");util->flush();
+                    printf("\n");Util::flush();
                     mate_score = 0;
                 }
             }
@@ -367,7 +279,7 @@ void Chess::list_legal_moves() {
             // Right color found
             if (( player_to_move == WHITE && ((field & 128) == 0) ) ||
                     ( player_to_move == BLACK && ((field & 128) == 128 ))) {
-                if (field == WhitePawn) {
+                if (field == table->WhitePawn) {
 
                     //If upper field is empty
                     if (*(ptt + 10) == 0) {
@@ -498,7 +410,7 @@ void Chess::list_legal_moves() {
                 }
 
                 //The same for black pawn
-                if (field == BlackPawn) {
+                if (field == table->BlackPawn) {
                     if (*(ptt - 10) == 0) {
                         if (i - 1 == 2) {
                             ++legal_pointer;
@@ -601,60 +513,60 @@ void Chess::list_legal_moves() {
                     continue;
                 }
                 int kk;
-                if (figure == Knight) {
+                if (figure == table->Knight) {
 
                     //kk : distance
                     //k : number of directions of possible knight moves
                     kk = 1;
                     for (int k = 0; k < 8; ++k) {
-                        if (*(ptt + *(dir_knight + k)) != 255) {
-                            append_legal_moves(*(dir_knight + k), i, j, kk);
+                        if (*(ptt + *(table->dir_knight + k)) != 255) {
+                            append_legal_moves(*(table->dir_knight + k), i, j, kk);
                         }
                     }
                     continue;
                 }
-                if (figure == King) {
+                if (figure == table->King) {
 
                     //Appends castling moves if possible
-                    castling();
+                    table->castling();
                     kk = 1;
                     for (int k = 0; k < 8; ++k) {
-                        if (*(ptt + *(dir_king + k)) != 255) {
-                            append_legal_moves(*(dir_king + k), i, j, kk);
+                        if (*(ptt + *(table->dir_king + k)) != 255) {
+                            append_legal_moves(*(table->dir_king + k), i, j, kk);
                         }
                     }
                     continue;
                 }
-                if (figure == Queen) {
+                if (figure == table->Queen) {
                     for (int k = 0; k < 8; ++k) {
                         kk = 1;
                         end_direction = false;
 
                         //Increases kk while queen can move in that direction
-                        while (end_direction == false && *(ptt + kk * (*(dir_king + k))) < 255) {
-                            append_legal_moves(*(dir_king + k), i, j, kk);
+                        while (end_direction == false && *(ptt + kk * (*(table->dir_king + k))) < 255) {
+                            append_legal_moves(*(table->dir_king + k), i, j, kk);
                             ++kk;
                         }
                     }
                     continue;
                 }
-                if (figure == Bishop) {
+                if (figure == table->Bishop) {
                     for (int k = 0; k < 4; ++k) {
                         kk = 1;
                         end_direction = false;
-                        while (end_direction == false && *(ptt + kk * (*(dir_bishop + k))) < 255) {
-                            append_legal_moves(*(dir_bishop + k), i, j, kk);
+                        while (end_direction == false && *(ptt + kk * (*(table->dir_bishop + k))) < 255) {
+                            append_legal_moves(*(table->dir_bishop + k), i, j, kk);
                             ++kk;
                         }
                     }
                     continue;
                 }
-                if (figure == Rook) {
+                if (figure == table->Rook) {
                     for (int k = 0; k < 4; ++k) {
                         kk = 1;
                         end_direction = false;
-                        while (end_direction == false && *(ptt + kk * (*(dir_rook + k))) < 255) {
-                            append_legal_moves(*(dir_rook + k), i, j, kk);
+                        while (end_direction == false && *(ptt + kk * (*(table->dir_rook + k))) < 255) {
+                            append_legal_moves(*(table->dir_rook + k), i, j, kk);
                             ++kk;
                         }
                     }
@@ -677,7 +589,7 @@ void Chess::make_move() {
     hash->reset_counters();
 #endif
     //max_time = 20 * 1000;
-    start_time = util->get_ms();
+    start_time = Util::get_ms();
     stop_time = start_time + max_time;
     init_depth = 1;
     //gui_depth = 2; max_time=0;
@@ -696,20 +608,20 @@ void Chess::make_move() {
         seldepth = depth + 8;
         if (depth > 4) seldepth = depth + 4;
         //seldepth = depth + 0;
-        printf("%d %d\n", depth, seldepth);util->flush();
+        printf("%d %d\n", depth, seldepth);Util::flush();
 
         //Calculates the time of the move
         //Searches the best move with negamax algorithm with alfa-beta cut off
         //mate_score = 0;
-        time_current_depth_start = util->get_ms();
-        printf("info depth %d\n", init_depth);util->flush();
+        time_current_depth_start = Util::get_ms();
+        printf("info depth %d\n", init_depth);Util::flush();
         alfabeta(1, alfa, beta);
         setjmp(env);
         if (stop_search == true) {
             for (int i = 0; i < curr_seldepth - 1; i++) --move_number;
         }
-        time_elapsed = util->get_ms() - start_time;
-        time_current_depth_stop = util->get_ms();
+        time_elapsed = Util::get_ms() - start_time;
+        time_current_depth_stop = Util::get_ms();
         time_remaining = stop_time - time_current_depth_stop;
 
         //If there is no time for another depth search
@@ -721,8 +633,8 @@ void Chess::make_move() {
         knodes = 1000LLU * nodes;
         printf("info depth %d seldepth %d time %d nodes %lld nps %lld\n",
                 init_depth, seldepth, time_elapsed, nodes,
-                (time_elapsed==0)?0:(knodes/time_elapsed));util->flush();
-        printf("nodes: %lld, knodes: %lld\n", nodes, knodes);util->flush();
+                (time_elapsed==0)?0:(knodes/time_elapsed));Util::flush();
+        printf("nodes: %lld, knodes: %lld\n", nodes, knodes);Util::flush();
         if (DEBUG) {
             debugfile=fopen("./debug.txt", "a");
             fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %llu nps %d\n",
@@ -731,8 +643,8 @@ void Chess::make_move() {
             fclose(debugfile);
         }
         //Prints statistics
-        //printf("alfabeta: %d\n", a);util->flush();
-        //printf("best %s\n", best_move);util->flush();
+        //printf("alfabeta: %d\n", a);Util::flush();
+        //printf("best %s\n", best_move);Util::flush();
         best_iterative[init_depth] = best_move;
         if (stop_search == true) break;
         if (mate_score > 20000) break;
@@ -740,50 +652,12 @@ void Chess::make_move() {
         //if (legal_pointer == 0) break; //there is only one legal move
         ++init_depth;
     }
-    move2str(best_move);
-    printf( "\nbestmove %s\n", move_str);util->flush();
+    printf( "\nbestmove %s\n", Util::move2str(move_str, best_move));Util::flush();
 #ifdef HASH
     hash->printStatistics(nodes);
 #endif
     update_table(best_move, false); //Update the table without printing it
     invert_player_to_move();
-}
-
-//Returns if the figure of color is attacked or not
-int Chess::is_attacked(int field, int color) {
-    int k, kk, attacking_figure, coord, color_offset;
-    int* ptablelist = tablelist[move_number];
-    if (color == WHITE) color_offset = 128; else color_offset = 0;
-    for (k = 0; k < 4; ++k) {
-        kk = 1;
-        while (*(ptablelist + field + kk * dir_rook[k]) == 0) ++kk;
-        coord = field + kk * dir_rook[k];
-        if (*(ptablelist + coord) == Queen + color_offset) return true;
-        if (*(ptablelist + coord) == Rook  + color_offset) return true;
-        if (kk == 1 && *(ptablelist + coord) == King + color_offset) return true;
-    }
-    for (k = 0; k < 4; ++k) {
-        kk = 1;
-        while (*(ptablelist + field + kk * dir_bishop[k]) == 0) ++kk;
-        coord = field + kk * dir_bishop[k];
-        if (*(ptablelist + coord) == Queen  + color_offset) return true;
-        if (*(ptablelist + coord) == Bishop + color_offset) return true;
-        if (kk == 1 && *(ptablelist + coord) == King + color_offset) return true;
-    }
-    for (k = 0; k < 8; ++k)
-        if (*(ptablelist + field + dir_knight[k]) == Knight + color_offset)
-            return true;
-    attacking_figure = Pawn;
-    if (color == WHITE) {
-        attacking_figure += 128;
-        if (*(ptablelist + field + 9) == attacking_figure ||
-                *(ptablelist + field + 11) == attacking_figure)
-            return true;
-    } else  //Black
-        if (*(ptablelist + field - 9) == attacking_figure ||
-                *(ptablelist + field - 11) == attacking_figure)
-            return true;
-    return false;
 }
 
 // Sorts legal moves
@@ -839,7 +713,7 @@ void Chess::calculate_evarray_new() {
 }
 
 void Chess::checkup() {
-    if ((max_time != 0 && util->get_ms() >= stop_time) || stop_received) {
+    if ((max_time != 0 && Util::get_ms() >= stop_time) || stop_received) {
         stop_search = true;
         longjmp(env, 0);
     }
@@ -873,8 +747,8 @@ void Chess::update_table(int move, bool print) {
     pm2->pos_black_king = pm1->pos_black_king;
     pm2->white_king_castled = pm1->white_king_castled;
     pm2->black_king_castled = pm1->black_king_castled;
-    if (figure_to == WhiteBishop) pm2->white_double_bishops = 0;
-    if (figure_to == BlackBishop) pm2->black_double_bishops = 0;
+    if (figure_to == table->WhiteBishop) pm2->white_double_bishops = 0;
+    if (figure_to == table->BlackBishop) pm2->black_double_bishops = 0;
     if (pm1->further == 2)
         pm2->further = 1;
     else
@@ -901,9 +775,9 @@ void Chess::update_table(int move, bool print) {
                 if ((move & 0x0002) == 0x0002) promotion = 'b'; else
                     if ((move & 0x0001) == 0x0001) promotion = 'n';
         for (n = 0; n < 14; n++) {
-            if (graphical_figure[n][1] == promotion) {
-                pm2->promotion = (graphical_figure[n][0] & 127);
-                *(pt2 + square_to) = (graphical_figure[n][0] & 127);
+            if (promotion == table->graphical_figure[n][1]) {
+                pm2->promotion = (table->graphical_figure[n][0] & 127);
+                *(pt2 + square_to) = (table->graphical_figure[n][0] & 127);
                 break;
             }
         }
@@ -919,7 +793,7 @@ void Chess::update_table(int move, bool print) {
     }
 
     // If not pawn move
-    if ( ! (figure_from == WhitePawn || figure_from == BlackPawn) ) {
+    if ( ! (figure_from == table->WhitePawn || figure_from == table->BlackPawn) ) {
         pm2->en_passant = 0;
         if (move_number == 1) {
             pm2->not_pawn_move = 1;
@@ -928,7 +802,7 @@ void Chess::update_table(int move, bool print) {
         } else {
             pm2->not_pawn_move = pm1->not_pawn_move + 1;
         }
-        if (figure_from == WhiteKing) {
+        if (figure_from == table->WhiteKing) {
             pm2->pos_white_king = square_to;
 
             // White Castling is not possible any more
@@ -939,16 +813,16 @@ void Chess::update_table(int move, bool print) {
                     (square_from == 25 && square_to == 23)) {
                 pm2->white_king_castled = table->eval->king_castled;
                 if (square_to ==  27) {
-                    *(pt2 + 26) = WhiteRook;
+                    *(pt2 + 26) = table->WhiteRook;
                     *(pt2 + 28) = 0;
                 }
                 if (square_to ==  23) {
-                    *(pt2 + 24) = WhiteRook;
+                    *(pt2 + 24) = table->WhiteRook;
                     *(pt2 + 21) = 0;
                 }
             }
         }
-        if (figure_from == BlackKing) {
+        if (figure_from == table->BlackKing) {
             pm2->pos_black_king = square_to;
 
             // Black Castling is not possible any more
@@ -957,16 +831,16 @@ void Chess::update_table(int move, bool print) {
                     (square_from == 95 && square_to == 93)) {
                 pm2->black_king_castled = table->eval->king_castled;
                 if (square_to ==  97) {
-                    *(pt2 + 96) = BlackRook;
+                    *(pt2 + 96) = table->BlackRook;
                     *(pt2 + 98) = 0;
                 }
                 if (square_to ==  93) {
-                    *(pt2 + 94) = BlackRook;
+                    *(pt2 + 94) = table->BlackRook;
                     *(pt2 + 91) = 0;
                 }
             }
         }
-        if (figure_from == WhiteRook) {
+        if (figure_from == table->WhiteRook) {
 
             // White Long Castling is not possible any more
             if (square_from == 21) pm2->castle = pm2->castle & 13;
@@ -974,7 +848,7 @@ void Chess::update_table(int move, bool print) {
             // White Short Castling is not possible any more
             if (square_from == 28) pm2->castle = pm2->castle & 14;
         }
-        if (figure_from == BlackRook) {
+        if (figure_from == table->BlackRook) {
 
             // Black Long Castling is not possible any more
             if (square_from == 91) pm2->castle = pm2->castle & 7;
@@ -996,38 +870,38 @@ void Chess::update_table(int move, bool print) {
             pm2->en_passant = 0; // en passant not possible
         }
         if (pm1->en_passant > 1) { // en passant possible
-            if (figure_from == WhitePawn) {
+            if (figure_from == table->WhitePawn) {
                 if (pm1->en_passant == square_from + 11 &&
                         square_to - square_from == 11) {
-                    pm2->captured_figure = BlackPawn;
+                    pm2->captured_figure = table->BlackPawn;
                     *(pt2 + square_to - 10) = 0;
                 }
                 if (pm1->en_passant == square_from + 9 &&
                         square_to - square_from == 9) {
-                    pm2->captured_figure = BlackPawn;
+                    pm2->captured_figure = table->BlackPawn;
                     *(pt2 + square_to - 10) = 0;
                 }
             }
-            if (figure_from == BlackPawn) {
+            if (figure_from == table->BlackPawn) {
                 if (pm1->en_passant == square_from - 11 &&
                         square_to - square_from == -11) {
-                    pm2->captured_figure = WhitePawn;
+                    pm2->captured_figure = table->WhitePawn;
                     *(pt2 + square_to + 10) = 0;
                 }
                 if (pm1->en_passant == square_from - 9 &&
                         square_to - square_from == -9) {
-                    pm2->captured_figure = WhitePawn;
+                    pm2->captured_figure = table->WhitePawn;
                     *(pt2 + square_to + 10) = 0;
                 }
             }
         }
     }
     *(pt2 + square_from) = 0;
-    if (is_attacked(player_to_move == WHITE ? pm2->pos_black_king :
+    if (table->is_attacked(player_to_move == WHITE ? pm2->pos_black_king :
                 pm2->pos_white_king, -player_to_move) == true) {
         pm2->further = 2;
     }
-    if (print == true) print_table();
+    if (print == true) table->print_table();
 }
 
 //Checks third occurance
@@ -1039,7 +913,7 @@ bool Chess::third_occurance() {
     if (move_number < 6) return false;
     i = move_number - 2;
     while (i >= 0 && occurance < 2) {
-        //printf("Third occurance: i: %d\n", i);util->flush();
+        //printf("Third occurance: i: %d\n", i);Util::flush();
         equal = true;
         for (j = 0; j < 120; ++j) {
             if (tablelist[move_number][j] != tablelist[i][j]) {
@@ -1055,47 +929,6 @@ bool Chess::third_occurance() {
     if (occurance >= 2) return true; else return false;
 }
 
-//Checks not enough material
-bool Chess::not_enough_material() {
-    int i, c;
-    int white_knight = 0;
-    int white_bishop = 0;
-    int black_knight = 0;
-    int black_bishop = 0;
-    for (i = 0; i < 120; ++i) {
-        c = tablelist[move_number][i];
-        if (c == 0 || c == 255) continue;
-        if (c == WhitePawn)  return false;
-        if (c == BlackPawn)  return false;
-        if (c == WhiteQueen) return false;
-        if (c == BlackQueen) return false;
-        if (c == WhiteRook)  return false;
-        if (c == BlackRook)  return false;
-        if (c == WhiteKnight) {
-            ++white_knight;
-            continue;
-        }
-        if (c == BlackKnight) {
-            ++black_knight;
-            continue;
-        }
-        if (c == WhiteBishop) {
-            ++white_bishop;
-            continue;
-        }
-        if (c == BlackBishop) {
-            ++black_bishop;
-            continue;
-        }
-    }
-    if (white_bishop == 2) return false;
-    if (black_bishop == 2) return false;
-    if (white_knight + white_bishop > 1) return false;
-    if (black_knight + black_bishop > 1) return false;
-    //printf("not enough material\n");util->flush();
-    return true;
-}
-
 //Evaluates material plus number of legal moves of both sides plus a random number
 int Chess::evaluation(int e_legal_pointer, int dpt) {
     int lp;
@@ -1107,13 +940,13 @@ int Chess::evaluation(int e_legal_pointer, int dpt) {
     legal_pointer = lp;
     invert_player_to_move();
     if (legal_pointer == -1) { //No legal move
-        if (is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_black_king :
+        if (table->is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_black_king :
                     (movelist + move_number)->pos_white_king, -player_to_move) == false) {
-            //printf("DRAW: ");util->flush();
+            //printf("DRAW: ");Util::flush();
             return table->eval->DRAW;
         }
         else {
-            //printf("WON: ");util->flush();
+            //printf("WON: ");Util::flush();
             //dpt : #1 (checkmate in one move) is better than #2
             return table->eval->WON - dpt;
         }
@@ -1131,17 +964,17 @@ int Chess::evaluation_only_end_game(int dpt) {
     list_legal_moves();
     invert_player_to_move();
     if (legal_pointer == -1) { //No legal move
-        if (is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_black_king :
+        if (table->is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_black_king :
                     (movelist + move_number)->pos_white_king, -player_to_move) == false) {
 
             //Stalemate
-            //printf("DRAW: ");util->flush();
+            //printf("DRAW: ");Util::flush();
             return table->eval->DRAW;
         }
         else {
 
             //Mate
-            //printf("WON: ");util->flush();
+            //printf("WON: ");Util::flush();
             return table->eval->WON - dpt;
         }
     }
@@ -1153,14 +986,14 @@ int Chess::evaluation_only_end_game(int dpt) {
 //Decreases the legal pointer->does not store the move
 void Chess::is_really_legal() {
     update_table(legal_moves[legal_pointer], false);
-    if (is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_white_king :
+    if (table->is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_white_king :
                 (movelist + move_number)->pos_black_king, player_to_move) == true) {
         --legal_pointer;
     }
 #ifdef SORT_ALFARRAY
     else
         if (global_dpt != 1 && sort_alfarray == true) {
-            //printf("EVA\n");util->flush();
+            //printf("EVA\n");Util::flush();
             eva_alfabeta_temp[legal_pointer] = evaluation_material(global_dpt);
         }
 #endif
@@ -1206,104 +1039,6 @@ void Chess::append_legal_moves(int dir_piece, int i, int j, int kk) {
     }
 }
 
-//Checks castlings and adds to legal moves if possible
-void Chess::castling() {
-    if (player_to_move == WHITE) {
-
-        //Checks the conditions of castling
-        //e1g1
-        if (tablelist[move_number][28] == WhiteRook)
-            if (tablelist[move_number][25] == WhiteKing)
-                if ((movelist[move_number].castle & 1) == 1)
-                    if (is_attacked(25, WHITE) == false)
-                        if (is_attacked(26, WHITE) == false)
-                            if (is_attacked(27, WHITE) == false)
-                                if (tablelist[move_number][26] == 0)
-                                    if (tablelist[move_number][27] == 0)  {
-                                        ++legal_pointer;
-                                        legal_moves[legal_pointer] = 0x80c0;
-                                        is_really_legal();
-                                    }
-        //e1c1
-        if (tablelist[move_number][25] == WhiteKing)
-            if (tablelist[move_number][21] == WhiteRook)
-                if ((movelist[move_number].castle & 2) == 2)
-                    if (is_attacked(25, WHITE) == false)
-                        if (is_attacked(24, WHITE) == false)
-                            if (is_attacked(23, WHITE) == false)
-                                if (tablelist[move_number][24] == 0)
-                                    if (tablelist[move_number][23] == 0)
-                                        if (tablelist[move_number][22] == 0) {
-                                            ++legal_pointer;
-                                            legal_moves[legal_pointer] = 0x8040;
-                                            is_really_legal();
-                                        }
-
-        //if (player_to_move == BLACK)
-    } else {
-        if ((movelist[move_number].castle & 4) == 4)
-            if (is_attacked(95, BLACK) == false)
-                if (is_attacked(96, BLACK) == false)
-                    if (is_attacked(97, BLACK) == false)
-                        if (tablelist[move_number][96] == 0)
-                            if (tablelist[move_number][97] == 0)
-                                if (tablelist[move_number][98] == BlackRook)
-                                    if (tablelist[move_number][95] == BlackKing) {
-                                        ++legal_pointer;
-                                        //e8g8
-                                        legal_moves[legal_pointer] = 0x9cdc;
-                                        is_really_legal();
-                                    }
-        //e8c8
-        if (tablelist[move_number][95] == BlackKing)
-            if (tablelist[move_number][91] == BlackRook)
-                if ((movelist[move_number].castle & 8) == 8)
-                    if (is_attacked(95, BLACK) == false)
-                        if (is_attacked(94, BLACK) == false)
-                            if (is_attacked(93, BLACK) == false)
-                                if (tablelist[move_number][94] == 0)
-                                    if (tablelist[move_number][93] == 0)
-                                        if (tablelist[move_number][92] == 0) {
-                                            ++legal_pointer;
-                                            legal_moves[legal_pointer] = 0x9c5c;
-                                            is_really_legal();
-                                        }
-    }
-}
-
-
-//Prints the table and the parameters to the console
-void Chess::print_table() {
-    int i, j, field;
-    for ( i = 11; i >= 0; i-- ) {
-        for ( j = 0; j < 10; j++) {
-            field = ( tablelist[move_number][ i * 10 + j ] );
-            if ( field == 255 ) {
-                continue;
-            }
-            printf( "%3x", field );
-        }
-        printf("\n");
-    }
-    printf("Move number    : %d\n", move_number);
-    printf("Move color     : %d\n", movelist[move_number].color);
-    printf("Move from      : %d\n", movelist[move_number].move_from);
-    printf("Move to        : %d\n", movelist[move_number].move_to);
-    printf("Captured       : %d\n", movelist[move_number].captured_figure);
-    printf("Promotion      : %d\n", movelist[move_number].promotion);
-    printf("Castle         : %d\n", movelist[move_number].castle);
-    printf("Not Pawn Move  : %d\n", movelist[move_number].not_pawn_move);
-    printf("En passant     : %d\n", movelist[move_number].en_passant);
-    printf("White castled  : %d\n", movelist[move_number].white_king_castled);
-    printf("Black castled  : %d\n", movelist[move_number].black_king_castled);
-    printf("Pos White king : %d\n", movelist[move_number].pos_white_king);
-    printf("Pos Black king : %d\n", movelist[move_number].pos_black_king);
-    printf("White2bishops  : %d\n", movelist[move_number].white_double_bishops);
-    printf("Black2bishops  : %d\n", movelist[move_number].black_double_bishops);
-    printf("Further invest.: %d\n", movelist[move_number].further);
-    printf("\n");
-    util->flush();
-}
 
 //Function to calculate x vector from direction (k) for move notation
 int Chess::convA(int k) {
@@ -1367,9 +1102,9 @@ int Chess::sum_material(int color) {
 int Chess::evaluation_king(int field, int figure) {
     int e = 0;
     int* pt = tablelist[move_number];
-    int* pdir = dir_king;
+    int* pdir = table->dir_king;
     for (int k = 0; k < 8; ++k, ++pdir)
-        if (*(pt + field + *pdir) == (figure & 128) + Pawn)
+        if (*(pt + field + *pdir) == (figure & 128) + table->Pawn)
             e += table->eval->friendly_pawn;
     return e;
 }
@@ -1425,11 +1160,11 @@ int Chess::evaluation_material(int dpt) {
             else c = -1;
 
             //Evaulates King position (friendly pawn structure)
-            if ((figure & 127) == King && move_number > 6)
+            if ((figure & 127) == table->King && move_number > 6)
                 e += c * evaluation_king(i, figure);
 
             //Evaulates Pawn structures
-            if ((figure & 127) == Pawn)
+            if ((figure & 127) == table->Pawn)
                 e += c * evaluation_pawn(i, figure, sm);
 
             //Calculates figure material values
@@ -1469,7 +1204,7 @@ int Chess::evaluation_material(int dpt) {
             evaking =  5 * (abs(5 - (pm->pos_white_king / 10)) +
                     abs(5 - (pm->pos_white_king % 10)));
         e += evaking;
-        //printf("player_to_move: %d, dpt: %d, pos_white_king: %d, pos_black_king: %d, evaking: %d\n", player_to_move, dpt, pm->pos_white_king, pm->pos_black_king, evaking);util->flush();
+        //printf("player_to_move: %d, dpt: %d, pos_white_king: %d, pos_black_king: %d, evaking: %d\n", player_to_move, dpt, pm->pos_white_king, pm->pos_black_king, evaking);Util::flush();
     } else {
 #ifdef CASTLING_PUNISHMENT
 
@@ -1486,160 +1221,6 @@ int Chess::evaluation_material(int dpt) {
     }
     return e;
 }
-
-//Resets the parameters and the table
-void Chess::reset_movelist() {
-
-    //Startup position
-    int new_table[120] =
-    {
-        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-        0xff,0x04,0x02,0x03,0x05,0x06,0x03,0x02,0x04,0xff,  // white - first row
-        0xff,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0xff,
-        0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-        0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-        0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-        0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,
-        0xff,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0xff, // black - seventh row
-        0xff,0x84,0x82,0x83,0x85,0x86,0x83,0x82,0x84,0xff,
-        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
-    };
-
-    for (int move_number = 0 ; move_number < 255 ; move_number++) {
-        movelist[move_number].color = 0;
-        movelist[move_number].move_from = 0;
-        movelist[move_number].move_to = 0;
-        movelist[move_number].captured_figure = 0;
-        movelist[move_number].promotion = 0;
-
-        // Both color, KQside castle possible
-        // 1:WhiteShort, 2:WhiteLong, 4:BlackShort, 8:BlackLong
-        movelist[move_number].castle = 15;
-        movelist[move_number].not_pawn_move = 0;
-        movelist[move_number].en_passant = 0;
-        movelist[move_number].white_king_castled = 0;
-        movelist[move_number].black_king_castled = 0;
-        movelist[move_number].pos_white_king = 25;
-        movelist[move_number].pos_black_king = 95;
-        movelist[move_number].white_double_bishops = table->eval->double_bishops;
-        movelist[move_number].black_double_bishops = table->eval->double_bishops;
-        movelist[move_number].further = 0;
-#ifdef POS_FIGURE
-        for (int i = 0; i < 16; i++) {
-            movelist[move_number].pos_white_figure[i] = new_pos_white_figure[i];
-            movelist[move_number].pos_black_figure[i] = new_pos_black_figure[i];
-        }
-#endif
-        for (int i = 0; i < 120; i++ ) {
-            tablelist[move_number][i] = new_table[i];
-        }
-    }
-    move_number = 0;
-}
-
-// FEN interpreter
-void Chess::setboard(char fen_position[255]) {
-    size_t n = 13;
-    int x = 1;
-    int y = 9;
-    int factor;
-    char move_old[6]="     ";
-    start_game();
-    size_t m = 5;
-    move_number = 1;
-    n = 13;
-    while (fen_position[n] != ' ') {
-        if (fen_position[n] > '0' && fen_position[n] < '9') {
-            for(int m = 0; m < fen_position[n] - '0'; m++) {
-                tablelist[move_number][y * 10 + x] = 0;
-                x++;
-            }
-            --x;
-        }
-        if (fen_position[n] != '/') {
-            for (int m = 0; m < 14; m++) {
-                if (fen_position[n] == graphical_figure[m][1]) {
-                    tablelist[move_number][y * 10 + x]=graphical_figure[m][0];
-                    break;
-                }
-            }
-            x++;
-        }
-        if (fen_position[n] == '/') {
-            y--;
-            x = 1;
-        }
-        n++;
-    }
-    n++;
-    if (fen_position[n] == 'w') {
-        player_to_move = WHITE;
-        FZChess = WHITE;
-        movelist[move_number].color = WHITE;
-    } else {
-        player_to_move = BLACK;
-        FZChess = BLACK;
-        movelist[move_number].color = BLACK;
-    }
-    n++;
-    n++;
-    movelist[move_number].castle = 0;
-    while  (fen_position[n] != ' ') {
-        if (fen_position[n] == '-') movelist[move_number].castle = 0;
-        if (fen_position[n] == 'K') movelist[move_number].castle=movelist[move_number].castle | 1;
-        if (fen_position[n] == 'Q') movelist[move_number].castle=movelist[move_number].castle | 2;
-        if (fen_position[n] == 'k') movelist[move_number].castle=movelist[move_number].castle | 4;
-        if (fen_position[n] == 'q') movelist[move_number].castle=movelist[move_number].castle | 8;
-        n++;
-    }
-    movelist[move_number - 1].castle = movelist[move_number].castle;
-    n++;
-    if (fen_position[n] == '-') movelist[move_number].en_passant = 0;
-    if (fen_position[n] >= 'a' && fen_position[n] <= 'h') { // en passant possible, target square
-        movelist[move_number].en_passant = 1 + fen_position[n] - 'a' + (fen_position[n+1] - '1' + 2) * 10;
-        n++;
-    }
-    n++;
-    n++;
-    movelist[move_number].not_pawn_move = 0;
-    factor = 1;
-    while (fen_position[n] != ' ') {
-        movelist[move_number].not_pawn_move =
-            movelist[move_number].not_pawn_move * factor +
-            (int)(fen_position[n] - '0');
-        factor = factor * 10;
-        n++;
-    }
-    for (int i = 0; i < 120; ++i)
-        if ((tablelist[move_number][i] & 127) == King) {
-            if (tablelist[move_number][i] == WhiteKing)
-                movelist[move_number].pos_white_king = i;
-            if (tablelist[move_number][i] == BlackKing)
-                movelist[move_number].pos_black_king = i;
-        }
-    if (strstr(input, "moves")) {
-        m = strlen(input) - 1;
-        for (size_t i = strstr(input, "moves") - input + 6; i < m; i++) {
-            //printf("i: %d, input[i]: %c\n", i, input[i]);util->flush();
-            move_old[0] = input[i++];
-            move_old[1] = input[i++];
-            move_old[2] = input[i++];
-            move_old[3] = input[i++];
-            if (input[i] != ' ' && input[i] != '\n') {
-                move_old[4] = input[i++];
-            } else {
-                move_old[4] = '\0';
-            }
-            //printf("move: %s\n", move);util->flush();
-            update_table(str2move(move_old), false);
-            invert_player_to_move();
-        }
-    }
-    print_table();
-}
-
 void Chess::processCommands(char* input) {
     if (strstr(input, "uci")) {
         uci->processCommands(input);

@@ -18,8 +18,8 @@ class Chess {
         Uci* uci;
         Table* table;
 
-        int WHITE;
-        int BLACK;
+        int WHITE; //TODO delete
+        int BLACK; //TODO delete
 
         //Parameters of the given position
         struct move {
@@ -100,20 +100,16 @@ class Chess {
         void make_move();
         int alfabeta(int dpt, int alfa, int beta);
         void list_legal_moves();
-        int is_attacked(int field, int color);
         void calculate_evarray();
         void calculate_evarray_new();
         void checkup();
         void update_table(int move, bool print);
         bool third_occurance();
-        bool not_enough_material();
         int evaluation(int e_legal_pointer, int dpt);
         int evaluation_only_end_game(int dpt);
         void is_really_legal();
-        void castling();
         void append_legal_moves(int dir_piece, int i, int j, int kk);
         void append_legal_moves_inner(int dir_piece, int i, int j, int kk);
-        void print_table();
         int convA(int k);
         int conv0(int k);
         int sum_material(int color);
@@ -121,12 +117,7 @@ class Chess {
         int evaluation_king(int field, int figure);
         int evaluation_pawn(int field, int figure, int sm);
         void invert_player_to_move();
-        int str2move(char move_old[6]);
-        void move2str(int move);
-        void reset_movelist();
-        void setboard(char fen_position[255]);
-        void flush();
-        int get_ms();
+        char* move2str(int move);
         void processCommands(char* input);
 
         int DEBUG;

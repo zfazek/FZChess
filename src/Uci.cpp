@@ -8,7 +8,6 @@ Uci::Uci(Chess* ch) {
 }
 
 Uci::~Uci() {
-    delete chess;
 }
 
 void Uci::position_received(char* input) {
@@ -32,7 +31,7 @@ void Uci::position_received(char* input) {
         } else {
             move_old[4] = '\0';
         }
-        chess->update_table(chess->str2move(move_old), false);
+        chess->update_table(Util::str2move(move_old), false);
         chess->invert_player_to_move();
     }
     //print_table();
@@ -83,7 +82,7 @@ void Uci::processCommands(char* input) {
         if (strstr(input, "position startpos")) {
             position_received(input);
         }
-        if (strstr(input, "position fen")) chess->setboard(input);
+        if (strstr(input, "position fen")) chess->table->setboard(input);
         if (strstr(input, "go")) {
             chess->FZChess = chess->player_to_move;
             //if (strstr(input, "ponder")) continue;
