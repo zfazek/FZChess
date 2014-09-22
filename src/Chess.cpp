@@ -309,7 +309,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                         uu =  1;
                     if (uu == 0 && u < 0)
                         uu = -1;
-                    printf("info multipv 1 depth %d seldepth %d score mate %d nodes %d pv ",
+                    printf("info multipv 1 depth %d seldepth %d score mate %d nodes %llu pv ",
                             curr_depth, curr_seldepth, uu, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         move2str(best_line[dpt].moves[b]);
@@ -318,7 +318,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     printf("\n");util->flush();
                     mate_score = abs(u);
                 } else {
-                    printf("info multipv 1 depth %d seldepth %d score cp %d nodes %d pv ",
+                    printf("info multipv 1 depth %d seldepth %d score cp %d nodes %llu pv ",
                             curr_depth, curr_seldepth, u, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         move2str(best_line[dpt].moves[b]);
@@ -719,13 +719,13 @@ void Chess::make_move() {
         if (init_depth > 30)
             stop_search = true;
         knodes = 1000LLU * nodes;
-        printf("info depth %d seldepth %d time %d nodes %d nps %lld\n",
+        printf("info depth %d seldepth %d time %d nodes %lld nps %lld\n",
                 init_depth, seldepth, time_elapsed, nodes,
                 (time_elapsed==0)?0:(knodes/time_elapsed));util->flush();
-        printf("nodes: %d, knodes: %lld\n", nodes, knodes);util->flush();
+        printf("nodes: %lld, knodes: %lld\n", nodes, knodes);util->flush();
         if (DEBUG) {
             debugfile=fopen("./debug.txt", "a");
-            fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %d nps %d\n",
+            fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %llu nps %d\n",
                     init_depth, seldepth, time_elapsed, nodes,
                     (time_elapsed==0)?0:(int)(1000*nodes/time_elapsed));
             fclose(debugfile);

@@ -69,7 +69,7 @@ class Chess {
         char input[1001];
         int FZChess; // 1:white, -1:black
 
-        unsigned int nodes;
+        unsigned long long nodes;
         jmp_buf env;
         int start_time, stop_time, max_time, movetime;
         int stop_search;
