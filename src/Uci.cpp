@@ -3,13 +3,15 @@
 #include <cstring>
 #include "Chess.h"
 
-Uci::Uci() {
+Uci::Uci(Chess* ch) {
+    chess = ch;
 }
 
 Uci::~Uci() {
+    delete chess;
 }
 
-void Uci::position_received(Chess* chess, char* input) {
+void Uci::position_received(char* input) {
     char move_old[6];
     strcpy(move_old,"     ");
     chess->start_game();
@@ -36,7 +38,7 @@ void Uci::position_received(Chess* chess, char* input) {
     //print_table();
 }
 
-void Uci::processCommands(Chess* chess, char* input) {
+void Uci::processCommands(char* input) {
     int movestogo = 40;
     int wtime, btime;
     int  winc = 0;
@@ -79,7 +81,7 @@ void Uci::processCommands(Chess* chess, char* input) {
             chess->util->flush();
         }
         if (strstr(input, "position startpos")) {
-            position_received(chess, input);
+            position_received(input);
         }
         if (strstr(input, "position fen")) chess->setboard(input);
         if (strstr(input, "go")) {

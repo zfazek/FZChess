@@ -8,7 +8,7 @@ void test_move_h2h4() {
     chess.n = 0;
     chess.start_game();
     char input[] = "position startpos moves h2h4";
-    chess.uci->position_received(&chess, input);
+    chess.uci->position_received(input);
     //chess.max_time = 300000 / 40;
     chess.max_time = 0;
     chess.gui_depth = 4; // "go depth 4"
@@ -60,7 +60,6 @@ void test_calculate_evarray_new(Chess &chess) {
 }
 
 void test() {
-    /*
     {
         Chess chess;
         chess.legal_pointer = 40;
@@ -68,7 +67,6 @@ void test() {
         test_calculate_evarray(chess);
         test_calculate_evarray_new(chess);
     }
-    */
     test_move_h2h4();
 }
 

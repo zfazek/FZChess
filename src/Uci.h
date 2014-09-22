@@ -4,8 +4,11 @@ class Chess;
 
 class Uci {
     public:
-        Uci();
+
+        Chess* chess;
+
+        Uci(Chess* chess);
         ~Uci();
-        void position_received(Chess* chess, char* input);
-        void processCommands(Chess* chess, char* input);
+        void position_received(char* input);
+        void processCommands(char* input);
 };

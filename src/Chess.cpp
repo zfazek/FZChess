@@ -1,9 +1,6 @@
 #include "Chess.h"
-//#include "Hash.h"
-//#include "Eval.h"
-//#include "Util.h"
-//#include "Uci.h"
 #include <cstring>
+#include <cstdio>
 #include <cmath>
 
 #define HASH
@@ -61,18 +58,6 @@ int dir_knight[8] = { -21, -19, -12,  -8,  8, 12, 19, 21 };
 int dir_bishop[4] = { -11,  -9,   9,  11 };
 int dir_king[8] = { -11, -10, -9, -1, 1, 9, 10, 11 };
 
-const int DRAW =  0;
-const int LOST = -22000;
-const int WON  =  22000;
-
-int end_game_threshold = 1200;
-int king_castled       =   40;
-int cant_castle        =  -10;
-int double_bishops     =   50;
-int double_pawn        =   15;
-int friendly_pawn      =    5;
-int pawn_advantage     =   10;
-
 struct best_lines {
     int length;
     int value;
@@ -87,9 +72,12 @@ Chess::Chess() {
     hash->init_hash_inner();
 #endif
     util = new Util();
-    eval = new Eval();
-    uci = new Uci();
+    uci = new Uci(this);
+    table = new Table(this);
     stop_received = false;
+    DEBUG = 0;
+    WHITE = 1;
+    BLACK = -1;
 }
 
 Chess::~Chess() {
@@ -97,8 +85,8 @@ Chess::~Chess() {
     delete hash;
 #endif
     delete util;
-    delete eval;
     delete uci;
+    delete table;
 }
 
 void Chess::start_game() { // new
@@ -177,11 +165,11 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         if (is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_white_king :
                     (movelist + move_number)->pos_black_king, player_to_move) == false) {
             //printf("DRAW: ");util->flush();
-            return DRAW;
+            return table->eval->DRAW;
         }
         else {
             //printf("LOST: ");util->flush();
-            return LOST;
+            return table->eval->LOST;
         }
     }
     nbr_legal = legal_pointer;
@@ -231,7 +219,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                 if (third_occurance() == true ||
                         not_enough_material() == true ||
                         movelist[move_number].not_pawn_move >= 100) {
-                    u=DRAW;
+                    u = table->eval->DRAW;
                     --move_number;
                 } else {
                     list_legal_moves();
@@ -252,7 +240,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             if (third_occurance() == true ||
                     not_enough_material() == true ||
                     movelist[move_number].not_pawn_move >= 100) {
-                u = DRAW;
+                u = table->eval->DRAW;
                 --move_number;
             } else {
                 u = evaluation_only_end_game(dpt);
@@ -857,7 +845,6 @@ void Chess::checkup() {
     }
 }
 
-
 // Updates the parameters /array movelist/ and the table with the given move.
 // If print is true->prints the table
 void Chess::update_table(int move, bool print) {
@@ -950,7 +937,7 @@ void Chess::update_table(int move, bool print) {
             // Castling
             if ((square_from == 25 && square_to == 27) ||
                     (square_from == 25 && square_to == 23)) {
-                pm2->white_king_castled = king_castled;
+                pm2->white_king_castled = table->eval->king_castled;
                 if (square_to ==  27) {
                     *(pt2 + 26) = WhiteRook;
                     *(pt2 + 28) = 0;
@@ -968,7 +955,7 @@ void Chess::update_table(int move, bool print) {
             pm2->castle = pm2->castle & 3;
             if ((square_from == 95 && square_to == 97) ||
                     (square_from == 95 && square_to == 93)) {
-                pm2->black_king_castled = king_castled;
+                pm2->black_king_castled = table->eval->king_castled;
                 if (square_to ==  97) {
                     *(pt2 + 96) = BlackRook;
                     *(pt2 + 98) = 0;
@@ -1123,12 +1110,12 @@ int Chess::evaluation(int e_legal_pointer, int dpt) {
         if (is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_black_king :
                     (movelist + move_number)->pos_white_king, -player_to_move) == false) {
             //printf("DRAW: ");util->flush();
-            return DRAW;
+            return table->eval->DRAW;
         }
         else {
             //printf("WON: ");util->flush();
             //dpt : #1 (checkmate in one move) is better than #2
-            return WON - dpt;
+            return table->eval->WON - dpt;
         }
     }
 
@@ -1149,13 +1136,13 @@ int Chess::evaluation_only_end_game(int dpt) {
 
             //Stalemate
             //printf("DRAW: ");util->flush();
-            return DRAW;
+            return table->eval->DRAW;
         }
         else {
 
             //Mate
             //printf("WON: ");util->flush();
-            return WON - dpt;
+            return table->eval->WON - dpt;
         }
     }
     return 32767; //not end
@@ -1370,7 +1357,7 @@ int Chess::sum_material(int color) {
         if (figure > 0 && figure < 255) {
             if ((color == WHITE && (figure & 128) == 0) ||
                     (color == BLACK && (figure & 128) == 128))
-                e += eval->figure_value[(figure & 127)];
+                e += table->eval->figure_value[(figure & 127)];
         }
     }
     return e;
@@ -1383,7 +1370,7 @@ int Chess::evaluation_king(int field, int figure) {
     int* pdir = dir_king;
     for (int k = 0; k < 8; ++k, ++pdir)
         if (*(pt + field + *pdir) == (figure & 128) + Pawn)
-            e += friendly_pawn;
+            e += table->eval->friendly_pawn;
     return e;
 }
 
@@ -1395,20 +1382,20 @@ int Chess::evaluation_pawn(int field, int figure, int sm) {
     int* pt = tablelist[move_number];
     do {
         dir += 10;
-        if (*(pt + field + dir) == figure) e -= double_pawn;
+        if (*(pt + field + dir) == figure) e += table->eval->double_pawn;
     } while (*(pt + field + dir) != 255);
     dir = 0;
     do {
         dir -= 10;
-        if (*(pt + field + dir) == figure) e -= double_pawn;
+        if (*(pt + field + dir) == figure) e += table->eval->double_pawn;
     } while (*(pt + field + dir) != 255);
 
     //Bonus for pawn advantage
     if (sm < 2000) {
         if ((figure & 128) == 0) {
-            e += (field / 10) * pawn_advantage;
+            e += (field / 10) * table->eval->pawn_advantage;
         } else {
-            e += (11 -(field / 10)) * pawn_advantage;
+            e += (11 -(field / 10)) * table->eval->pawn_advantage;
         }
     }
     return e;
@@ -1446,7 +1433,7 @@ int Chess::evaluation_material(int dpt) {
                 e += c * evaluation_pawn(i, figure, sm);
 
             //Calculates figure material values
-            e += c * eval->figure_value[(figure & 127)];
+            e += c * table->eval->figure_value[(figure & 127)];
         }
     }
     //return e; // ZOLI
@@ -1459,7 +1446,7 @@ int Chess::evaluation_material(int dpt) {
     e += c * (pm->white_double_bishops - pm->black_double_bishops);
 
     //In the end game bonus if the enemy king is close
-    if (sm < end_game_threshold) {
+    if (sm < table->eval->end_game_threshold) {
         random_window = 2;
         evaking  = 3 * abs((pm->pos_white_king / 10)-(pm->pos_black_king / 10));
         evaking += 3 * abs((pm->pos_white_king % 10)-(pm->pos_black_king % 10));
@@ -1536,8 +1523,8 @@ void Chess::reset_movelist() {
         movelist[move_number].black_king_castled = 0;
         movelist[move_number].pos_white_king = 25;
         movelist[move_number].pos_black_king = 95;
-        movelist[move_number].white_double_bishops = double_bishops;
-        movelist[move_number].black_double_bishops = double_bishops;
+        movelist[move_number].white_double_bishops = table->eval->double_bishops;
+        movelist[move_number].black_double_bishops = table->eval->double_bishops;
         movelist[move_number].further = 0;
 #ifdef POS_FIGURE
         for (int i = 0; i < 16; i++) {
@@ -1655,6 +1642,6 @@ void Chess::setboard(char fen_position[255]) {
 
 void Chess::processCommands(char* input) {
     if (strstr(input, "uci")) {
-        uci->processCommands(this, input);
+        uci->processCommands(input);
     }
 }

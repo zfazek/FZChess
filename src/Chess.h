@@ -1,12 +1,10 @@
 #pragma once
 
-#include <ctime>
 #include <setjmp.h>
-#include <cstdio>
 #include <thread>
 #include "Hash.h"
 #include "Util.h"
-#include "Eval.h"
+#include "Table.h"
 #include "Uci.h"
 
 class Chess {
@@ -17,11 +15,11 @@ class Chess {
 
         Hash* hash;
         Util* util;
-        Eval* eval;
         Uci* uci;
+        Table* table;
 
-        const int WHITE =  1;
-        const int BLACK = -1;
+        int WHITE;
+        int BLACK;
 
         //Parameters of the given position
         struct move {
@@ -131,7 +129,7 @@ class Chess {
         int get_ms();
         void processCommands(char* input);
 
-        int DEBUG = 0;
+        int DEBUG;
         FILE *debugfile;
         bool stop_received;
 
