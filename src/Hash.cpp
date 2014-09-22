@@ -75,7 +75,7 @@ void Hash::set_hash(Chess* chess) {
     int field, figure;
     hash = 0;
     // XOR the side to move
-    if (chess->player_to_move == WHITE) {
+    if (chess->player_to_move == chess->WHITE) {
         hash ^= hash_side_white;
     }
     else {

@@ -3,7 +3,7 @@ uci
 position startpos moves h2h4
 go depth 5
 
-# Lasken pawn end game Ka1!!
+# Lasken pawn end game Kb1!!
 uci
 position fen 8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - - 1 1
 go infinite

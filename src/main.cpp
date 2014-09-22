@@ -8,14 +8,14 @@ void test_move_h2h4() {
     chess.n = 0;
     chess.start_game();
     char input[] = "position startpos moves h2h4";
-    chess.position_received(input);
+    chess.uci->position_received(&chess, input);
     //chess.max_time = 300000 / 40;
     chess.max_time = 0;
-    chess.gui_depth = 6; // "go depth 4"
+    chess.gui_depth = 4; // "go depth 4"
     chess.make_move();
     printf("n: %d\n", chess.n);
     assert(strcmp(chess.move_str, "e7e6 ") == 0);
-    assert(chess.nodes > 100000);
+    assert(chess.nodes == 126027);
 #ifdef HASH
     assert(20000 < chess.hash->hash_nodes);
 #endif

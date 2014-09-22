@@ -7,9 +7,7 @@
 #include "Hash.h"
 #include "Util.h"
 #include "Eval.h"
-
-const int WHITE =  1;
-const int BLACK = -1;
+#include "Uci.h"
 
 class Chess {
 
@@ -20,6 +18,10 @@ class Chess {
         Hash* hash;
         Util* util;
         Eval* eval;
+        Uci* uci;
+
+        const int WHITE =  1;
+        const int BLACK = -1;
 
         //Parameters of the given position
         struct move {
@@ -59,8 +61,12 @@ class Chess {
         //Array of best move of iterative deepening
         int best_iterative[255];
 
+#ifdef SORT_ALFARRAY
+
         //Array of sorted legal moves
         int eva_alfabeta_temp[255];
+#endif
+
         char move_str[6];
         char input[1001];
         int FZChess; // 1:white, -1:black
@@ -70,7 +76,7 @@ class Chess {
         int start_time, stop_time, max_time, movetime;
         int stop_search;
         int depth, seldepth, init_depth, curr_depth, curr_seldepth, gui_depth;
-        int last_ply;
+        bool last_ply;
         int sm;
         int legal_pointer;
         int *pt, *ptt;
@@ -100,9 +106,9 @@ class Chess {
         void calculate_evarray();
         void calculate_evarray_new();
         void checkup();
-        void update_table(int move, int print);
-        int third_occurance();
-        int not_enough_material();
+        void update_table(int move, bool print);
+        bool third_occurance();
+        bool not_enough_material();
         int evaluation(int e_legal_pointer, int dpt);
         int evaluation_only_end_game(int dpt);
         void is_really_legal();
@@ -123,12 +129,11 @@ class Chess {
         void setboard(char fen_position[255]);
         void flush();
         int get_ms();
-        void position_received(char* input);
         void processCommands(char* input);
 
         int DEBUG = 0;
         FILE *debugfile;
-        int stop_received = 0;
+        bool stop_received;
 
         int n;
 };
