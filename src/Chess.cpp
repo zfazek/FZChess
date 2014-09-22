@@ -236,6 +236,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     list_legal_moves();
                     //legal_pointer=1;
                     u=evaluation(legal_pointer, dpt);
+                    //u=evaluation_material(dpt);
                     //for (b=1; b<=curr_seldepth; ++b) { move2str(curr_line[b]); printf("%s ", move_str); } printf(" u: %d\n", u);util->flush();
                     --move_number;
                 }
@@ -713,7 +714,7 @@ void Chess::make_move() {
            */
         seldepth = depth + 8;
         if (depth > 4) seldepth = depth + 4;
-        seldepth = depth + 0;
+        //seldepth = depth + 0;
         printf("%d %d\n", depth, seldepth);util->flush();
         //Calculates the time of the move
         //Searches the best move with negamax algorithm with alfa-beta cut off
@@ -1459,21 +1460,7 @@ void Chess::setboard(char fen_position[255]) {
     char move_old[6]="     ";
     start_game();
     size_t m = 5;
-    for (size_t j = 0; j < m; j++) {
-        while (fen_position[n] != ' ') {
-            n++;
-        }
-        n++;
-    }
-    factor = 1;
-    move_number = 0;
-    while (fen_position[n] != ' ' && n < strlen(input) - 1) {
-        //printf("move_number: %d, factor: %d, n: %d, fen_position[n]: %d, strlen(input): %d\n", move_number, factor, n, (int)(fen_position[n] - '0'), strlen(input));
-        util->flush();
-        move_number = move_number * factor + (int)(fen_position[n] - '0');
-        factor =factor * 10;
-        n++;
-    }
+    move_number = 1;
     n = 13;
     while (fen_position[n] != ' ') {
         if (fen_position[n] > '0' && fen_position[n] < '9') {
@@ -1562,7 +1549,7 @@ void Chess::setboard(char fen_position[255]) {
             invert_player_to_move();
         }
     }
-    //print_table();
+    print_table();
 }
 
 void Chess::position_received(char* input) {
@@ -1729,6 +1716,7 @@ int Chess::evaluation_material(int dpt) {
             e += c * eval->figure_value[(figure & 127)];
         }
     }
+    //return e; // ZOLI
     if (player_to_move == WHITE) c = 1; else c = -1;
 
     //Bonus for castling
