@@ -4,6 +4,8 @@ class Chess;
 
 class Eval {
     public:
+		Chess* chess;
+
         Eval(Chess* chess);
         ~Eval();
 
@@ -22,6 +24,14 @@ class Eval {
         //Values for evaluation
         //empty, pawn, knight, bishop, rook, queen, king
         int figure_value[7] = {0, 100, 330, 330, 500, 900, 0};
+
+        int random_window;
+
+        int evaluation_material(int dpt);
+        int evaluation(int e_legal_pointer, int dpt);
+        int evaluation_only_end_game(int dpt);
+        int evaluation_king(int field, int figure);
+        int evaluation_pawn(int field, int figure, int sm);
 
 };
 

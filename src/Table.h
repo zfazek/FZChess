@@ -65,4 +65,6 @@ class Table {
         int is_attacked(int field, int color);
         bool not_enough_material();
         void castling();
+        void update_table(int move, bool print);
+
 };

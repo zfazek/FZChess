@@ -21,6 +21,7 @@ void test_move_h2h4() {
 #endif
 }
 
+
 void test_calculate_evarray(Chess &chess) {
     for (int i = 0; i <= chess.legal_pointer; i++) {
         chess.root_moves[i].move = 100 - i;

@@ -84,7 +84,6 @@ class Chess {
         //unsigned long long knodes = 9999999999999999999LLU;
         std::thread th_make_move;
         int sort_alfarray;
-        int random_window;
 
         struct move_t {
             int move;
@@ -103,19 +102,13 @@ class Chess {
         void calculate_evarray();
         void calculate_evarray_new();
         void checkup();
-        void update_table(int move, bool print);
         bool third_occurance();
-        int evaluation(int e_legal_pointer, int dpt);
-        int evaluation_only_end_game(int dpt);
         void is_really_legal();
         void append_legal_moves(int dir_piece, int i, int j, int kk);
         void append_legal_moves_inner(int dir_piece, int i, int j, int kk);
         int convA(int k);
         int conv0(int k);
         int sum_material(int color);
-        int evaluation_material(int dpt);
-        int evaluation_king(int field, int figure);
-        int evaluation_pawn(int field, int figure, int sm);
         void invert_player_to_move();
         char* move2str(int move);
         void processCommands(char* input);

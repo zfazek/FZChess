@@ -31,7 +31,7 @@ void Uci::position_received(char* input) {
         } else {
             move_old[4] = '\0';
         }
-        chess->update_table(Util::str2move(move_old), false);
+        chess->table->update_table(Util::str2move(move_old), false);
         chess->invert_player_to_move();
     }
     //print_table();

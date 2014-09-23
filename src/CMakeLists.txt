@@ -12,7 +12,4 @@ add_executable(
     Uci.cpp
     Table.cpp)
 
-set (CMAKE_CXX_FLAGS "-Wall -Werror -std=c++11 -g -O2 -pthread -funroll-loops")
 
-FIND_PACKAGE(Threads)
-TARGET_LINK_LIBRARIES(fzchess++ ${CMAKE_THREAD_LIBS_INIT})
