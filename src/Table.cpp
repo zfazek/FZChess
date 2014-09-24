@@ -1,12 +1,14 @@
 #include "Table.h"
 #include "Chess.h"
 #include <cstring>
+#include <cmath>
+#include <cstdio>
+
+using namespace std;
 
 Table::Table(Chess* ch) {
     chess = ch;
     eval = new Eval(chess);
-
-
 }
 
 Table::~Table() {

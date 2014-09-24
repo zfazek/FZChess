@@ -1,5 +1,8 @@
 #include "Eval.h"
 #include "Chess.h"
+#include <cmath>
+
+using namespace std;
 
 Eval::Eval(Chess* ch) {
 	chess = ch;
