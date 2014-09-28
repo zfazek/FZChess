@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cassert>
 #include <locale.h>
+#include <time.h>
 
 void test_move_h2h4() {
     Chess chess;
@@ -22,26 +23,56 @@ void test_move_h2h4() {
 #endif
 }
 
-void test_perft() {
+void test_perft_pos1() {
+    char input[] = "position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    puts(input);
     for (int i = 1; i < 6; i++) {
         Chess chess;
         chess.start_game();
         chess.nodes = 0;
-        char input[] = "position startpos";
+        chess.table->setboard(input);
+        chess.max_time = 0;
+        int start_time = Util::get_ms();
+        unsigned long long nodes = chess.perft(i);
+        int stop_time = Util::get_ms();
+        int duration = stop_time - start_time;
+        printf("depth: %d nodes: %'llu time: %'dms knps: %'llu\n",
+                i,
+                nodes,
+                duration,
+                (duration == 0) ? 0 : (nodes / duration));
+    }
+    puts("");
+}
+
+void test_perft_startpos() {
+    char input[] = "position startpos";
+    puts(input);
+    for (int i = 1; i < 6; i++) {
+        Chess chess;
+        chess.start_game();
+        chess.nodes = 0;
         chess.uci->position_received(input);
         chess.max_time = 0;
         int start_time = Util::get_ms();
         unsigned long long nodes = chess.perft(i);
         int stop_time = Util::get_ms();
         int duration = stop_time - start_time;
-        printf("depth: %d nodes: %'llu time: %d knps: %'llu\n",
+        printf("depth: %d nodes: %'llu time: %'dms knps: %'llu\n",
                 i,
                 nodes,
                 duration,
                 (duration == 0) ? 0 : (nodes / duration));
     }
+    puts("");
 }
 
+void test_perft() {
+    time_t mytime = time(NULL);
+    printf("%s", ctime(&mytime));
+    test_perft_startpos();
+    test_perft_pos1();
+}
 
 void test_calculate_evarray(Chess &chess) {
     for (int i = 0; i <= chess.legal_pointer; i++) {

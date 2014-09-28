@@ -1,0 +1,16 @@
+Sun Sep 28 22:46:26 2014
+position startpos
+depth: 1 nodes: 20 time: 0ms knps: 0
+depth: 2 nodes: 400 time: 0ms knps: 0
+depth: 3 nodes: 8.902 time: 3ms knps: 2.967
+depth: 4 nodes: 197.281 time: 78ms knps: 2.529
+depth: 5 nodes: 4.865.609 time: 1.944ms knps: 2.502
+
+position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1
+depth: 1 nodes: 48 time: 0ms knps: 0
+depth: 2 nodes: 2.039 time: 1ms knps: 2.039
+depth: 3 nodes: 97.862 time: 37ms knps: 2.644
+depth: 4 nodes: 4.085.603 time: 1.567ms knps: 2.607
+depth: 5 nodes: 193.690.690 time: 73.848ms knps: 2.622
+
+

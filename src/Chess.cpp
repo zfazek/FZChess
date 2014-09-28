@@ -307,15 +307,48 @@ void Chess::list_legal_moves() {
 
                         //If white pawn is in the 7th rank->promotion
                         if (i - 1 == 7) {
-                            ++legal_pointer;
 
-                            //Calculates only with Queen promotion
+                            //Calculates Queen promotion
+                            ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
                             move |= (j - 1) * 0x0020;
                             move |= 7 * 0x0004;
                             move |= 0x0200;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            //Calculates Rook promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j - 1) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0100;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            //Calculates Bishop promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j - 1) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0002;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            //Calculates Knight promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j - 1) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0001;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
                         } else {
@@ -358,6 +391,39 @@ void Chess::list_legal_moves() {
                             move |= 0x0200;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
+
+                        //With Rook promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j - 2) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0100;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                        //With Bishop promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j - 2) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0002;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                        //With Knight promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j - 2) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0001;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
                         } else {
 
                             //Normal capture
@@ -375,8 +441,9 @@ void Chess::list_legal_moves() {
                     //Pawn capture of the other direction
                     if ((*(ptt + 11) & 128) == 128 && *(ptt + 11) != 255) {
 
-                        //With Queen promotion
                         if (i - 1 == 7) {
+
+                            //With Queen promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -384,6 +451,39 @@ void Chess::list_legal_moves() {
                             move |= (j    ) * 0x0020;
                             move |= 7 * 0x0004;
                             move |= 0x0200;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            //With Rook promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j    ) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0100;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            //With Bishop promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j    ) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0002;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            //With Knight promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 6 * 0x0400;
+                            move |= (j    ) * 0x0020;
+                            move |= 7 * 0x0004;
+                            move |= 0x0001;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
                         } else {
@@ -434,6 +534,8 @@ void Chess::list_legal_moves() {
                 if (field == table->BlackPawn) {
                     if (*(ptt - 10) == 0) {
                         if (i - 1 == 2) {
+
+                            // With Queen promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -441,6 +543,39 @@ void Chess::list_legal_moves() {
                             move |= (j - 1) * 0x0020;
                             //move |= (i - 3) * 0x0004;
                             move |= 0x0200;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Rook promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 1 * 0x0400;
+                            move |= (j - 1) * 0x0020;
+                            //move |= (i - 3) * 0x0004;
+                            move |= 0x0100;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Bishop promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 1 * 0x0400;
+                            move |= (j - 1) * 0x0020;
+                            //move |= (i - 3) * 0x0004;
+                            move |= 0x0002;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Knight promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= 1 * 0x0400;
+                            move |= (j - 1) * 0x0020;
+                            //move |= (i - 3) * 0x0004;
+                            move |= 0x00001;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
                         } else {
@@ -466,6 +601,8 @@ void Chess::list_legal_moves() {
                     }
                     if (*(ptt - 9) > 0 && *(ptt - 9) < 128) {
                         if (i - 1 == 2) {
+
+                            // With Queen promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -473,6 +610,39 @@ void Chess::list_legal_moves() {
                             move |= (j    ) * 0x0020;
                             move |= (i - 3) * 0x0004;
                             move |= 0x0200;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Rook promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= (i - 2) * 0x0400;
+                            move |= (j    ) * 0x0020;
+                            move |= (i - 3) * 0x0004;
+                            move |= 0x0100;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Bishop promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= (i - 2) * 0x0400;
+                            move |= (j    ) * 0x0020;
+                            move |= (i - 3) * 0x0004;
+                            move |= 0x0002;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Knight promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= (i - 2) * 0x0400;
+                            move |= (j    ) * 0x0020;
+                            move |= (i - 3) * 0x0004;
+                            move |= 0x0001;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
                         } else {
@@ -488,6 +658,8 @@ void Chess::list_legal_moves() {
                     }
                     if (*(ptt - 11) > 0 && *(ptt - 11) < 128) {
                         if (i - 1 == 2) {
+
+                            // With Queen promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -495,6 +667,39 @@ void Chess::list_legal_moves() {
                             move |= (j - 2) * 0x0020;
                             move |= (i - 3) * 0x0004;
                             move |= 0x0200;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Rook promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= (i - 2) * 0x0400;
+                            move |= (j - 2) * 0x0020;
+                            move |= (i - 3) * 0x0004;
+                            move |= 0x0100;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Bishop promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= (i - 2) * 0x0400;
+                            move |= (j - 2) * 0x0020;
+                            move |= (i - 3) * 0x0004;
+                            move |= 0x0002;
+                            legal_moves[legal_pointer] = move;
+                            is_really_legal();
+
+                            // With Knight promotion
+                            ++legal_pointer;
+                            move = 0;
+                            move |= (j - 1) * 0x2000;
+                            move |= (i - 2) * 0x0400;
+                            move |= (j - 2) * 0x0020;
+                            move |= (i - 3) * 0x0004;
+                            move |= 0x0001;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
                         } else {

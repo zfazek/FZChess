@@ -1,7 +1,7 @@
 # startup position
 uci
 position startpos moves h2h4
-go depth 5
+go depth 4
 
 # Lasken pawn end game Kb1!!
 uci

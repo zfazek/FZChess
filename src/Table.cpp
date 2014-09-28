@@ -390,7 +390,7 @@ void Table::setboard(char* input) {
             chess->invert_player_to_move();
         }
     }
-    print_table();
+    //print_table();
 }
 
 //Returns if the figure of color is attacked or not
