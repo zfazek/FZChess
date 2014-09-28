@@ -161,16 +161,16 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                 u = table->eval->evaluation_only_end_game(dpt);
                 if (u == 32767) { //not end
                     /*
-                    hash->set_hash(this);
-                    if (hash->posInHashtable()) {
-                        u = hash->getU();
-                        hash->hash_inner_nodes++;
-                    } else {
-                    */
-                        invert_player_to_move();
-                        u = -alfabeta(dpt + 1, -beta, -alfa);
-                        last_ply = false;
-                        invert_player_to_move();
+                       hash->set_hash(this);
+                       if (hash->posInHashtable()) {
+                       u = hash->getU();
+                       hash->hash_inner_nodes++;
+                       } else {
+                       */
+                    invert_player_to_move();
+                    u = -alfabeta(dpt + 1, -beta, -alfa);
+                    last_ply = false;
+                    invert_player_to_move();
                     //}
                 }
                 --move_number;
@@ -249,6 +249,27 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 #endif
     }
     return value;
+}
+
+int Chess::perft(int dpt) {
+    int i, nbr_legal;
+    int alfarray[255];
+    unsigned long long nodes = 0;
+
+    if (dpt == 0) return 1;
+
+    list_legal_moves();
+    nbr_legal = legal_pointer;
+    for (i = 0; i <= nbr_legal; ++i) alfarray[i] = legal_moves[i];
+    for (i = 0; i <= nbr_legal; ++i) {
+        if ((nodes & 1023) == 0) checkup();
+            table->update_table(alfarray[i], false);
+            invert_player_to_move();
+            nodes += perft(dpt - 1);
+            invert_player_to_move();
+            --move_number;
+    }
+    return nodes;
 }
 
 //Searches and stores all the legal moves
@@ -749,7 +770,7 @@ bool Chess::third_occurance() {
 //Checks weather the move is legal. If the king is attacked then not legal.
 //Decreases the legal pointer->does not store the move
 void Chess::is_really_legal() {
-	table->update_table(legal_moves[legal_pointer], false);
+    table->update_table(legal_moves[legal_pointer], false);
     if (table->is_attacked(player_to_move == WHITE ? (movelist + move_number)->pos_white_king :
                 (movelist + move_number)->pos_black_king, player_to_move) == true) {
         --legal_pointer;

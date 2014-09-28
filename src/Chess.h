@@ -112,6 +112,7 @@ class Chess {
         void invert_player_to_move();
         char* move2str(int move);
         void processCommands(char* input);
+        int perft(int dpt);
 
         int DEBUG;
         FILE *debugfile;

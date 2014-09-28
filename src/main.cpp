@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cassert>
+#include <locale.h>
 
 void test_move_h2h4() {
     Chess chess;
@@ -21,6 +22,26 @@ void test_move_h2h4() {
 #endif
 }
 
+void test_perft() {
+    for (int i = 1; i < 6; i++) {
+        Chess chess;
+        chess.start_game();
+        chess.nodes = 0;
+        char input[] = "position startpos";
+        chess.uci->position_received(input);
+        chess.max_time = 0;
+        int start_time = Util::get_ms();
+        unsigned long long nodes = chess.perft(i);
+        int stop_time = Util::get_ms();
+        int duration = stop_time - start_time;
+        printf("depth: %d nodes: %'llu time: %d knps: %'llu\n",
+                i,
+                nodes,
+                duration,
+                (duration == 0) ? 0 : (nodes / duration));
+    }
+}
+
 
 void test_calculate_evarray(Chess &chess) {
     for (int i = 0; i <= chess.legal_pointer; i++) {
@@ -29,13 +50,13 @@ void test_calculate_evarray(Chess &chess) {
     }
     chess.calculate_evarray();
     /*
-    for (int i = 0; i <= chess.legal_pointer; i++) {
-        printf("%2d. %2d %2d\n",
-                i + 1,
-                chess.root_moves[i].move,
-                chess.root_moves[i].value);
-    }
-    */
+       for (int i = 0; i <= chess.legal_pointer; i++) {
+       printf("%2d. %2d %2d\n",
+       i + 1,
+       chess.root_moves[i].move,
+       chess.root_moves[i].value);
+       }
+       */
     for (int i = 0; i < chess.legal_pointer; i++) {
         assert(chess.root_moves[i].value >= chess.root_moves[i+1].value);
     }
@@ -49,11 +70,11 @@ void test_calculate_evarray_new(Chess &chess) {
     chess.calculate_evarray_new();
     for (int i = 0; i <= chess.legal_pointer; i++) {
         /*
-        printf("%2d. %2d %2d\n",
-                i + 1,
-                chess.root_moves[i].move,
-                chess.root_moves[i].value);
-        */
+           printf("%2d. %2d %2d\n",
+           i + 1,
+           chess.root_moves[i].move,
+           chess.root_moves[i].value);
+           */
     }
     for (int i = 0; i < chess.legal_pointer; i++) {
         assert(chess.root_moves[i].value >= chess.root_moves[i+1].value);
@@ -72,8 +93,13 @@ void test() {
 }
 
 int main(int argc, char* argv[]) {
+    setlocale(LC_ALL, "");
     if (argc > 1) {
-        test();
+        if (strcmp(argv[1], "1") == 0) {
+            test();
+        } else if (strcmp(argv[1], "2") == 0) {
+            test_perft();
+        }
     } else {
 
         // Start here

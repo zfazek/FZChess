@@ -41,9 +41,11 @@ void Hash::init_hash() {
         printf("HASH memory fault!\n");
         exit(2);
     }
+    /*
     printf("hashsize: %d, sizeof: %d\n",
             HASHSIZE,
             sizeof(hash_t[HASHSIZE]));
+            */
     Util::flush();
 }
 
