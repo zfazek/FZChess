@@ -5,6 +5,7 @@
 
 #define HASH
 #define ALFABETA
+#define PERFT
 //#define SORT_ALFARRAY
 
 using namespace std;
@@ -121,7 +122,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         if ((dpt >= depth && movelist[move_number].further == 0) ||
                 dpt >= seldepth) {
             last_ply = true;
-            n++;
 #ifdef HASH
             hash->set_hash(this);
             if (hash->posInHashtable()) {
@@ -133,7 +133,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             //not in the hashtable. normal evaluating
             else {
 #endif
-                if (third_occurance() == true ||
+                if (table->third_occurance() == true ||
                         table->not_enough_material() == true ||
                         movelist[move_number].not_pawn_move >= 100) {
                     u = table->eval->DRAW;
@@ -153,7 +153,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         }
         //Not last ply
         else {
-            if (third_occurance() == true ||
+            if (table->third_occurance() == true ||
                     table->not_enough_material() == true ||
                     movelist[move_number].not_pawn_move >= 100) {
                 u = table->eval->DRAW;
@@ -320,6 +320,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#ifdef PERFT
                             //Calculates Rook promotion
                             ++legal_pointer;
                             move = 0;
@@ -342,6 +343,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#endif
                             //Calculates Knight promotion
                             ++legal_pointer;
                             move = 0;
@@ -381,8 +383,9 @@ void Chess::list_legal_moves() {
                     //Pawn capture
                     if ((*(ptt + 9) & 128) == 128 && *(ptt + 9) != 255) {
 
-                        //With Queen promotion
                         if (i - 1 == 7) {
+
+                            //With Queen promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -393,7 +396,8 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
-                        //With Rook promotion
+#ifdef PERFT
+                            //With Rook promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -404,7 +408,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
-                        //With Bishop promotion
+                            //With Bishop promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -415,7 +419,8 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
-                        //With Knight promotion
+#endif
+                            //With Knight promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
@@ -455,6 +460,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#ifdef PERFT
                             //With Rook promotion
                             ++legal_pointer;
                             move = 0;
@@ -477,6 +483,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#endif
                             //With Knight promotion
                             ++legal_pointer;
                             move = 0;
@@ -504,6 +511,7 @@ void Chess::list_legal_moves() {
                     //If en passant is possible
                     en_pass = (movelist + move_number)->en_passant;
                     if (en_pass > 1)
+
                         //If it is the right field
                         if (en_pass == i * 10 + j + 9) {
                             ++legal_pointer;
@@ -542,18 +550,19 @@ void Chess::list_legal_moves() {
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
                             move |= (j - 1) * 0x0020;
-                            //move |= (i - 3) * 0x0004;
+                            move |= (i - 3) * 0x0004;
                             move |= 0x0200;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#ifdef PERFT
                             // With Rook promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
                             move |= (j - 1) * 0x0020;
-                            //move |= (i - 3) * 0x0004;
+                            move |= (i - 3) * 0x0004;
                             move |= 0x0100;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
@@ -564,18 +573,19 @@ void Chess::list_legal_moves() {
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
                             move |= (j - 1) * 0x0020;
-                            //move |= (i - 3) * 0x0004;
+                            move |= (i - 3) * 0x0004;
                             move |= 0x0002;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#endif
                             // With Knight promotion
                             ++legal_pointer;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
                             move |= (j - 1) * 0x0020;
-                            //move |= (i - 3) * 0x0004;
+                            move |= (i - 3) * 0x0004;
                             move |= 0x00001;
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
@@ -614,6 +624,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#ifdef PERFT
                             // With Rook promotion
                             ++legal_pointer;
                             move = 0;
@@ -636,6 +647,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#endif
                             // With Knight promotion
                             ++legal_pointer;
                             move = 0;
@@ -671,6 +683,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#ifdef PERFT
                             // With Rook promotion
                             ++legal_pointer;
                             move = 0;
@@ -693,6 +706,7 @@ void Chess::list_legal_moves() {
                             legal_moves[legal_pointer] = move;
                             is_really_legal();
 
+#endif
                             // With Knight promotion
                             ++legal_pointer;
                             move = 0;
@@ -946,33 +960,6 @@ void Chess::checkup() {
     }
 }
 
-//Checks third occurance
-bool Chess::third_occurance() {
-    int i;
-    int j;
-    int equal;
-    int occurance = 0;
-    if (move_number < 6) return false;
-    i = move_number - 2;
-    while (i >= 0 && occurance < 2) {
-        //printf("Third occurance: i: %d\n", i);Util::flush();
-        equal = true;
-        for (j = 0; j < 120; ++j) {
-            if (tablelist[move_number][j] != tablelist[i][j]) {
-                equal = false;
-                break;
-            }
-        }
-        if (equal == true) {
-            ++occurance;
-        }
-        i -= 2;
-    }
-    if (occurance >= 2) return true; else return false;
-}
-
-
-
 //Checks weather the move is legal. If the king is attacked then not legal.
 //Decreases the legal pointer->does not store the move
 void Chess::is_really_legal() {
@@ -1000,7 +987,6 @@ void Chess::append_legal_moves_inner(int dir_piece, int i, int j, int kk) {
     move |= (i - 2) * 0x0400;
     move |= (j - 1 + kk * convA(dir_piece)) * 0x0020;
     move |= (i - 2 + kk * conv0(dir_piece)) * 0x0004;
-    //move=(j-1)*0x2000 + (i-2)*0x0400 + (j - 1 + kk * convA(dir_piece)) * 0x0020 +(i - 2 + kk * conv0(dir_piece)) * 0x0004;
     legal_moves[legal_pointer] = move;
     is_really_legal();
 }

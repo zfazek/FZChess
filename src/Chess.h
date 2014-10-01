@@ -102,7 +102,6 @@ class Chess {
         void calculate_evarray();
         void calculate_evarray_new();
         void checkup();
-        bool third_occurance();
         void is_really_legal();
         void append_legal_moves(int dir_piece, int i, int j, int kk);
         void append_legal_moves_inner(int dir_piece, int i, int j, int kk);

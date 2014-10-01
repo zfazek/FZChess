@@ -66,5 +66,5 @@ class Table {
         bool not_enough_material();
         void castling();
         void update_table(int move, bool print);
-
+        bool third_occurance();
 };

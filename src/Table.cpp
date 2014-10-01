@@ -540,3 +540,30 @@ void Table::castling() {
     }
 }
 
+//Checks third occurance
+bool Table::third_occurance() {
+    int i;
+    int j;
+    int equal;
+    int occurance = 0;
+    if (chess->move_number < 6) return false;
+    i = chess->move_number - 2;
+    while (i >= 0 && occurance < 2) {
+        //printf("Third occurance: i: %d\n", i);Util::flush();
+        equal = true;
+        for (j = 0; j < 120; ++j) {
+            if (chess->tablelist[chess->move_number][j] != chess->tablelist[i][j]) {
+                equal = false;
+                break;
+            }
+        }
+        if (equal == true) {
+            ++occurance;
+        }
+        i -= 2;
+    }
+    if (occurance >= 2) return true; else return false;
+}
+
+
+
