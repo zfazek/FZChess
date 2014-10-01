@@ -23,10 +23,10 @@ void test_move_h2h4() {
 #endif
 }
 
-void test_perft_pos1() {
+void test_perft_pos1(int depth) {
     char input[] = "position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
     puts(input);
-    for (int i = 1; i < 6; i++) {
+    for (int i = 1; i <= depth; i++) {
         Chess chess;
         chess.start_game();
         chess.nodes = 0;
@@ -41,14 +41,22 @@ void test_perft_pos1() {
                 nodes,
                 duration,
                 (duration == 0) ? 0 : (nodes / duration));
+        switch (i) {
+            case 1: assert (nodes == 48); break;
+            case 2: assert (nodes == 2039); break;
+            case 3: assert (nodes == 97862); break;
+            case 4: assert (nodes == 4085603); break;
+            case 5: assert (nodes == 193690690); break;
+            default: break;
+        }
     }
     puts("");
 }
 
-void test_perft_startpos() {
+void test_perft_startpos(int depth) {
     char input[] = "position startpos";
     puts(input);
-    for (int i = 1; i < 6; i++) {
+    for (int i = 1; i <= depth; i++) {
         Chess chess;
         chess.start_game();
         chess.nodes = 0;
@@ -63,6 +71,14 @@ void test_perft_startpos() {
                 nodes,
                 duration,
                 (duration == 0) ? 0 : (nodes / duration));
+        switch (i) {
+            case 1: assert (nodes == 20); break;
+            case 2: assert (nodes == 400); break;
+            case 3: assert (nodes == 8902); break;
+            case 4: assert (nodes == 197281); break;
+            case 5: assert (nodes == 4865609); break;
+            default: break;
+        }
     }
     puts("");
 }
@@ -70,8 +86,9 @@ void test_perft_startpos() {
 void test_perft() {
     time_t mytime = time(NULL);
     printf("%s", ctime(&mytime));
-    test_perft_startpos();
-    test_perft_pos1();
+    int depth = 4;
+    test_perft_startpos(depth);
+    test_perft_pos1(depth);
 }
 
 void test_calculate_evarray(Chess &chess) {

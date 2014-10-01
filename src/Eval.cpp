@@ -187,3 +187,20 @@ int Eval::evaluation_pawn(int field, int figure, int sm) {
 }
 
 
+//Calculates material for evaluating end game threshold
+int Eval::sum_material(int color) {
+    int i, figure, e;
+    e = 0;
+    //    int* pt = tablelist + move_number;
+    for (i = 0; i < 120; ++i) {
+        figure = chess->tablelist[chess->move_number][i];
+        if (figure > 0 && figure < 255) {
+            if ((color == chess->WHITE && (figure & 128) == 0) ||
+                    (color == chess->BLACK && (figure & 128) == 128))
+                e += figure_value[(figure & 127)];
+        }
+    }
+    return e;
+}
+
+

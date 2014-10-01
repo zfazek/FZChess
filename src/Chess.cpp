@@ -99,6 +99,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         for (i = 0; i <= legal_pointer; i++) {
             alfarray[i] = root_moves[i].move;
             printf("(%s:%d) ", Util::move2str(move_str, root_moves[i].move), root_moves[i].value);
+            if (i % 8 == 7) puts("");
         }
         puts("");
     }
@@ -829,7 +830,7 @@ void Chess::make_move() {
         print_hash_inner(hash_inner, 0);
 #endif
         //Calculate summa of material for end game threshold
-        sm = sum_material(player_to_move);
+        sm = table->eval->sum_material(player_to_move);
         depth = init_depth;
         seldepth = depth + 8;
         if (depth > 4) seldepth = depth + 4;
@@ -1071,23 +1072,6 @@ int Chess::conv0(int k) {
     if (k ==  21) return  2;
     return 0;
 }
-
-//Calculates material for evaluating end game threshold
-int Chess::sum_material(int color) {
-    int i, figure, e;
-    e = 0;
-    //    int* pt = tablelist + move_number;
-    for (i = 0; i < 120; ++i) {
-        figure = tablelist[move_number][i];
-        if (figure > 0 && figure < 255) {
-            if ((color == WHITE && (figure & 128) == 0) ||
-                    (color == BLACK && (figure & 128) == 128))
-                e += table->eval->figure_value[(figure & 127)];
-        }
-    }
-    return e;
-}
-
 
 void Chess::processCommands(char* input) {
     if (strstr(input, "uci")) {

@@ -108,7 +108,6 @@ class Chess {
         void append_legal_moves_inner(int dir_piece, int i, int j, int kk);
         int convA(int k);
         int conv0(int k);
-        int sum_material(int color);
         void invert_player_to_move();
         char* move2str(int move);
         void processCommands(char* input);

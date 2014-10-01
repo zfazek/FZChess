@@ -32,6 +32,7 @@ class Eval {
         int evaluation_only_end_game(int dpt);
         int evaluation_king(int field, int figure);
         int evaluation_pawn(int field, int figure, int sm);
+        int sum_material(int color);
 
 };
 
