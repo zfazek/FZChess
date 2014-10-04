@@ -101,7 +101,7 @@ int Eval::evaluation(int e_legal_pointer, int dpt) {
     int lp;
     lp = e_legal_pointer;
     chess->invert_player_to_move();
-    chess->list_legal_moves();
+    chess->table->list_legal_moves();
     //legal_pointer=1;
     e_legal_pointer -= chess->legal_pointer;
     chess->legal_pointer = lp;
@@ -128,7 +128,7 @@ int Eval::evaluation(int e_legal_pointer, int dpt) {
 
 int Eval::evaluation_only_end_game(int dpt) {
 	chess->invert_player_to_move();
-	chess->list_legal_moves();
+	chess->table->list_legal_moves();
 	chess->invert_player_to_move();
     if (chess->legal_pointer == -1) { //No legal move
         if (chess->table->is_attacked(chess->player_to_move == chess->WHITE ? (chess->movelist + chess->move_number)->pos_black_king :

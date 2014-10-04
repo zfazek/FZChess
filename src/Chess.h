@@ -77,10 +77,8 @@ class Chess {
         bool last_ply;
         int sm;
         int legal_pointer;
-        int *pt, *ptt;
         int best_move;
         int mate_score;
-        int end_direction;
         //unsigned long long knodes = 9999999999999999999LLU;
         std::thread th_make_move;
         int sort_alfarray;
@@ -98,15 +96,9 @@ class Chess {
         void start_game();
         void make_move();
         int alfabeta(int dpt, int alfa, int beta);
-        void list_legal_moves();
         void calculate_evarray();
         void calculate_evarray_new();
         void checkup();
-        void is_really_legal();
-        void append_legal_moves(int dir_piece, int i, int j, int kk);
-        void append_legal_moves_inner(int dir_piece, int i, int j, int kk);
-        int convA(int k);
-        int conv0(int k);
         void invert_player_to_move();
         char* move2str(int move);
         void processCommands(char* input);

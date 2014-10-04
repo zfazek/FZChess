@@ -57,8 +57,17 @@ class Table {
             { 191,  88 }, // "X"
         };
 
+        int *pt, *ptt;
+        int end_direction;
+
         Table(Chess* chess);
         ~Table();
+        void list_legal_moves();
+        void is_really_legal();
+        void append_legal_moves(int dir_piece, int i, int j, int kk);
+        void append_legal_moves_inner(int dir_piece, int i, int j, int kk);
+        int convA(int k);
+        int conv0(int k);
         void print_table();
         void reset_movelist();
         void setboard(char* fen_position);
