@@ -73,10 +73,10 @@ class Table {
         void print_table();
         void reset_movelist();
         void setboard(char* fen_position);
-        int is_attacked(int field, int color);
+        bool is_attacked(int field, int color);
         bool not_enough_material();
         void castling();
-        void update_table(int move, bool print);
-        void update_table_fake(int move);
+        //void update_table(int move, bool print);
+        void update_table(int move, bool print, bool fake = false);
         bool third_occurance();
 };

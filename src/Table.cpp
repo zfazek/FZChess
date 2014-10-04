@@ -67,9 +67,194 @@ void Table::reset_movelist() {
     chess->move_number = 0;
 }
 
+/*
 // Updates the parameters /array movelist/ and the table with the given move.
 // If print is true->prints the table
 void Table::update_table(int move, bool print) {
+int n, x_from, y_from, x_to, y_to;
+int figure_from, figure_to, square_from, square_to;
+char promotion = ' ';
+
+//Copies the table for the next move and updates later according to the move
+int* pt1 = chess->tablelist[chess->move_number];
+struct Chess::move* pm1 = chess->movelist + chess->move_number;
+++chess->move_number;
+int* pt2 = chess->tablelist[chess->move_number];
+struct Chess::move *pm2 = chess->movelist + chess->move_number;
+memcpy(pt2, pt1, 120*sizeof(int));
+x_from = (move & 0xe000) / 256 / 32;
+y_from = (move & 0x1c00) / 256 /  4;
+x_to   = (move & 0x00e0) % 256 / 32;
+y_to   = (move & 0x001c) % 256 /  4;
+figure_from = *(pt2 + 1 + x_from + (y_from + 2) * 10);
+figure_to   = *(pt2 + 1 + x_to + (y_to + 2) * 10);
+
+//Copies the parameters according to the previous status and updates later
+pm2->white_double_bishops = pm1->white_double_bishops;
+pm2->black_double_bishops = pm1->black_double_bishops;
+pm2->pos_white_king = pm1->pos_white_king;
+pm2->pos_black_king = pm1->pos_black_king;
+pm2->white_king_castled = pm1->white_king_castled;
+pm2->black_king_castled = pm1->black_king_castled;
+if (figure_to == WhiteBishop) pm2->white_double_bishops = 0;
+if (figure_to == BlackBishop) pm2->black_double_bishops = 0;
+if (pm1->further == 2)
+pm2->further = 1;
+else
+pm2->further = 0;
+square_from = 1 + x_from + (y_from + 2) * 10;
+square_to   = 1 + x_to + (y_to + 2) * 10;
+pm2->color = chess->player_to_move;
+pm2->move_from = square_from;
+pm2->move_to = square_to;
+pm2->castle = pm1->castle;
+pm2->captured_figure = figure_to;
+
+// If captured is occured->not_pawn_move parameters is set to 1,
+// and further is set to 1
+if (figure_to != 0) {
+pm2->not_pawn_move = 1;
+pm2->further = 1;
+}
+
+//Promotion
+if ((move & 0x0303) > 0) {
+if ((move & 0x0200) == 0x0200) promotion = 'q';
+else if ((move & 0x0100) == 0x0100) promotion = 'r';
+else if ((move & 0x0002) == 0x0002) promotion = 'b';
+else if ((move & 0x0001) == 0x0001) promotion = 'n';
+for (n = 0; n < 14; n++) {
+if (promotion == graphical_figure[n][1]) {
+pm2->promotion = (graphical_figure[n][0] & 127);
+ *(pt2 + square_to) = (graphical_figure[n][0] & 127);
+ break;
+ }
+ }
+ if (chess->player_to_move == BLACK) {
+ *(pt2 + square_to) += 128;
+ }
+ }
+
+// Not promotion
+else {
+pm2->promotion = 0;
+*(pt2 + square_to) = figure_from;
+}
+
+// If not pawn move
+if ( ! (figure_from == WhitePawn || figure_from == BlackPawn) ) {
+    pm2->en_passant = 0;
+    if (chess->move_number == 1) {
+        pm2->not_pawn_move = 1;
+
+        // not_pawn_move++
+    } else {
+        pm2->not_pawn_move = pm1->not_pawn_move + 1;
+    }
+    if (figure_from == WhiteKing) {
+        pm2->pos_white_king = square_to;
+
+        // White Castling is not possible any more
+        pm2->castle = pm2->castle & 12;
+
+        // Castling
+        if ((square_from == 25 && square_to == 27) ||
+                (square_from == 25 && square_to == 23)) {
+            pm2->white_king_castled = eval->king_castled;
+            if (square_to ==  27) {
+                *(pt2 + 26) = WhiteRook;
+                *(pt2 + 28) = 0;
+            }
+            if (square_to ==  23) {
+                *(pt2 + 24) = WhiteRook;
+                *(pt2 + 21) = 0;
+            }
+        }
+    }
+    if (figure_from == BlackKing) {
+        pm2->pos_black_king = square_to;
+
+        // Black Castling is not possible any more
+        pm2->castle = pm2->castle & 3;
+        if ((square_from == 95 && square_to == 97) ||
+                (square_from == 95 && square_to == 93)) {
+            pm2->black_king_castled = eval->king_castled;
+            if (square_to ==  97) {
+                *(pt2 + 96) = BlackRook;
+                *(pt2 + 98) = 0;
+            }
+            if (square_to ==  93) {
+                *(pt2 + 94) = BlackRook;
+                *(pt2 + 91) = 0;
+            }
+        }
+    }
+    if (figure_from == WhiteRook) {
+
+        // White Long Castling is not possible any more
+        if (square_from == 21) pm2->castle = pm2->castle & 13;
+
+        // White Short Castling is not possible any more
+        if (square_from == 28) pm2->castle = pm2->castle & 14;
+    }
+    if (figure_from == BlackRook) {
+
+        // Black Long Castling is not possible any more
+        if (square_from == 91) pm2->castle = pm2->castle & 7;
+
+        // Black Short Castling is not possible any more
+        if (square_from == 98) pm2->castle = pm2->castle & 11;
+    }
+} else { // If pawn move
+    if (chess->player_to_move == WHITE && y_from > 3) pm2->further = 2;
+    if (chess->player_to_move == BLACK && y_from < 4) pm2->further = 2;
+    pm2->not_pawn_move = 0;
+    if (square_to - square_from == 20) {
+        pm2->en_passant = square_from + 10; // en passant possible
+    }
+    if (square_from - square_to == 20) {
+        pm2->en_passant = square_to + 10; // en passant possible
+    }
+    if (abs(square_to - square_from) != 20) {
+        pm2->en_passant = 0; // en passant not possible
+    }
+    if (pm1->en_passant > 1) { // en passant possible
+        if (figure_from == WhitePawn) {
+            if (pm1->en_passant == square_from + 11 &&
+                    square_to - square_from == 11) {
+                pm2->captured_figure = BlackPawn;
+                *(pt2 + square_to - 10) = 0;
+            }
+            if (pm1->en_passant == square_from + 9 &&
+                    square_to - square_from == 9) {
+                pm2->captured_figure = BlackPawn;
+                *(pt2 + square_to - 10) = 0;
+            }
+        }
+        if (figure_from == BlackPawn) {
+            if (pm1->en_passant == square_from - 11 &&
+                    square_to - square_from == -11) {
+                pm2->captured_figure = WhitePawn;
+                *(pt2 + square_to + 10) = 0;
+            }
+            if (pm1->en_passant == square_from - 9 &&
+                    square_to - square_from == -9) {
+                pm2->captured_figure = WhitePawn;
+                *(pt2 + square_to + 10) = 0;
+            }
+        }
+    }
+}
+*(pt2 + square_from) = 0;
+if (is_attacked(chess->player_to_move == WHITE ? pm2->pos_black_king :
+            pm2->pos_white_king, -chess->player_to_move) == true) {
+    pm2->further = 2;
+}
+if (print == true) print_table();
+}
+*/
+
+void Table::update_table(int move, bool print, bool fake) {
     int n, x_from, y_from, x_to, y_to;
     int figure_from, figure_to, square_from, square_to;
     char promotion = ' ';
@@ -89,18 +274,11 @@ void Table::update_table(int move, bool print) {
     figure_to   = *(pt2 + 1 + x_to + (y_to + 2) * 10);
 
     //Copies the parameters according to the previous status and updates later
-    pm2->white_double_bishops = pm1->white_double_bishops;
-    pm2->black_double_bishops = pm1->black_double_bishops;
     pm2->pos_white_king = pm1->pos_white_king;
     pm2->pos_black_king = pm1->pos_black_king;
     pm2->white_king_castled = pm1->white_king_castled;
     pm2->black_king_castled = pm1->black_king_castled;
-    if (figure_to == WhiteBishop) pm2->white_double_bishops = 0;
-    if (figure_to == BlackBishop) pm2->black_double_bishops = 0;
-    if (pm1->further == 2)
-        pm2->further = 1;
-    else
-        pm2->further = 0;
+
     square_from = 1 + x_from + (y_from + 2) * 10;
     square_to   = 1 + x_to + (y_to + 2) * 10;
     pm2->color = chess->player_to_move;
@@ -109,11 +287,25 @@ void Table::update_table(int move, bool print) {
     pm2->castle = pm1->castle;
     pm2->captured_figure = figure_to;
 
-    // If captured is occured->not_pawn_move parameters is set to 1,
-    // and further is set to 1
-    if (figure_to != 0) {
-        pm2->not_pawn_move = 1;
-        pm2->further = 1;
+    if (!fake) {
+        if (figure_to == WhiteBishop)
+            pm2->white_double_bishops = 0;
+        else
+            pm2->white_double_bishops = pm1->white_double_bishops;
+        if (figure_to == BlackBishop)
+            pm2->black_double_bishops = 0;
+        else
+            pm2->black_double_bishops = pm1->black_double_bishops;
+
+        // If captured is occured->not_pawn_move parameters is set to 1,
+        // and further is set to 1
+        if (figure_to != 0) {
+            pm2->not_pawn_move = 1;
+            pm2->further = 1;
+        } else if (pm1->further == 2)
+            pm2->further = 1;
+        else
+            pm2->further = 0;
     }
 
     //Promotion
@@ -142,14 +334,7 @@ void Table::update_table(int move, bool print) {
 
     // If not pawn move
     if ( ! (figure_from == WhitePawn || figure_from == BlackPawn) ) {
-        pm2->en_passant = 0;
-        if (chess->move_number == 1) {
-            pm2->not_pawn_move = 1;
 
-            // not_pawn_move++
-        } else {
-            pm2->not_pawn_move = pm1->not_pawn_move + 1;
-        }
         if (figure_from == WhiteKing) {
             pm2->pos_white_king = square_to;
 
@@ -160,201 +345,6 @@ void Table::update_table(int move, bool print) {
             if ((square_from == 25 && square_to == 27) ||
                     (square_from == 25 && square_to == 23)) {
                 pm2->white_king_castled = eval->king_castled;
-                if (square_to ==  27) {
-                    *(pt2 + 26) = WhiteRook;
-                    *(pt2 + 28) = 0;
-                }
-                if (square_to ==  23) {
-                    *(pt2 + 24) = WhiteRook;
-                    *(pt2 + 21) = 0;
-                }
-            }
-        }
-        if (figure_from == BlackKing) {
-            pm2->pos_black_king = square_to;
-
-            // Black Castling is not possible any more
-            pm2->castle = pm2->castle & 3;
-            if ((square_from == 95 && square_to == 97) ||
-                    (square_from == 95 && square_to == 93)) {
-                pm2->black_king_castled = eval->king_castled;
-                if (square_to ==  97) {
-                    *(pt2 + 96) = BlackRook;
-                    *(pt2 + 98) = 0;
-                }
-                if (square_to ==  93) {
-                    *(pt2 + 94) = BlackRook;
-                    *(pt2 + 91) = 0;
-                }
-            }
-        }
-        if (figure_from == WhiteRook) {
-
-            // White Long Castling is not possible any more
-            if (square_from == 21) pm2->castle = pm2->castle & 13;
-
-            // White Short Castling is not possible any more
-            if (square_from == 28) pm2->castle = pm2->castle & 14;
-        }
-        if (figure_from == BlackRook) {
-
-            // Black Long Castling is not possible any more
-            if (square_from == 91) pm2->castle = pm2->castle & 7;
-
-            // Black Short Castling is not possible any more
-            if (square_from == 98) pm2->castle = pm2->castle & 11;
-        }
-    } else { // If pawn move
-        if (chess->player_to_move == WHITE && y_from > 3) pm2->further = 2;
-        if (chess->player_to_move == BLACK && y_from < 4) pm2->further = 2;
-        pm2->not_pawn_move = 0;
-        if (square_to - square_from == 20) {
-            pm2->en_passant = square_from + 10; // en passant possible
-        }
-        if (square_from - square_to == 20) {
-            pm2->en_passant = square_to + 10; // en passant possible
-        }
-        if (abs(square_to - square_from) != 20) {
-            pm2->en_passant = 0; // en passant not possible
-        }
-        if (pm1->en_passant > 1) { // en passant possible
-            if (figure_from == WhitePawn) {
-                if (pm1->en_passant == square_from + 11 &&
-                        square_to - square_from == 11) {
-                    pm2->captured_figure = BlackPawn;
-                    *(pt2 + square_to - 10) = 0;
-                }
-                if (pm1->en_passant == square_from + 9 &&
-                        square_to - square_from == 9) {
-                    pm2->captured_figure = BlackPawn;
-                    *(pt2 + square_to - 10) = 0;
-                }
-            }
-            if (figure_from == BlackPawn) {
-                if (pm1->en_passant == square_from - 11 &&
-                        square_to - square_from == -11) {
-                    pm2->captured_figure = WhitePawn;
-                    *(pt2 + square_to + 10) = 0;
-                }
-                if (pm1->en_passant == square_from - 9 &&
-                        square_to - square_from == -9) {
-                    pm2->captured_figure = WhitePawn;
-                    *(pt2 + square_to + 10) = 0;
-                }
-            }
-        }
-    }
-    *(pt2 + square_from) = 0;
-    if (is_attacked(chess->player_to_move == WHITE ? pm2->pos_black_king :
-                pm2->pos_white_king, -chess->player_to_move) == true) {
-        pm2->further = 2;
-    }
-    if (print == true) print_table();
-}
-
-void Table::update_table_fake(int move) {
-    int n, x_from, y_from, x_to, y_to;
-    int figure_from, figure_to, square_from, square_to;
-    char promotion = ' ';
-
-    //Copies the table for the next move and updates later according to the move
-    int* pt1 = chess->tablelist[chess->move_number];
-    struct Chess::move* pm1 = chess->movelist + chess->move_number;
-    ++chess->move_number;
-    int* pt2 = chess->tablelist[chess->move_number];
-    struct Chess::move *pm2 = chess->movelist + chess->move_number;
-    memcpy(pt2, pt1, 120*sizeof(int));
-    x_from = (move & 0xe000) / 256 / 32;
-    y_from = (move & 0x1c00) / 256 /  4;
-    x_to   = (move & 0x00e0) % 256 / 32;
-    y_to   = (move & 0x001c) % 256 /  4;
-    figure_from = *(pt2 + 1 + x_from + (y_from + 2) * 10);
-    figure_to   = *(pt2 + 1 + x_to + (y_to + 2) * 10);
-
-    //Copies the parameters according to the previous status and updates later
-
-    /*
-    pm2->white_double_bishops = pm1->white_double_bishops;
-    pm2->black_double_bishops = pm1->black_double_bishops;
-    */
-
-    pm2->pos_white_king = pm1->pos_white_king;
-    pm2->pos_black_king = pm1->pos_black_king;
-    pm2->white_king_castled = pm1->white_king_castled;
-    pm2->black_king_castled = pm1->black_king_castled;
-
-    /*
-    if (figure_to == WhiteBishop) pm2->white_double_bishops = 0;
-    if (figure_to == BlackBishop) pm2->black_double_bishops = 0;
-    if (pm1->further == 2)
-        pm2->further = 1;
-    else
-        pm2->further = 0;
-        */
-
-    square_from = 1 + x_from + (y_from + 2) * 10;
-    square_to   = 1 + x_to + (y_to + 2) * 10;
-    pm2->color = chess->player_to_move;
-    pm2->move_from = square_from;
-    pm2->move_to = square_to;
-    pm2->castle = pm1->castle;
-    pm2->captured_figure = figure_to;
-
-    /*
-    // If captured is occured->not_pawn_move parameters is set to 1,
-    // and further is set to 1
-    if (figure_to != 0) {
-        pm2->not_pawn_move = 1;
-        pm2->further = 1;
-    }
-    */
-
-    //Promotion
-    if ((move & 0x0303) > 0) {
-        if ((move & 0x0200) == 0x0200) promotion = 'q';
-        else if ((move & 0x0100) == 0x0100) promotion = 'r';
-        else if ((move & 0x0002) == 0x0002) promotion = 'b';
-        else if ((move & 0x0001) == 0x0001) promotion = 'n';
-        for (n = 0; n < 14; n++) {
-            if (promotion == graphical_figure[n][1]) {
-                pm2->promotion = (graphical_figure[n][0] & 127);
-                *(pt2 + square_to) = (graphical_figure[n][0] & 127);
-                break;
-            }
-        }
-        if (chess->player_to_move == BLACK) {
-            *(pt2 + square_to) += 128;
-        }
-    }
-
-    // Not promotion
-    else {
-        pm2->promotion = 0;
-        *(pt2 + square_to) = figure_from;
-    }
-
-    // If not pawn move
-    if ( ! (figure_from == WhitePawn || figure_from == BlackPawn) ) {
-
-        /*
-        pm2->en_passant = 0;
-        if (chess->move_number == 1) {
-            pm2->not_pawn_move = 1;
-        } else {
-            pm2->not_pawn_move++;
-        }
-        */
-
-        if (figure_from == WhiteKing) {
-            pm2->pos_white_king = square_to;
-
-            // White Castling is not possible any more
-            pm2->castle = pm2->castle & 12;
-
-            // Castling
-            if ((square_from == 25 && square_to == 27) ||
-                    (square_from == 25 && square_to == 23)) {
-                //pm2->white_king_castled = eval->king_castled;
                 if (square_to ==  27) {
                     *(pt2 + 26) = WhiteRook;
                     *(pt2 + 28) = 0;
@@ -371,7 +361,7 @@ void Table::update_table_fake(int move) {
             pm2->castle = pm2->castle & 3;
             if ((square_from == 95 && square_to == 97) ||
                     (square_from == 95 && square_to == 93)) {
-                //pm2->black_king_castled = eval->king_castled;
+                pm2->black_king_castled = eval->king_castled;
                 if (square_to ==  97) {
                     *(pt2 + 96) = BlackRook;
                     *(pt2 + 98) = 0;
@@ -382,74 +372,79 @@ void Table::update_table_fake(int move) {
             }
         }
 
-        /*
-        if (figure_from == WhiteRook) {
+        if (!fake) {
+            pm2->en_passant = 0;
+            if (chess->move_number == 1) {
+                pm2->not_pawn_move = 1;
+            } else {
+                pm2->not_pawn_move++;
+            }
+            if (figure_from == WhiteRook) {
 
-            // White Long Castling is not possible any more
-            if (square_from == 21) pm2->castle = pm2->castle & 13;
+                // White Long Castling is not possible any more
+                if (square_from == 21) pm2->castle = pm2->castle & 13;
 
-            // White Short Castling is not possible any more
-            if (square_from == 28) pm2->castle = pm2->castle & 14;
+                // White Short Castling is not possible any more
+                else if (square_from == 28) pm2->castle = pm2->castle & 14;
+            } else if (figure_from == BlackRook) {
+
+                // Black Long Castling is not possible any more
+                if (square_from == 91) pm2->castle = pm2->castle & 7;
+
+                // Black Short Castling is not possible any more
+                else if (square_from == 98) pm2->castle = pm2->castle & 11;
+            }
         }
-        if (figure_from == BlackRook) {
-
-            // Black Long Castling is not possible any more
-            if (square_from == 91) pm2->castle = pm2->castle & 7;
-
-            // Black Short Castling is not possible any more
-            if (square_from == 98) pm2->castle = pm2->castle & 11;
-        }
-        */
 
     } else { // If pawn move
 
-        /*
-        if (chess->player_to_move == WHITE && y_from > 3) pm2->further = 2;
-        if (chess->player_to_move == BLACK && y_from < 4) pm2->further = 2;
-        pm2->not_pawn_move = 0;
-        if (square_to - square_from == 20) {
-            pm2->en_passant = square_from + 10; // en passant possible
+        if (!fake) {
+            if (chess->player_to_move == WHITE && y_from > 3) pm2->further = 2;
+            if (chess->player_to_move == BLACK && y_from < 4) pm2->further = 2;
+            pm2->not_pawn_move = 0;
+            if (square_to - square_from == 20) {
+                pm2->en_passant = square_from + 10; // en passant possible
+            }
+            if (square_from - square_to == 20) {
+                pm2->en_passant = square_to + 10; // en passant possible
+            }
+            if (abs(square_to - square_from) != 20) {
+                pm2->en_passant = 0; // en passant not possible
+            }
+            if (is_attacked(chess->player_to_move == WHITE ? pm2->pos_black_king :
+                        pm2->pos_white_king, -chess->player_to_move)) {
+                pm2->further = 2;
+            }
         }
-        if (square_from - square_to == 20) {
-            pm2->en_passant = square_to + 10; // en passant possible
-        }
-        if (abs(square_to - square_from) != 20) {
-            pm2->en_passant = 0; // en passant not possible
-        }
-        */
 
         if (pm1->en_passant > 1) { // en passant possible
             if (figure_from == WhitePawn) {
                 if (pm1->en_passant == square_from + 11 &&
                         square_to - square_from == 11) {
-                    //pm2->captured_figure = BlackPawn;
+                    pm2->captured_figure = BlackPawn;
                     *(pt2 + square_to - 10) = 0;
                 } else if (pm1->en_passant == square_from + 9 &&
                         square_to - square_from == 9) {
-                    //pm2->captured_figure = BlackPawn;
+                    pm2->captured_figure = BlackPawn;
                     *(pt2 + square_to - 10) = 0;
                 }
             } else if (figure_from == BlackPawn) {
                 if (pm1->en_passant == square_from - 11 &&
                         square_to - square_from == -11) {
-                    //pm2->captured_figure = WhitePawn;
+                    pm2->captured_figure = WhitePawn;
                     *(pt2 + square_to + 10) = 0;
                 } else if (pm1->en_passant == square_from - 9 &&
                         square_to - square_from == -9) {
-                    //pm2->captured_figure = WhitePawn;
+                    pm2->captured_figure = WhitePawn;
                     *(pt2 + square_to + 10) = 0;
                 }
             }
         }
     }
+
     *(pt2 + square_from) = 0;
 
-    /*
-    if (is_attacked(chess->player_to_move == WHITE ? pm2->pos_black_king :
-                pm2->pos_white_king, -chess->player_to_move) == true) {
-        pm2->further = 2;
-    }
-    */
+    if (print == true) print_table();
 }
 
 //Prints the table and the parameters to the console
@@ -592,7 +587,7 @@ void Table::setboard(char* input) {
 }
 
 //Returns if the figure of color is attacked or not
-int Table::is_attacked(int field, int color) {
+bool Table::is_attacked(int field, int color) {
     int attacking_figure, coord, color_offset;
     int* ptablelist = chess->tablelist[chess->move_number];
     if (color == chess->WHITE)
@@ -603,16 +598,16 @@ int Table::is_attacked(int field, int color) {
         int kk = 1;
         while (*(ptablelist + field + kk * dir_rook[k]) == 0) ++kk;
         coord = field + kk * dir_rook[k];
-        if (*(ptablelist + coord) == Queen + color_offset) return true;
-        if (*(ptablelist + coord) == Rook  + color_offset) return true;
+        if (ptablelist[coord] == Queen + color_offset) return true;
+        if (ptablelist[coord] == Rook  + color_offset) return true;
         if (kk == 1 && *(ptablelist + coord) == King + color_offset) return true;
     }
     for (int k = 0; k < 4; ++k) {
         int kk = 1;
         while (*(ptablelist + field + kk * dir_bishop[k]) == 0) ++kk;
         coord = field + kk * dir_bishop[k];
-        if (*(ptablelist + coord) == Queen  + color_offset) return true;
-        if (*(ptablelist + coord) == Bishop + color_offset) return true;
+        if (ptablelist[coord] == Queen  + color_offset) return true;
+        if (ptablelist[coord] == Bishop + color_offset) return true;
         if (kk == 1 && *(ptablelist + coord) == King + color_offset) return true;
     }
     for (int k = 0; k < 8; ++k)
@@ -1292,7 +1287,7 @@ void Table::list_legal_moves() {
 //Checks weather the move is legal. If the king is attacked then not legal.
 //Decreases the legal pointer->does not store the move
 void Table::is_really_legal() {
-    update_table_fake(chess->legal_moves[chess->legal_pointer]);
+    update_table(chess->legal_moves[chess->legal_pointer], false, false);
     if (is_attacked(chess->player_to_move == WHITE ? chess->movelist[chess->move_number].pos_white_king :
                 chess->movelist[chess->move_number].pos_black_king, chess->player_to_move)) {
         --chess->legal_pointer;
