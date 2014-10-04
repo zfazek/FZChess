@@ -3,10 +3,6 @@
 #include <cstdio>
 #include <cmath>
 
-#define HASH
-#define ALFABETA
-//#define SORT_ALFARRAY
-
 using namespace std;
 
 enum figures { PAWN1, PAWN2, PAWN3, PAWN4, PAWN5, PAWN6, PAWN7, PAWN8,
@@ -139,7 +135,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     int i, nbr_legal, value, u;
     int b;
     int uu; // Evaluation if checkmate is found
-    int alfarray[255];
+    int alfarray[MAX_LEGAL_MOVES];
     value = -22767;
 
     //if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);Util::flush();
@@ -336,7 +332,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 
 int Chess::perft(int dpt) {
     int i, nbr_legal;
-    int alfarray[255];
+    int alfarray[MAX_LEGAL_MOVES];
     unsigned long long nodes = 0;
 
     if (dpt == 0) return 1;

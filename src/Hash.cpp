@@ -87,7 +87,7 @@ void Hash::set_hash(Chess* chess) {
     // XOR the figures;
     for (k = 0; k < 120; k++) {
         field = chess->tablelist[chess->move_number][k];
-        if (field > 0 && field < 255) {
+        if (field > 0 && field < OFFBOARD) {
             figure = (field & 127);
             if ((field & 128) == 128) i = 1; else i = 0;
             hash ^= hash_piece[i][figure][k];

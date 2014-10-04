@@ -25,7 +25,7 @@ int Eval::evaluation_material(int dpt) {
     //Goes through the table
     for (int i = 0; i < 120; ++i) {
         int figure = *(pt + i);
-        if (figure > 0 && figure < 255) {
+        if (figure > 0 && figure < OFFBOARD) {
 
             //c=1 : own figure is found, c=-1 opposite figure is found
             if ((chess->player_to_move == chess->WHITE && (figure & 128) == 0) ||
@@ -168,12 +168,12 @@ int Eval::evaluation_pawn(int field, int figure, int sm) {
     do {
         dir += 10;
         if (*(pt + field + dir) == figure) e += double_pawn;
-    } while (*(pt + field + dir) != 255);
+    } while (*(pt + field + dir) != OFFBOARD);
     dir = 0;
     do {
         dir -= 10;
         if (*(pt + field + dir) == figure) e += double_pawn;
-    } while (*(pt + field + dir) != 255);
+    } while (*(pt + field + dir) != OFFBOARD);
 
     //Bonus for pawn advantage
     if (sm < 2000) {
@@ -194,7 +194,7 @@ int Eval::sum_material(int color) {
     //    int* pt = tablelist + move_number;
     for (i = 0; i < 120; ++i) {
         figure = chess->tablelist[chess->move_number][i];
-        if (figure > 0 && figure < 255) {
+        if (figure > 0 && figure < OFFBOARD) {
             if ((color == chess->WHITE && (figure & 128) == 0) ||
                     (color == chess->BLACK && (figure & 128) == 128))
                 e += figure_value[(figure & 127)];

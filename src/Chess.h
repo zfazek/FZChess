@@ -7,6 +7,16 @@
 #include "Table.h"
 #include "Uci.h"
 
+#define HASH
+#define ALFABETA
+#define PERFT
+
+//#define SORT_ALFARRAY
+
+#define MAX_MOVES 1000
+#define MAX_LEGAL_MOVES 255
+
+
 class Chess {
 
     public:
@@ -48,21 +58,21 @@ class Chess {
         int player_to_move; // 1:white, -1:black
 
         //Array of moves. Each time the whole table is stored
-        int tablelist[255][120];
+        int tablelist[MAX_MOVES][120];
 
         //Array of legal moves
-        int legal_moves[255];
+        int legal_moves[MAX_LEGAL_MOVES];
 
         //Array of best line
-        int curr_line[255];
+        int curr_line[MAX_LEGAL_MOVES];
 
         //Array of best move of iterative deepening
-        int best_iterative[255];
+        int best_iterative[MAX_LEGAL_MOVES];
 
 #ifdef SORT_ALFARRAY
 
         //Array of sorted legal moves
-        int eva_alfabeta_temp[255];
+        int eva_alfabeta_temp[MAX_LEGAL_MOVES];
 #endif
 
         char move_str[6];
@@ -88,10 +98,10 @@ class Chess {
             int value;
         };
 
-        struct move_t root_moves[255];
+        struct move_t root_moves[MAX_LEGAL_MOVES];
 
         //Stores the parameters of the given position
-        struct move movelist[1000];
+        struct move movelist[MAX_MOVES];
 
         void start_game();
         void make_move();

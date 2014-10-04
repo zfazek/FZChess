@@ -1,6 +1,8 @@
 #pragma once
 #include "Eval.h"
 
+#define OFFBOARD 0xff
+
 class Chess;
 
 class Table {
@@ -75,5 +77,6 @@ class Table {
         bool not_enough_material();
         void castling();
         void update_table(int move, bool print);
+        void update_table_fake(int move);
         bool third_occurance();
 };
