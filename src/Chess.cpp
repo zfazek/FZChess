@@ -18,9 +18,6 @@ Chess::Chess() {
 #ifdef HASH
     hash = new Hash();
 #endif
-#ifdef HASH_INNER
-    hash->init_hash_inner();
-#endif
     uci = new Uci(this);
     table = new Table(this);
     stop_received = false;
@@ -40,6 +37,8 @@ Chess::~Chess() {
 void Chess::start_game() { // new
     table->reset_movelist();
     player_to_move = WHITE;
+    default_seldepth = 8;
+    break_if_mate_found = true;
     //table->print_table();
 }
 
@@ -67,23 +66,18 @@ void Chess::make_move() {
     stop_search = false;
     for (;;) {
 #ifdef HASH
-        //hash->hashes.clear();
-#endif
-#ifdef HASH_INNER
-        set_hash_inner();
-        print_hash_inner(hash_inner, 0);
+        hash->hashes.clear();
 #endif
         //Calculate summa of material for end game threshold
         sm = table->eval->sum_material(player_to_move);
         depth = init_depth;
         seldepth = depth + 8;
         if (depth > 4) seldepth = depth + 4;
-        seldepth = depth + 0;
+        seldepth = depth + default_seldepth;
         printf("%d %d\n", depth, seldepth);Util::flush();
 
         //Calculates the time of the move
         //Searches the best move with negamax algorithm with alfa-beta cut off
-        //mate_score = 0;
         time_current_depth_start = Util::get_ms();
         printf("info depth %d\n", init_depth);Util::flush();
         alfabeta(1, alfa, beta);
@@ -124,7 +118,7 @@ void Chess::make_move() {
         //printf("best %s\n", best_move);Util::flush();
         best_iterative[init_depth] = best_move;
         if (stop_search == true) break;
-        if (mate_score > 20000) break;
+        if (mate_score > 20000 && break_if_mate_found) break;
         if (init_depth == gui_depth) break;
         //if (legal_pointer == 0) break; //there is only one legal move
         ++init_depth;
@@ -145,24 +139,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     value = -22767;
 
     //if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);Util::flush();
-#ifdef HASH_INNER
-    hash_index = hash_inner % HASHSIZE_INNER;
-
-    // if this position is in the hashtable
-    if ( (hashtable_inner + hash_index)->lock != hash_inner &&
-            (hashtable_inner + hash_index)->lock != 0)
-        hash_collision_inner++;
-    if ( (hashtable_inner + hash_index)->lock == hash_inner) {
-        if (dpt > init_depth) depth_inner = 0;
-        else depth_inner = init_depth - dpt;
-        if ((hashtable_inner + hash_index)->depth > depth_inner) {
-            hash_inner_nodes++;
-            printf("##HASH_INNER FOUND##");
-            print_hash_inner(hash_inner, dpt);
-            return (hashtable_inner + hash_index)->u;
-        }
-    }
-#endif
     table->list_legal_moves();
     //printf("nbr_legal: %d\n", nbr_legal);
     if (legal_pointer == -1) {
@@ -195,10 +171,16 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         if (dpt > depth) curr_depth = depth; else curr_depth = dpt;
         curr_seldepth = dpt;
         if (dpt == 1) {
+            //if (strcmp(Util::move2str(move_str, alfarray[i]), "d6d1 ") == 0) continue;
             printf("info currmove %s currmovenumber %d\n", Util::move2str(move_str, alfarray[i]), i + 1);Util::flush();
         }
         table->update_table(alfarray[i], false);
         curr_line[dpt] = alfarray[i];
+
+        // ZOLI
+        if (depth == 5 && dpt == 1) {
+            table->print_table();   
+        }
 
         // If last ply->evaluating
         if ((dpt >= depth && movelist[move_number].further == 0) ||
@@ -221,10 +203,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     u = table->eval->DRAW;
                     --move_number;
                 } else {
-                    table->list_legal_moves();
-                    //legal_pointer=1;
-                    u = table->eval->evaluation(legal_pointer, dpt);
-                    //u=evaluation_material(dpt);
+                    u = table->eval->evaluation(nbr_legal, dpt);
                     --move_number;
                 }
 #ifdef HASH
@@ -243,23 +222,21 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             } else {
                 u = table->eval->evaluation_only_end_game(dpt);
                 if (u == 32767) { //not end
-                    /*
-                       hash->set_hash(this);
-                       if (hash->posInHashtable()) {
-                       u = hash->getU();
-                       hash->hash_inner_nodes++;
-                       } else {
-                       */
                     invert_player_to_move();
                     u = -alfabeta(dpt + 1, -beta, -alfa);
                     last_ply = false;
                     invert_player_to_move();
-                    //}
                 }
                 --move_number;
             }
         }
         if (dpt == 1) {
+            if (u > 20000) {
+                printf("ZOLI %s: %d move_number: %d\n", Util::move2str(move_str, alfarray[i]), u, move_number);
+                move_number++;
+                table->print_table();
+                --move_number;
+            }
             root_moves[i].move  = alfarray[i];
             root_moves[i].value = u;
         }
@@ -281,18 +258,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     best_line[dpt].moves[b] = best_line[dpt + 1].moves[b];
                 //printf("best_line[%d].length: %d\n", dpt, best_line[dpt].length);Util::flush();
             }
-#ifdef HASH_INNER
-
-            // if this position is not in the hashtable->insert it to hashtable
-            hash_index = hash_inner % HASHSIZE_INNER;
-            (hashtable_inner + hash_index)->lock = hash_inner;
-            (hashtable_inner + hash_index)->u = u;
-            if (dpt < init_depth)
-                (hashtable_inner + hash_index)->depth = init_depth - dpt;
-            else (hashtable_inner + hash_index)->depth = 0;
-            (hashtable_inner + hash_index)->move = curr_line[dpt];
-            //print_hash_inner(hash_inner, dpt);
-#endif
             if (dpt == 1) {
                 best_move = alfarray[i];
 #ifdef HASH
@@ -330,7 +295,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         if (value >= beta) return value;
         if (value > alfa) alfa=value;
 #endif
-    }
+    } // for
     return value;
 }
 
@@ -354,6 +319,7 @@ int Chess::perft(int dpt) {
     }
     return nodes;
 }
+
 // Sorts legal moves
 // Bubble sort
 void Chess::calculate_evarray() {

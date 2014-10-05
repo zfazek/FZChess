@@ -7,6 +7,7 @@
 #include "Table.h"
 #include "Uci.h"
 
+#define QUIESCENCE_SEARCH
 #define HASH
 #define ALFABETA
 #define PERFT
@@ -84,7 +85,9 @@ class Chess {
         int start_time, stop_time, max_time, movetime;
         int stop_search;
         int depth, seldepth, init_depth, curr_depth, curr_seldepth, gui_depth;
+        int default_seldepth;
         bool last_ply;
+        bool break_if_mate_found;
         int sm;
         int legal_pointer;
         int nof_legal;

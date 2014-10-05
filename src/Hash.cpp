@@ -5,7 +5,6 @@
 #include <cstdio>
 
 const unsigned int HASHSIZE = 1024 * 1024 * 64;
-const unsigned int HASHSIZE_INNER = 1024 * 1024 * 1;
 
 Hash::Hash() {
     init_hash();
@@ -17,9 +16,7 @@ Hash::~Hash() {
 
 void Hash::reset_counters() {
     hash_nodes = 0;
-    hash_inner_nodes = 0;
     hash_collision = 0;
-    hash_collision_inner = 0;
 }
 
 void Hash::init_hash() {
@@ -47,29 +44,6 @@ void Hash::init_hash() {
             sizeof(hash_t[HASHSIZE]));
             */
     Util::flush();
-}
-
-void Hash::init_hash_inner() {
-    int i, j, k;
-    srand(0);
-
-    //WHITE: i = 0, BLACK: i = 1
-    for (i = 0; i < 2; i++)
-
-        //PAWN = 1, KNIGHT = 2, ..., KING = 7
-        for (j = 1; j < 7; j++)
-            for (k = 0; k < 120; k++)
-                hash_piece[i][j][k] = hash_rand();
-    hash_side_white = hash_rand();
-    hash_side_black = hash_rand();
-    for (i = 0; i < 120; i++) hash_enpassant[i] = hash_rand();
-    for (i = 0; i < 15; i++) hash_castle[i] = hash_rand();
-    if ((hashtable_inner = (hash_inner_t*)malloc(
-                    sizeof(hash_inner_t[HASHSIZE_INNER]))) == NULL) {
-        printf("HASH_INNER memory fault!\n");
-        exit(2);
-    }
-    printf("hashsize_inner: %d\n", HASHSIZE_INNER);fflush(stdout);
 }
 
 //Set the hash variable of the current position
@@ -153,9 +127,8 @@ unsigned long long Hash::hash_rand() {
 }
 
 void Hash :: printStatistics(int nodes) {
-    printf("Hash found %d, hash inner nodes: %d, hash/nodes: %d%%\n",
+    printf("Hash found %d, hash/nodes: %d%%\n",
             hash_nodes,
-            hash_inner_nodes,
             100 * hash_nodes/nodes);
     fflush(stdout);
 }

@@ -379,13 +379,26 @@ void Table::setboard(char* input) {
         factor = factor * 10;
         n++;
     }
-    for (int i = 0; i < 120; ++i)
+    int white_bishop = 0;
+    int black_bishop = 0;
+    for (int i = 0; i < 120; ++i) {
+        if ((chess->tablelist[move_number][i] & 127) == Bishop) {
+            if (chess->tablelist[move_number][i] == WhiteBishop)
+                white_bishop++;
+            if (chess->tablelist[move_number][i] == BlackBishop)
+                black_bishop++;
+        }
         if ((chess->tablelist[move_number][i] & 127) == King) {
             if (chess->tablelist[move_number][i] == WhiteKing)
                 chess->movelist[move_number].pos_white_king = i;
             if (chess->tablelist[move_number][i] == BlackKing)
                 chess->movelist[move_number].pos_black_king = i;
         }
+    }
+    if (white_bishop < 2) 
+        chess->movelist[move_number].white_double_bishops = 0;
+    if (black_bishop < 2)
+        chess->movelist[move_number].black_double_bishops = 0;
     if (strstr(input, "moves")) {
         m = strlen(input) - 1;
         for (size_t i = strstr(input, "moves") - input + 6; i < m; i++) {
@@ -404,7 +417,7 @@ void Table::setboard(char* input) {
             chess->invert_player_to_move();
         }
     }
-    //print_table();
+    print_table();
 }
 
 //Returns if the figure of color is attacked or not

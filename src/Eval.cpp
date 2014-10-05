@@ -98,13 +98,10 @@ int Eval::evaluation_material(int dpt) {
 
 //Evaluates material plus number of legal moves of both sides plus a random number
 int Eval::evaluation(int e_legal_pointer, int dpt) {
-    int lp;
-    lp = e_legal_pointer;
+    int lp = e_legal_pointer;
     chess->invert_player_to_move();
     chess->table->list_legal_moves();
-    //legal_pointer=1;
-    e_legal_pointer -= chess->legal_pointer;
-    chess->legal_pointer = lp;
+    lp -= chess->legal_pointer;
     chess->invert_player_to_move();
     if (chess->legal_pointer == -1) { //No legal move
         if (chess->table->is_attacked(chess->player_to_move == chess->WHITE ? (chess->movelist + chess->move_number)->pos_black_king :
@@ -123,7 +120,7 @@ int Eval::evaluation(int e_legal_pointer, int dpt) {
     //random_number = (rand() % random_window);
     int random_number = 0;
     //return evaluation_material(dpt);
-    return evaluation_material(dpt) + 1 * e_legal_pointer + random_number;
+    return evaluation_material(dpt) + 1 * lp + random_number;
 }
 
 int Eval::evaluation_only_end_game(int dpt) {

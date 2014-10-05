@@ -97,9 +97,27 @@ void test_bratko_kopec_1() {
     chess.start_game();
     chess.table->setboard(input);
     chess.max_time = 0;
-    chess.gui_depth = 6;
+    chess.gui_depth = 5;
+    chess.default_seldepth = 0;
     chess.make_move();
     assert(strcmp(chess.move_str, "d6d1 ") == 0);
+    assert(chess.mate_score == 21995);
+    assert(chess.root_moves[1].value < 20000);
+}
+
+void test_bratko_kopec_1a() {
+    char input[] = "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - - 0 1 bm Qd1+; id BK.01;";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 6;
+    chess.default_seldepth = 0;
+    chess.break_if_mate_found = false;
+    chess.make_move();
+    assert(strcmp(chess.move_str, "d6d1 ") == 0);
+    assert(chess.mate_score == 21995);
 }
 
 void test_bratko_kopec_2() {
@@ -116,6 +134,7 @@ void test_bratko_kopec_2() {
 
 void test_bratko_kopec() {
     test_bratko_kopec_1();
+    //test_bratko_kopec_1a();
     //test_bratko_kopec_2();
 }
 
