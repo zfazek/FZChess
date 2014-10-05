@@ -87,6 +87,7 @@ class Chess {
         bool last_ply;
         int sm;
         int legal_pointer;
+        int nof_legal;
         int best_move;
         int mate_score;
         //unsigned long long knodes = 9999999999999999999LLU;

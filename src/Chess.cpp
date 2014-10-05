@@ -67,7 +67,7 @@ void Chess::make_move() {
     stop_search = false;
     for (;;) {
 #ifdef HASH
-        hash->hashes.clear();
+        //hash->hashes.clear();
 #endif
 #ifdef HASH_INNER
         set_hash_inner();
@@ -78,7 +78,7 @@ void Chess::make_move() {
         depth = init_depth;
         seldepth = depth + 8;
         if (depth > 4) seldepth = depth + 4;
-        //seldepth = depth + 0;
+        seldepth = depth + 0;
         printf("%d %d\n", depth, seldepth);Util::flush();
 
         //Calculates the time of the move
@@ -113,6 +113,12 @@ void Chess::make_move() {
                     (time_elapsed==0)?0:(int)(1000*nodes/time_elapsed));
             fclose(debugfile);
         }
+        calculate_evarray_new();
+        for (int i = 0; i < nof_legal; i++) {
+            printf("(%s:%d) ", Util::move2str(move_str, root_moves[i].move), root_moves[i].value);
+            if (i % 8 == 7) puts("");
+        }
+        puts("");
         //Prints statistics
         //printf("alfabeta: %d\n", a);Util::flush();
         //printf("best %s\n", best_move);Util::flush();
@@ -174,13 +180,11 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 
     // Sorts legal moves
     if (dpt == 1) {
+        nof_legal = legal_pointer + 1;
         calculate_evarray();
-        for (i = 0; i <= legal_pointer; i++) {
+        for (i = 0; i < nof_legal; i++) {
             alfarray[i] = root_moves[i].move;
-            printf("(%s:%d) ", Util::move2str(move_str, root_moves[i].move), root_moves[i].value);
-            if (i % 8 == 7) puts("");
         }
-        puts("");
     }
     else {
         for (i = 0; i <= nbr_legal; ++i) alfarray[i] = legal_moves[i];
@@ -356,13 +360,13 @@ void Chess::calculate_evarray() {
     int i, j, v;
     int tempmove;
     if (init_depth == 1) {
-        for (i = 0; i <= legal_pointer; i++) {
+        for (i = 0; i < nof_legal; i++) {
             (root_moves + i)->move = legal_moves[i];
             (root_moves + i)->value = 0;
         }
     } else {
-        for (i = 0; i <= legal_pointer; i++) {
-            for (j = i + 1; j <= legal_pointer; j++) {
+        for (i = 0; i < nof_legal; i++) {
+            for (j = i + 1; j < nof_legal; j++) {
                 if (root_moves[j].value > root_moves[i].value) {
                     tempmove = root_moves[j].move;
                     root_moves[j].move = root_moves[i].move;
@@ -376,21 +380,12 @@ void Chess::calculate_evarray() {
     }
 }
 
-// Sorts legal moves
-// Insertion sort
 void Chess::calculate_evarray_new() {
     int i, j, v;
     int tempmove;
-    if (init_depth == 1) {
-        for (i = 0; i <= legal_pointer; i++) {
-            (root_moves + i)->move = legal_moves[i];
-            (root_moves + i)->value = 0;
-        }
-    } else {
-        for (i = 1; i <= legal_pointer; i++) {
-            for (j = i;
-                    j > 0 && root_moves[j].value > root_moves[j-1].value;
-                    j--) {
+    for (i = 0; i < nof_legal; i++) {
+        for (j = i + 1; j < nof_legal; j++) {
+            if (root_moves[j].value > root_moves[i].value) {
                 tempmove = root_moves[j].move;
                 root_moves[j].move = root_moves[i].move;
                 root_moves[i].move = tempmove;
@@ -401,6 +396,27 @@ void Chess::calculate_evarray_new() {
         }
     }
 }
+
+/*
+// Sorts legal moves
+// Insertion sort
+void Chess::calculate_evarray_new() {
+    int v;
+    int tempmove;
+    for (int i = 1; i < nof_legal; i++) {
+        for (int j = i;
+                j > 0 && root_moves[j].value > root_moves[j-1].value;
+                j--) {
+            tempmove = root_moves[j].move;
+            root_moves[j].move = root_moves[i].move;
+            root_moves[i].move = tempmove;
+            v = root_moves[j].value;
+            root_moves[j].value = root_moves[i].value;
+            root_moves[i].value = v;
+        }
+    }
+}
+*/
 
 void Chess::checkup() {
     if ((max_time != 0 && Util::get_ms() >= stop_time) || stop_received) {

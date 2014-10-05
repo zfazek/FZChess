@@ -214,8 +214,10 @@ void Table::update_table(int move, bool print, bool fake) {
     } else { // If pawn move
 
         if (!fake) {
+#ifdef QUIESCENCE_SEARCH
             if (chess->player_to_move == WHITE && y_from > 3) pm2->further = 2;
             if (chess->player_to_move == BLACK && y_from < 4) pm2->further = 2;
+#endif
             pm2->not_pawn_move = 0;
             if (square_to - square_from == 20) {
                 pm2->en_passant = square_from + 10; // en passant possible
@@ -255,12 +257,14 @@ void Table::update_table(int move, bool print, bool fake) {
 
     *(pt2 + square_from) = 0;
 
+#ifdef QUIESCENCE_SEARCH
     if (!fake) {
         if (is_attacked(chess->player_to_move == WHITE ? pm2->pos_black_king :
                     pm2->pos_white_king, -chess->player_to_move)) {
             pm2->further = 2;
         }
     }
+#endif
     if (print == true) print_table();
 }
 
