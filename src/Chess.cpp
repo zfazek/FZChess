@@ -179,7 +179,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 
         // ZOLI
         if (depth == 5 && dpt == 1) {
-            table->print_table();   
+            //table->print_table();   
         }
 
         // If last ply->evaluating
@@ -203,7 +203,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     u = table->eval->DRAW;
                     --move_number;
                 } else {
-                    u = table->eval->evaluation(nbr_legal, dpt);
+                    table->list_legal_moves();
+                    u = table->eval->evaluation(legal_pointer, dpt);
                     --move_number;
                 }
 #ifdef HASH
@@ -231,12 +232,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             }
         }
         if (dpt == 1) {
-            if (u > 20000) {
-                printf("ZOLI %s: %d move_number: %d\n", Util::move2str(move_str, alfarray[i]), u, move_number);
-                move_number++;
-                table->print_table();
-                --move_number;
-            }
             root_moves[i].move  = alfarray[i];
             root_moves[i].value = u;
         }
@@ -293,7 +288,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 
         // Alfa Beta cut-off
         if (value >= beta) return value;
-        if (value > alfa) alfa=value;
+        if (value > alfa) alfa = value;
 #endif
     } // for
     return value;

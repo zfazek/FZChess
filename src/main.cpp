@@ -90,8 +90,34 @@ void test_perft() {
     test_perft_pos1(depth);
 }
 
+void test_eval_depth_1() {
+    //char input[] = "position fen 4k2n/8/6p1/6P1/6p1/6P1/8/4K2N w - - 0 1 ";
+    char input[] = "position fen 4k3/8/6p1/6P1/6p1/6P1/4K3/8 w - - 0 1";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 1;
+    chess.default_seldepth = 0;
+    chess.make_move();
+}
+
+void test_eval_depth_2() {
+    char input[] = "position fen 4k2n/8/6p1/6P1/6p1/6P1/8/4K2N w - - 0 1 ";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 2;
+    chess.default_seldepth = 0;
+    chess.make_move();
+}
+
 void test_bratko_kopec_1() {
     char input[] = "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - - 0 1 bm Qd1+; id BK.01;";
+    //char input[] = "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4R3/PPP2B2/1K6 b - - 0 1 bm Qd1+; id BK.01;";
     puts(input);
     Chess chess;
     chess.start_game();
@@ -99,6 +125,7 @@ void test_bratko_kopec_1() {
     chess.max_time = 0;
     chess.gui_depth = 5;
     chess.default_seldepth = 0;
+    chess.break_if_mate_found = false; //remove
     chess.make_move();
     assert(strcmp(chess.move_str, "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
@@ -196,6 +223,8 @@ int main(int argc, char* argv[]) {
             test_perft();
         } else if (strcmp(argv[1], "3") == 0) {
             test_bratko_kopec();
+        } else if (strcmp(argv[1], "4") == 0) {
+            test_eval_depth_1();
         }
     } else {
 

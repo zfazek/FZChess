@@ -45,7 +45,7 @@ int Eval::evaluation_material(int dpt) {
             e += c * figure_value[(figure & 127)];
         }
     }
-    //return e; // ZOLI
+
     if (chess->player_to_move == chess->WHITE) c = 1; else c = -1;
 
     //Bonus for castling
@@ -65,16 +65,18 @@ int Eval::evaluation_material(int dpt) {
         else {
             e -= evaking;
         }
+
+        // force to the corner
         if ((chess->player_to_move == chess->WHITE) && ((dpt % 2) == 1))
             evaking =  5 * (abs(5 - (pm->pos_black_king / 10)) +
                     abs(5 - (pm->pos_black_king % 10)));
-        if ((chess->player_to_move == chess->WHITE) && ((dpt % 2) == 0))
+        else if ((chess->player_to_move == chess->WHITE) && ((dpt % 2) == 0))
             evaking = -5 * (abs(5 - (pm->pos_white_king / 10)) +
                     abs(5 - (pm->pos_white_king % 10)));
-        if ((chess->player_to_move == chess->BLACK) && ((dpt % 2) == 0))
+        else if ((chess->player_to_move == chess->BLACK) && ((dpt % 2) == 0))
             evaking = -5 * (abs(5 - (pm->pos_black_king / 10)) +
                     abs(5 - (pm->pos_black_king % 10)));
-        if ((chess->player_to_move == chess->BLACK) && ((dpt % 2) == 1))
+        else if ((chess->player_to_move == chess->BLACK) && ((dpt % 2) == 1))
             evaking =  5 * (abs(5 - (pm->pos_white_king / 10)) +
                     abs(5 - (pm->pos_white_king % 10)));
         e += evaking;
@@ -93,6 +95,7 @@ int Eval::evaluation_material(int dpt) {
         }
 #endif
     }
+
     return e;
 }
 
@@ -101,7 +104,9 @@ int Eval::evaluation(int e_legal_pointer, int dpt) {
     int lp = e_legal_pointer;
     chess->invert_player_to_move();
     chess->table->list_legal_moves();
+    //printf("lp own: %d, lp opposite: %d\n", lp, chess->legal_pointer);
     lp -= chess->legal_pointer;
+    //if (dpt % 2 == 0) lp = -lp;
     chess->invert_player_to_move();
     if (chess->legal_pointer == -1) { //No legal move
         if (chess->table->is_attacked(chess->player_to_move == chess->WHITE ? (chess->movelist + chess->move_number)->pos_black_king :
@@ -120,7 +125,7 @@ int Eval::evaluation(int e_legal_pointer, int dpt) {
     //random_number = (rand() % random_window);
     int random_number = 0;
     //return evaluation_material(dpt);
-    return evaluation_material(dpt) + 1 * lp + random_number;
+    return evaluation_material(dpt) + 2 * lp + random_number;
 }
 
 int Eval::evaluation_only_end_game(int dpt) {
