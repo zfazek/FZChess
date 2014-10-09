@@ -117,7 +117,6 @@ void test_eval_depth_2() {
 
 void test_bratko_kopec_1() {
     char input[] = "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - - 0 1 bm Qd1+; id BK.01;";
-    //char input[] = "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4R3/PPP2B2/1K6 b - - 0 1 bm Qd1+; id BK.01;";
     puts(input);
     Chess chess;
     chess.start_game();
@@ -129,7 +128,7 @@ void test_bratko_kopec_1() {
     chess.make_move();
     assert(strcmp(chess.move_str, "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
-    assert(chess.root_moves[1].value < 20000);
+    assert(chess.root_moves[0].value == 21995);
 }
 
 void test_bratko_kopec_1a() {
@@ -141,10 +140,11 @@ void test_bratko_kopec_1a() {
     chess.max_time = 0;
     chess.gui_depth = 6;
     chess.default_seldepth = 0;
-    chess.break_if_mate_found = false;
     chess.make_move();
     assert(strcmp(chess.move_str, "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
+    assert(chess.root_moves[0].value == 21995);
+    assert(chess.init_depth == 5);
 }
 
 void test_bratko_kopec_2() {
@@ -154,15 +154,16 @@ void test_bratko_kopec_2() {
     chess.start_game();
     chess.table->setboard(input);
     chess.max_time = 0;
+    chess.default_seldepth = 4;
     chess.gui_depth = 5;
     chess.make_move();
     assert(strcmp(chess.move_str, "d4d5 ") == 0);
 }
 
 void test_bratko_kopec() {
-    test_bratko_kopec_1();
+    //test_bratko_kopec_1();
     //test_bratko_kopec_1a();
-    //test_bratko_kopec_2();
+    test_bratko_kopec_2();
 }
 
 void test_calculate_evarray(Chess &chess) {
@@ -203,6 +204,17 @@ void test_calculate_evarray_new(Chess &chess) {
     }
 }
 
+void test_mate_in_2() {
+    char input[] = "position fen 2bqkbn1/2pppp2/np2N3/r3P1p1/p2N2B1/5Q2/PPPPKPP1/RNB2r2 w KQkq - 0 1";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 5;
+    chess.default_seldepth = 0;
+    chess.make_move();
+}
 void test() {
     {
         Chess chess;
@@ -224,7 +236,8 @@ int main(int argc, char* argv[]) {
         } else if (strcmp(argv[1], "3") == 0) {
             test_bratko_kopec();
         } else if (strcmp(argv[1], "4") == 0) {
-            test_eval_depth_1();
+            //test_mate_in_2();
+            test_eval_depth_2();
         }
     } else {
 

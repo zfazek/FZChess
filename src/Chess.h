@@ -9,7 +9,7 @@
 
 #define QUIESCENCE_SEARCH
 #define HASH
-#define ALFABETA
+//#define ALFABETA
 #define PERFT
 
 //#define SORT_ALFARRAY

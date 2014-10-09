@@ -49,8 +49,7 @@ void Chess::invert_player_to_move() {
 
 void Chess::make_move() {
     unsigned long long knodes = 9999999999999999999LLU;
-    int alfa = -22767;
-    int beta =  22767;
+    int MAX = 22767;
     int time_elapsed;
     int time_current_depth_start, time_current_depth_stop, time_remaining;
     sort_alfarray = false;
@@ -80,7 +79,7 @@ void Chess::make_move() {
         //Searches the best move with negamax algorithm with alfa-beta cut off
         time_current_depth_start = Util::get_ms();
         printf("info depth %d\n", init_depth);Util::flush();
-        alfabeta(1, alfa, beta);
+        alfabeta(1, -MAX, MAX);
         setjmp(env);
         if (stop_search == true) {
             for (int i = 0; i < curr_seldepth - 1; i++) --move_number;
@@ -121,7 +120,8 @@ void Chess::make_move() {
         if (mate_score > 20000 && break_if_mate_found) break;
         if (init_depth == gui_depth) break;
         //if (legal_pointer == 0) break; //there is only one legal move
-        ++init_depth;
+        //++init_depth;
+        if (init_depth == 1) init_depth = 5;
     }
     printf( "\nbestmove %s\n", Util::move2str(move_str, best_move));Util::flush();
 #ifdef HASH
