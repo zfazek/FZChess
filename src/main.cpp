@@ -147,6 +147,22 @@ void test_bratko_kopec_1a() {
     assert(chess.init_depth == 5);
 }
 
+void test_bratko_kopec_1b() {
+    char input[] = "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - - 0 1 bm Qd1+; id BK.01;";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 1;
+    //chess.default_seldepth = 0;
+    chess.make_move();
+    assert(strcmp(chess.move_str, "d6d1 ") == 0);
+    assert(chess.mate_score == 21995);
+    assert(chess.root_moves[0].value == 21995);
+    assert(chess.init_depth == 1);
+}
+
 void test_bratko_kopec_2() {
     char input[] = "position fen 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - - 0 1 bm d5; id BK.02;";
     puts(input);
@@ -154,16 +170,45 @@ void test_bratko_kopec_2() {
     chess.start_game();
     chess.table->setboard(input);
     chess.max_time = 0;
-    chess.default_seldepth = 4;
+    chess.default_seldepth = 8;
     chess.gui_depth = 5;
     chess.make_move();
     assert(strcmp(chess.move_str, "d4d5 ") == 0);
 }
 
+void test_bratko_kopec_10() {
+    char input[] = "position fen 3rr1k1/pp3pp1/1qn2np1/8/3p4/PP1R1P2/2P1NQPP/R1B3K1 b - - 0 1 bm Ne5; id BK.10;";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 5;
+    chess.make_move();
+    assert(strcmp(chess.move_str, "c6e5 ") == 0);
+}
+
+void test_bratko_kopec_12() {
+    char input[] = "position fen r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - - 0 1 bm Bf5; id BK.12;";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 2;
+    chess.make_move();
+    assert(strcmp(chess.move_str, "d7f5 ") == 0);
+}
+
 void test_bratko_kopec() {
-    //test_bratko_kopec_1();
-    //test_bratko_kopec_1a();
-    test_bratko_kopec_2();
+    /*
+    test_bratko_kopec_1();
+    test_bratko_kopec_1a();
+    test_bratko_kopec_1b();
+    */
+    //test_bratko_kopec_2();
+    test_bratko_kopec_10();
+    test_bratko_kopec_12();
 }
 
 void test_calculate_evarray(Chess &chess) {

@@ -9,13 +9,13 @@
 
 #define QUIESCENCE_SEARCH
 #define HASH
-//#define ALFABETA
+#define ALFABETA
 #define PERFT
 
 //#define SORT_ALFARRAY
 
 #define MAX_MOVES 1000
-#define MAX_LEGAL_MOVES 255
+#define MAX_LEGAL_MOVES 128
 
 
 class Chess {

@@ -120,8 +120,8 @@ void Chess::make_move() {
         if (mate_score > 20000 && break_if_mate_found) break;
         if (init_depth == gui_depth) break;
         //if (legal_pointer == 0) break; //there is only one legal move
-        //++init_depth;
-        if (init_depth == 1) init_depth = 5;
+        ++init_depth;
+        //if (init_depth == 1) init_depth = 5;
     }
     printf( "\nbestmove %s\n", Util::move2str(move_str, best_move));Util::flush();
 #ifdef HASH
