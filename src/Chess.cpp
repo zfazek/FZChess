@@ -59,7 +59,7 @@ void Chess::make_move() {
     //max_time = 20 * 1000;
     start_time = Util::get_ms();
     stop_time = start_time + max_time;
-    init_depth = 1;
+    depth = 1;
     //gui_depth = 2; max_time=0;
     stop_search = false;
     for (;;) {
@@ -68,7 +68,6 @@ void Chess::make_move() {
 #endif
         //Calculate summa of material for end game threshold
         sm = table->eval->sum_material(player_to_move);
-        depth = init_depth;
         seldepth = depth + 8;
         if (depth > 4) seldepth = depth + 4;
         seldepth = depth + default_seldepth;
@@ -77,11 +76,12 @@ void Chess::make_move() {
         //Calculates the time of the move
         //Searches the best move with negamax algorithm with alfa-beta cut off
         time_current_depth_start = Util::get_ms();
-        printf("info depth %d\n", init_depth);Util::flush();
+        printf("info depth %d\n", depth);Util::flush();
         alfabeta(1, -MAX, MAX);
         setjmp(env);
-        if (stop_search == true) {
-            for (int i = 0; i < curr_seldepth - 1; i++) --move_number;
+        if (stop_search) {
+            for (int i = 0; i < curr_seldepth - 1; i++)
+                --move_number;
         }
         time_elapsed = Util::get_ms() - start_time;
         time_current_depth_stop = Util::get_ms();
@@ -91,15 +91,15 @@ void Chess::make_move() {
         if (movetime == 0 && max_time != 0)
             if ((time_current_depth_stop - time_current_depth_start) * 5 > time_remaining)
                 stop_search = true;
-        if (init_depth > 30)
+        if (depth > 30)
             stop_search = true;
         printf("info depth %d seldepth %d time %d nodes %lld nps %lld\n",
-                init_depth, seldepth, time_elapsed, nodes,
+                depth, seldepth, time_elapsed, nodes,
                 (time_elapsed==0)?0:(long long)((1000.0*nodes/time_elapsed)));Util::flush();
         if (DEBUG) {
             debugfile=fopen("./debug.txt", "a");
             fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %llu nps %d\n",
-                    init_depth, seldepth, time_elapsed, nodes,
+                    depth, seldepth, time_elapsed, nodes,
                     (time_elapsed==0)?0:(int)(1000*nodes/time_elapsed));
             fclose(debugfile);
         }
@@ -112,13 +112,13 @@ void Chess::make_move() {
         //Prints statistics
         //printf("alfabeta: %d\n", a);Util::flush();
         //printf("best %s\n", best_move);Util::flush();
-        best_iterative[init_depth] = best_move;
+        best_iterative[depth] = best_move;
         if (stop_search == true) break;
         if (mate_score > 20000 && break_if_mate_found) break;
-        if (init_depth == gui_depth) break;
+        if (depth == gui_depth) break;
         //if (legal_pointer == 0) break; //there is only one legal move
-        ++init_depth;
-        //if (init_depth == 1) init_depth = 5;
+        ++depth;
+        //if (depth == 1) depth = 5;
     }
     printf( "\nbestmove %s\n", Util::move2str(move_str, best_move));Util::flush();
 #ifdef HASH
@@ -312,7 +312,7 @@ int Chess::perft(int dpt) {
 void Chess::calculate_evarray() {
     int i, j, v;
     int tempmove;
-    if (init_depth == 1) {
+    if (depth == 1) {
         for (i = 0; i < nof_legal; i++) {
             (root_moves + i)->move = legal_moves[i];
             (root_moves + i)->value = 0;

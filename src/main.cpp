@@ -144,7 +144,7 @@ void test_bratko_kopec_1a() {
     assert(strcmp(chess.move_str, "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
     assert(chess.root_moves[0].value == 21995);
-    assert(chess.init_depth == 5);
+    assert(chess.depth == 5);
 }
 
 void test_bratko_kopec_1b() {
@@ -160,7 +160,7 @@ void test_bratko_kopec_1b() {
     assert(strcmp(chess.move_str, "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
     assert(chess.root_moves[0].value == 21995);
-    assert(chess.init_depth == 1);
+    assert(chess.depth == 1);
 }
 
 void test_bratko_kopec_2() {
@@ -265,7 +265,7 @@ void test() {
     {
         Chess chess;
         chess.nof_legal = 40;
-        chess.init_depth = 2;
+        chess.depth = 2;
         test_calculate_evarray(chess);
         test_calculate_evarray_new(chess);
     }

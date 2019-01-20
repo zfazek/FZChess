@@ -84,7 +84,7 @@ class Chess {
         jmp_buf env;
         int start_time, stop_time, max_time, movetime;
         int stop_search;
-        int depth, seldepth, init_depth, curr_depth, curr_seldepth, gui_depth;
+        int depth, seldepth, curr_depth, curr_seldepth, gui_depth;
         int default_seldepth;
         bool last_ply;
         bool break_if_mate_found;
@@ -93,7 +93,6 @@ class Chess {
         int nof_legal;
         int best_move;
         int mate_score;
-        //unsigned long long knodes = 9999999999999999999LLU;
         std::thread th_make_move;
         int sort_alfarray;
 
