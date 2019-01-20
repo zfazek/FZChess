@@ -36,4 +36,3 @@ class Hash {
         void printStatistics(int nodes);
         std::map<unsigned long long, int> hashes;
 };
-

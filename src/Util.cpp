@@ -48,4 +48,3 @@ char* Util::move2str(char* move_str, int move) {
     }
     return move_str;
 }
-

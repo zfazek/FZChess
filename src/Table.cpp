@@ -582,7 +582,10 @@ bool Table::third_occurance() {
         }
         i -= 2;
     }
-    if (occurance >= 2) return true; else return false;
+    if (occurance >= 2)
+        return true;
+    else
+        return false;
 }
 
 //Searches and stores all the legal moves
@@ -1214,4 +1217,3 @@ int Table::conv0(int k) {
     if (k ==  21) return  2;
     return 0;
 }
-

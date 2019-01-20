@@ -5,11 +5,12 @@
 using namespace std;
 
 Eval::Eval(Chess* ch) {
-	chess = ch;
+    chess = ch;
 }
 
 Eval::~Eval() {
 }
+
 //Evaluates material and king position, pawn structure, etc
 int Eval::evaluation_material(int dpt) {
     int c, e;
@@ -188,7 +189,6 @@ int Eval::evaluation_pawn(int field, int figure, int sm) {
     return e;
 }
 
-
 //Calculates material for evaluating end game threshold
 int Eval::sum_material(int color) {
     int i, figure, e;
@@ -204,5 +204,3 @@ int Eval::sum_material(int color) {
     }
     return e;
 }
-
-

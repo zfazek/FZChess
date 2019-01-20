@@ -260,6 +260,7 @@ void test_mate_in_2() {
     chess.default_seldepth = 0;
     chess.make_move();
 }
+
 void test() {
     {
         Chess chess;

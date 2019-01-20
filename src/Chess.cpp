@@ -48,7 +48,6 @@ void Chess::invert_player_to_move() {
 }
 
 void Chess::make_move() {
-    unsigned long long knodes = 9999999999999999999LLU;
     int MAX = 22767;
     int time_elapsed;
     int time_current_depth_start, time_current_depth_stop, time_remaining;
@@ -94,11 +93,9 @@ void Chess::make_move() {
                 stop_search = true;
         if (init_depth > 30)
             stop_search = true;
-        knodes = 1000LLU * nodes;
         printf("info depth %d seldepth %d time %d nodes %lld nps %lld\n",
                 init_depth, seldepth, time_elapsed, nodes,
-                (time_elapsed==0)?0:(knodes/time_elapsed));Util::flush();
-        printf("nodes: %lld, knodes: %lld\n", nodes, knodes);Util::flush();
+                (time_elapsed==0)?0:(long long)((1000.0*nodes/time_elapsed)));Util::flush();
         if (DEBUG) {
             debugfile=fopen("./debug.txt", "a");
             fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %llu nps %d\n",
@@ -177,14 +174,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         table->update_table(alfarray[i], false);
         curr_line[dpt] = alfarray[i];
 
-        // ZOLI
-        if (depth == 5 && dpt == 1) {
-            //table->print_table();   
-        }
-
         // If last ply->evaluating
-        if ((dpt >= depth && movelist[move_number].further == 0) ||
-                dpt >= seldepth) {
+        if ((dpt >= depth && movelist[move_number].further == 0) || dpt >= seldepth) {
             last_ply = true;
 #ifdef HASH
             hash->set_hash(this);
@@ -258,6 +249,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 #ifdef HASH
                 hash->printStatistics(nodes);
 #endif
+                int time_elapsed = Util::get_ms() - start_time;
                 // If checkmate is found
                 if (abs(u) > 20000) {
                     if (u > 0) uu = (22001 - u) / 2;
@@ -266,16 +258,16 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                         uu =  1;
                     if (uu == 0 && u < 0)
                         uu = -1;
-                    printf("info multipv 1 depth %d seldepth %d score mate %d nodes %llu pv ",
-                            curr_depth, curr_seldepth, uu, nodes);
+                    printf("info multipv 1 depth %d seldepth %d time %d score mate %d nodes %llu pv ",
+                            curr_depth, curr_seldepth, time_elapsed, uu, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(move_str, best_line[dpt].moves[b]));
                     }
                     printf("\n");Util::flush();
                     mate_score = abs(u);
                 } else {
-                    printf("info multipv 1 depth %d seldepth %d score cp %d nodes %llu pv ",
-                            curr_depth, curr_seldepth, u, nodes);
+                    printf("info multipv 1 depth %d seldepth %d time %d score cp %d nodes %llu pv ",
+                            curr_depth, curr_seldepth, time_elapsed, u, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(move_str, best_line[dpt].moves[b]));
                     }
