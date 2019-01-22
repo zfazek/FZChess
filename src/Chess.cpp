@@ -62,7 +62,7 @@ void Chess::start_game() { // new
 void Chess::invert_player_to_move() { player_to_move = -player_to_move; }
 
 void Chess::make_move() {
-    int MAX = 22767;
+    const int MAX = 22767;
     int time_elapsed;
     int time_current_depth_start, time_current_depth_stop, time_remaining;
     sort_alfarray = false;
@@ -145,7 +145,7 @@ void Chess::make_move() {
         // printf("alfabeta: %d\n", a);Util::flush();
         // printf("best %s\n", best_move);Util::flush();
         best_iterative[depth] = best_move;
-        if (stop_search == true) {
+        if (stop_search) {
             break;
         }
         if (mate_score > 20000 && break_if_mate_found) {
@@ -163,8 +163,8 @@ void Chess::make_move() {
 #ifdef HASH
     hash->printStatistics(nodes);
 #endif
-    table->update_table(best_move,
-                        false); // Update the table without printing it
+    // Update the table without printing it
+    table->update_table(best_move, false);
     invert_player_to_move();
 }
 
@@ -180,10 +180,10 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     table->list_legal_moves();
     // printf("nbr_legal: %d\n", nbr_legal);
     if (legal_pointer == -1) {
-        if (table->is_attacked(player_to_move == WHITE
+        if (!table->is_attacked(player_to_move == WHITE
                                    ? (movelist + move_number)->pos_white_king
                                    : (movelist + move_number)->pos_black_king,
-                               player_to_move) == false) {
+                               player_to_move)) {
             // printf("DRAW: ");Util::flush();
             return table->eval->DRAW;
         } else {
@@ -241,8 +241,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             // not in the hashtable. normal evaluating
             else {
 #endif
-                if (table->third_occurance() == true ||
-                    table->not_enough_material() == true ||
+                if (table->third_occurance() ||
+                    table->not_enough_material() ||
                     movelist[move_number].not_pawn_move >= 100) {
                     u = table->eval->DRAW;
                     --move_number;
@@ -260,8 +260,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         }
         // Not last ply
         else {
-            if (table->third_occurance() == true ||
-                table->not_enough_material() == true ||
+            if (table->third_occurance() ||
+                table->not_enough_material() ||
                 movelist[move_number].not_pawn_move >= 100) {
                 u = table->eval->DRAW;
                 --move_number;
@@ -289,10 +289,10 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                 best_line[dpt].moves[b] = curr_line[b];
             }
             best_line[dpt].value = u;
-            if (last_ply == true) {
+            if (last_ply) {
                 best_line[dpt].length = dpt;
             }
-            if (last_ply == false) {
+            if (!last_ply) {
                 best_line[dpt].length = best_line[dpt + 1].length;
                 best_line[dpt].value = best_line[dpt + 1].value;
                 for (b = 1; b <= best_line[dpt + 1].length; b++) {
@@ -360,8 +360,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     return value;
 }
 
-int Chess::perft(int dpt) {
-    int i, nbr_legal;
+uint64_t Chess::perft(const int dpt) {
+    int nbr_legal;
     int alfarray[MAX_LEGAL_MOVES];
     uint64_t nodes = 0;
 
@@ -371,10 +371,10 @@ int Chess::perft(int dpt) {
 
     table->list_legal_moves();
     nbr_legal = legal_pointer;
-    for (i = 0; i <= nbr_legal; ++i) {
+    for (int i = 0; i <= nbr_legal; ++i) {
         alfarray[i] = legal_moves[i];
     }
-    for (i = 0; i <= nbr_legal; ++i) {
+    for (int i = 0; i <= nbr_legal; ++i) {
         if ((nodes & 1023) == 0) {
             checkup();
         }
@@ -390,16 +390,16 @@ int Chess::perft(int dpt) {
 // Sorts legal moves
 // Bubble sort
 void Chess::calculate_evarray() {
-    int i, j, v;
+    int v;
     int tempmove;
     if (depth == 1) {
-        for (i = 0; i < nof_legal; i++) {
+        for (int i = 0; i < nof_legal; i++) {
             (root_moves + i)->move = legal_moves[i];
             (root_moves + i)->value = 0;
         }
     } else {
-        for (i = 0; i < nof_legal; i++) {
-            for (j = i + 1; j < nof_legal; j++) {
+        for (int i = 0; i < nof_legal; i++) {
+            for (int j = i + 1; j < nof_legal; j++) {
                 if (root_moves[j].value > root_moves[i].value) {
                     tempmove = root_moves[j].move;
                     root_moves[j].move = root_moves[i].move;
@@ -414,10 +414,10 @@ void Chess::calculate_evarray() {
 }
 
 void Chess::calculate_evarray_new() {
-    int i, j, v;
+    int v;
     int tempmove;
-    for (i = 0; i < nof_legal; i++) {
-        for (j = i + 1; j < nof_legal; j++) {
+    for (int i = 0; i < nof_legal; i++) {
+        for (int j = i + 1; j < nof_legal; j++) {
             if (root_moves[j].value > root_moves[i].value) {
                 tempmove = root_moves[j].move;
                 root_moves[j].move = root_moves[i].move;
@@ -458,7 +458,7 @@ void Chess::checkup() {
     }
 }
 
-void Chess::processCommands(char *input) {
+void Chess::processCommands(const char *input) {
     if (strstr(input, "uci")) {
         uci->processCommands(input);
     }

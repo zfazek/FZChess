@@ -16,19 +16,19 @@ Table::~Table() { delete eval; }
 // Resets the parameters and the table
 void Table::reset_movelist() {
     // Startup position
-    int new_table[120] = {
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x04,
-        0x02, 0x03, 0x05, 0x06, 0x03, 0x02, 0x04, 0xff, // white - first row
-        0xff, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff, 0xff,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x81, 0x81, 0x81, 0x81,
-        0x81, 0x81, 0x81, 0x81, 0xff, // black - seventh row
-        0xff, 0x84, 0x82, 0x83, 0x85, 0x86, 0x83, 0x82, 0x84, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    const int new_table[120] = {
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0x04, 0x02, 0x03, 0x05, 0x06, 0x03, 0x02, 0x04, 0xff, // white - first row
+        0xff, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff,
+        0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff,
+        0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff,
+        0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff,
+        0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff,
+        0xff, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xff, // black - seventh row
+        0xff, 0x84, 0x82, 0x83, 0x85, 0x86, 0x83, 0x82, 0x84, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
     for (int move_number = 0; move_number < MAX_MOVES; move_number++) {
         chess->movelist[move_number].color = 0;
@@ -66,7 +66,7 @@ void Table::reset_movelist() {
     chess->move_number = 0;
 }
 
-void Table::update_table(int move, bool print, bool fake) {
+void Table::update_table(const int move, bool print, bool fake) {
     int n, x_from, y_from, x_to, y_to;
     int figure_from, figure_to, square_from, square_to;
     char promotion = ' ';
@@ -74,10 +74,10 @@ void Table::update_table(int move, bool print, bool fake) {
     // Copies the table for the next move and updates later according to the
     // move
     int *pt1 = chess->tablelist[chess->move_number];
-    struct Chess::move *pm1 = chess->movelist + chess->move_number;
+    struct move *pm1 = chess->movelist + chess->move_number;
     ++chess->move_number;
     int *pt2 = chess->tablelist[chess->move_number];
-    struct Chess::move *pm2 = chess->movelist + chess->move_number;
+    struct move *pm2 = chess->movelist + chess->move_number;
     memcpy(pt2, pt1, 120 * sizeof(int));
     x_from = (move & 0xe000) / 256 / 32;
     y_from = (move & 0x1c00) / 256 / 4;
@@ -114,7 +114,7 @@ void Table::update_table(int move, bool print, bool fake) {
 
         // If captured is occured->not_pawn_move parameters is set to 1,
         // and further is set to 1
-        if (figure_to != 0) {
+        if (figure_to != EMPTY) {
             pm2->not_pawn_move = 1;
             pm2->further = 1;
         } else if (pm1->further == 2) {
@@ -167,10 +167,10 @@ void Table::update_table(int move, bool print, bool fake) {
                 pm2->white_king_castled = eval->king_castled;
                 if (square_to == 27) {
                     *(pt2 + 26) = WhiteRook;
-                    *(pt2 + 28) = 0;
+                    *(pt2 + 28) = EMPTY;
                 } else if (square_to == 23) {
                     *(pt2 + 24) = WhiteRook;
-                    *(pt2 + 21) = 0;
+                    *(pt2 + 21) = EMPTY;
                 }
             }
         }
@@ -184,10 +184,10 @@ void Table::update_table(int move, bool print, bool fake) {
                 pm2->black_king_castled = eval->king_castled;
                 if (square_to == 97) {
                     *(pt2 + 96) = BlackRook;
-                    *(pt2 + 98) = 0;
+                    *(pt2 + 98) = EMPTY;
                 } else if (square_to == 93) {
                     *(pt2 + 94) = BlackRook;
-                    *(pt2 + 91) = 0;
+                    *(pt2 + 91) = EMPTY;
                 }
             }
         }
@@ -250,27 +250,27 @@ void Table::update_table(int move, bool print, bool fake) {
                 if (pm1->en_passant == square_from + 11 &&
                     square_to - square_from == 11) {
                     pm2->captured_figure = BlackPawn;
-                    *(pt2 + square_to - 10) = 0;
+                    *(pt2 + square_to - 10) = EMPTY;
                 } else if (pm1->en_passant == square_from + 9 &&
                            square_to - square_from == 9) {
                     pm2->captured_figure = BlackPawn;
-                    *(pt2 + square_to - 10) = 0;
+                    *(pt2 + square_to - 10) = EMPTY;
                 }
             } else if (figure_from == BlackPawn) {
                 if (pm1->en_passant == square_from - 11 &&
                     square_to - square_from == -11) {
                     pm2->captured_figure = WhitePawn;
-                    *(pt2 + square_to + 10) = 0;
+                    *(pt2 + square_to + 10) = EMPTY;
                 } else if (pm1->en_passant == square_from - 9 &&
                            square_to - square_from == -9) {
                     pm2->captured_figure = WhitePawn;
-                    *(pt2 + square_to + 10) = 0;
+                    *(pt2 + square_to + 10) = EMPTY;
                 }
             }
         }
     }
 
-    *(pt2 + square_from) = 0;
+    *(pt2 + square_from) = EMPTY;
 
 #ifdef QUIESCENCE_SEARCH
     if (!fake) {
@@ -281,7 +281,7 @@ void Table::update_table(int move, bool print, bool fake) {
         }
     }
 #endif
-    if (print == true) {
+    if (print) {
         print_table();
     }
 }
@@ -290,7 +290,7 @@ void Table::update_table(int move, bool print, bool fake) {
 void Table::print_table() {
     for (int i = 11; i >= 0; i--) {
         for (int j = 0; j < 10; j++) {
-            int field = chess->tablelist[chess->move_number][i * 10 + j];
+            const int field = chess->tablelist[chess->move_number][i * 10 + j];
             if (field == OFFBOARD) {
                 continue;
             }
@@ -332,21 +332,19 @@ void Table::print_table() {
 }
 
 // FEN interpreter
-void Table::setboard(char *input) {
+void Table::setboard(const char *input) {
     size_t n = 13;
     int x = 1;
     int y = 9;
-    int factor;
     char move_old[6] = "     ";
     chess->start_game();
-    size_t m = 5;
     int move_number = 1;
     chess->move_number = 1;
     n = 13;
     while (input[n] != ' ') {
         if (input[n] > '0' && input[n] < '9') {
             for (int m = 0; m < input[n] - '0'; m++) {
-                chess->tablelist[move_number][y * 10 + x] = 0;
+                chess->tablelist[move_number][y * 10 + x] = EMPTY;
                 x++;
             }
             --x;
@@ -417,7 +415,7 @@ void Table::setboard(char *input) {
     n++;
     n++;
     chess->movelist[move_number].not_pawn_move = 0;
-    factor = 1;
+    int factor = 1;
     while (input[n] != ' ') {
         chess->movelist[move_number].not_pawn_move =
             chess->movelist[move_number].not_pawn_move * factor +
@@ -452,7 +450,7 @@ void Table::setboard(char *input) {
         chess->movelist[move_number].black_double_bishops = 0;
     }
     if (strstr(input, "moves")) {
-        m = strlen(input) - 1;
+        size_t m = strlen(input) - 1;
         for (size_t i = strstr(input, "moves") - input + 6; i < m; i++) {
             // printf("i: %d, input[i]: %c\n", i, input[i]);Util::flush();
             move_old[0] = input[i++];
@@ -473,7 +471,7 @@ void Table::setboard(char *input) {
 }
 
 // Returns if the figure of color is attacked or not
-bool Table::is_attacked(int field, int color) {
+bool Table::is_attacked(const int field, const int color) {
     int attacking_figure, coord, color_offset;
     int *ptablelist = chess->tablelist[chess->move_number];
     if (color == chess->WHITE) {
@@ -483,7 +481,7 @@ bool Table::is_attacked(int field, int color) {
     }
     for (int k = 0; k < 4; ++k) {
         int kk = 1;
-        while (*(ptablelist + field + kk * dir_rook[k]) == 0) {
+        while (*(ptablelist + field + kk * dir_rook[k]) == EMPTY) {
             ++kk;
         }
         coord = field + kk * dir_rook[k];
@@ -499,7 +497,7 @@ bool Table::is_attacked(int field, int color) {
     }
     for (int k = 0; k < 4; ++k) {
         int kk = 1;
-        while (*(ptablelist + field + kk * dir_bishop[k]) == 0) {
+        while (*(ptablelist + field + kk * dir_bishop[k]) == EMPTY) {
             ++kk;
         }
         coord = field + kk * dir_bishop[k];
@@ -535,13 +533,12 @@ bool Table::is_attacked(int field, int color) {
 
 // Checks not enough material
 bool Table::not_enough_material() {
-    int c;
     int white_knight = 0;
     int white_bishop = 0;
     int black_knight = 0;
     int black_bishop = 0;
     for (int i = 0; i < 120; ++i) {
-        c = chess->tablelist[chess->move_number][i];
+        int c = chess->tablelist[chess->move_number][i];
         if (c == 0 || c == OFFBOARD) {
             continue;
         }
@@ -591,18 +588,18 @@ bool Table::not_enough_material() {
 
 // Checks castlings and adds to legal moves if possible
 void Table::castling() {
-    int *t = chess->tablelist[chess->move_number];
+    const int *t = chess->tablelist[chess->move_number];
     if (chess->player_to_move == chess->WHITE) {
         // Checks the conditions of castling
         // e1g1
         if (t[28] == WhiteRook) {
             if (t[25] == WhiteKing) {
                 if ((chess->movelist[chess->move_number].castle & 1) == 1) {
-                    if (is_attacked(25, WHITE) == false) {
-                        if (is_attacked(26, WHITE) == false) {
-                            if (is_attacked(27, WHITE) == false) {
-                                if (t[26] == 0) {
-                                    if (t[27] == 0) {
+                    if (!is_attacked(25, WHITE)) {
+                        if (!is_attacked(26, WHITE)) {
+                            if (!is_attacked(27, WHITE)) {
+                                if (t[26] == EMPTY) {
+                                    if (t[27] == EMPTY) {
                                         ++chess->legal_pointer;
                                         chess->legal_moves
                                             [chess->legal_pointer] = 0x80c0;
@@ -619,12 +616,12 @@ void Table::castling() {
         if (t[25] == WhiteKing) {
             if (t[21] == WhiteRook) {
                 if ((chess->movelist[chess->move_number].castle & 2) == 2) {
-                    if (is_attacked(25, WHITE) == false) {
-                        if (is_attacked(24, WHITE) == false) {
-                            if (is_attacked(23, WHITE) == false) {
-                                if (t[24] == 0) {
-                                    if (t[23] == 0) {
-                                        if (t[22] == 0) {
+                    if (!is_attacked(25, WHITE)) {
+                        if (!is_attacked(24, WHITE)) {
+                            if (!is_attacked(23, WHITE)) {
+                                if (t[24] == EMPTY) {
+                                    if (t[23] == EMPTY) {
+                                        if (t[22] == EMPTY) {
                                             ++chess->legal_pointer;
                                             chess->legal_moves
                                                 [chess->legal_pointer] = 0x8040;
@@ -642,11 +639,11 @@ void Table::castling() {
         // if (chess->player_to_move == BLACK)
     } else {
         if ((chess->movelist[chess->move_number].castle & 4) == 4) {
-            if (is_attacked(95, BLACK) == false) {
-                if (is_attacked(96, BLACK) == false) {
-                    if (is_attacked(97, BLACK) == false) {
-                        if (t[96] == 0) {
-                            if (t[97] == 0) {
+            if (!is_attacked(95, BLACK)) {
+                if (!is_attacked(96, BLACK)) {
+                    if (!is_attacked(97, BLACK)) {
+                        if (t[96] == EMPTY) {
+                            if (t[97] == EMPTY) {
                                 if (t[98] == BlackRook) {
                                     if (t[95] == BlackKing) {
                                         ++chess->legal_pointer;
@@ -666,12 +663,12 @@ void Table::castling() {
         if (t[95] == BlackKing) {
             if (t[91] == BlackRook) {
                 if ((chess->movelist[chess->move_number].castle & 8) == 8) {
-                    if (is_attacked(95, BLACK) == false) {
-                        if (is_attacked(94, BLACK) == false) {
-                            if (is_attacked(93, BLACK) == false) {
-                                if (t[94] == 0) {
-                                    if (t[93] == 0) {
-                                        if (t[92] == 0) {
+                    if (!is_attacked(95, BLACK)) {
+                        if (!is_attacked(94, BLACK)) {
+                            if (!is_attacked(93, BLACK)) {
+                                if (t[94] == EMPTY) {
+                                    if (t[93] == EMPTY) {
+                                        if (t[92] == EMPTY) {
                                             ++chess->legal_pointer;
                                             chess->legal_moves
                                                 [chess->legal_pointer] = 0x9c5c;
@@ -690,25 +687,22 @@ void Table::castling() {
 
 // Checks third occurance
 bool Table::third_occurance() {
-    int i;
-    int j;
-    int equal;
     int occurance = 0;
     if (chess->move_number < 6) {
         return false;
     }
-    i = chess->move_number - 2;
+    int i = chess->move_number - 2;
     while (i >= 0 && occurance < 2) {
         // printf("Third occurance: i: %d\n", i);Util::flush();
-        equal = true;
-        for (j = 0; j < 120; ++j) {
+        bool equal = true;
+        for (int j = 0; j < 120; ++j) {
             if (chess->tablelist[chess->move_number][j] !=
                 chess->tablelist[i][j]) {
                 equal = false;
                 break;
             }
         }
-        if (equal == true) {
+        if (equal) {
             ++occurance;
         }
         i -= 2;
@@ -749,7 +743,7 @@ void Table::list_legal_moves() {
                 (chess->player_to_move == BLACK && ((field & 128) == 128))) {
                 if (field == WhitePawn) {
                     // If upper field is empty
-                    if (*(ptt + 10) == 0) {
+                    if (*(ptt + 10) == EMPTY) {
                         // If white pawn is in the 7th rank->promotion
                         if (i - 1 == 7) {
                             // Calculates Queen promotion
@@ -811,7 +805,7 @@ void Table::list_legal_moves() {
 
                         // If white pawn is in the 2nd rank
                         if (i - 1 == 2) {
-                            if (*(ptt + 20) == 0) {
+                            if (*(ptt + 20) == EMPTY) {
                                 ++chess->legal_pointer;
                                 move = 0;
                                 move |= (j - 1) * 0x2000;
@@ -981,7 +975,7 @@ void Table::list_legal_moves() {
 
                 // The same for black pawn
                 else if (field == BlackPawn) {
-                    if (*(ptt - 10) == 0) {
+                    if (*(ptt - 10) == EMPTY) {
                         if (i - 1 == 2) {
                             // With Queen promotion
                             ++chess->legal_pointer;
@@ -1039,7 +1033,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
                         }
                         if (i - 1 == 7) {
-                            if (*(ptt - 20) == 0) {
+                            if (*(ptt - 20) == EMPTY) {
                                 ++chess->legal_pointer;
                                 move = 0;
                                 move |= (j - 1) * 0x2000;
@@ -1217,8 +1211,7 @@ void Table::list_legal_moves() {
                         end_direction = false;
 
                         // Increases kk while queen can move in that direction
-                        while (end_direction == false &&
-                               *(ptt + kk * (dir_king[k])) < OFFBOARD) {
+                        while (!end_direction && *(ptt + kk * (dir_king[k])) < OFFBOARD) {
                             append_legal_moves(dir_king[k], i, j, kk);
                             ++kk;
                         }
@@ -1227,8 +1220,7 @@ void Table::list_legal_moves() {
                     for (int k = 0; k < 4; ++k) {
                         kk = 1;
                         end_direction = false;
-                        while (end_direction == false &&
-                               *(ptt + kk * (dir_bishop[k])) < OFFBOARD) {
+                        while (!end_direction && *(ptt + kk * (dir_bishop[k])) < OFFBOARD) {
                             append_legal_moves(dir_bishop[k], i, j, kk);
                             ++kk;
                         }
@@ -1237,8 +1229,7 @@ void Table::list_legal_moves() {
                     for (int k = 0; k < 4; ++k) {
                         kk = 1;
                         end_direction = false;
-                        while (end_direction == false &&
-                               *(ptt + kk * (dir_rook[k])) < OFFBOARD) {
+                        while (!end_direction && *(ptt + kk * (dir_rook[k])) < OFFBOARD) {
                             append_legal_moves(dir_rook[k], i, j, kk);
                             ++kk;
                         }
@@ -1270,7 +1261,7 @@ void Table::is_really_legal() {
 }
 
 // Co-function of append_legal_moves()
-void Table::append_legal_moves_inner(int dir_piece, int i, int j, int kk) {
+void Table::append_legal_moves_inner(const int dir_piece, const int i, const int j, const int kk) {
     ++chess->legal_pointer;
     int move = 0;
     move |= (j - 1) * 0x2000;
@@ -1282,18 +1273,17 @@ void Table::append_legal_moves_inner(int dir_piece, int i, int j, int kk) {
 }
 
 // Tries if a particular move is legal
-void Table::append_legal_moves(int dir_piece, int i, int j, int kk) {
+void Table::append_legal_moves(const int dir_piece, const int i, const int j, const int kk) {
     // dir_piece : direction of the move
     // kk : distance
     // No more moves in that direction if field is not empty
-    int tmp;
-    tmp = i * 10 + j + kk * dir_piece;
-    if (*(pt + tmp) != 0) {
+    const int tmp = i * 10 + j + kk * dir_piece;
+    if (*(pt + tmp) != EMPTY) {
         end_direction = true;
     }
     if (chess->player_to_move == WHITE) {
         // Tries move if field occupied by black or empty
-        if (*(pt + tmp) > 128 || *(pt + tmp) == 0) {
+        if (*(pt + tmp) > 128 || *(pt + tmp) == EMPTY) {
             append_legal_moves_inner(dir_piece, i, j, kk);
         }
     }
@@ -1306,7 +1296,7 @@ void Table::append_legal_moves(int dir_piece, int i, int j, int kk) {
 }
 
 // Function to calculate x vector from direction (k) for move notation
-int Table::convA(int k) {
+int Table::convA(const int k) {
     if (k == -21) {
         return -1;
     }
@@ -1359,7 +1349,7 @@ int Table::convA(int k) {
 }
 
 // Function to calculate y vector from direction (k) for move notation
-int Table::conv0(int k) {
+int Table::conv0(const int k) {
     if (k == -21) {
         return -2;
     }

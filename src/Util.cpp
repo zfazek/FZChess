@@ -15,7 +15,7 @@ int Util::get_ms() {
     return 0;
 }
 
-int Util::str2move(char move_old[6]) {
+int Util::str2move(const char move_old[6]) {
     int x_from, y_from, x_to, y_to, move_hi, move_lo;
     x_from = move_old[0] - 'a';
     y_from = move_old[1] - '1';
@@ -24,30 +24,30 @@ int Util::str2move(char move_old[6]) {
     move_hi = x_from * 32 + y_from * 4;
     move_lo = x_to * 32 + y_to * 4;
     switch (move_old[4]) {
-    case 'q':
-    case 'Q':
-        move_hi += 2;
-        break;
-    case 'r':
-    case 'R':
-        move_hi += 1;
-        break;
-    case 'b':
-    case 'B':
-        move_lo += 2;
-        break;
-    case 'n':
-    case 'N':
-        move_lo += 1;
-        break;
-    default:
-        break;
+        case 'q':
+        case 'Q':
+            move_hi += 2;
+            break;
+        case 'r':
+        case 'R':
+            move_hi += 1;
+            break;
+        case 'b':
+        case 'B':
+            move_lo += 2;
+            break;
+        case 'n':
+        case 'N':
+            move_lo += 1;
+            break;
+        default:
+            break;
     }
     return move_hi * 256 + move_lo;
 }
 
-char *Util::move2str(char *move_str, int move) {
-    strcpy(move_str, "     ");
+char *Util::move2str(char *move_str, const int move) {
+    strncpy(move_str, "     ", 6);
     move_str[0] = (move & 0xe000) / 256 / 32 + 'a';
     move_str[1] = (move & 0x1c00) / 256 / 4 + '1';
     move_str[2] = (move & 0x00e0) % 256 / 32 + 'a';

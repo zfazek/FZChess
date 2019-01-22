@@ -3,13 +3,13 @@
 #include <cstdio>
 #include <cstring>
 
-Uci::Uci(Chess *ch) { chess = ch; }
+Uci::Uci(Chess *ch) : chess(ch) {}
 
 Uci::~Uci() {}
 
-void Uci::position_received(char *input) {
-    char move_old[6];
-    strcpy(move_old, "     ");
+void Uci::position_received(const char *input) {
+    static char move_old[6];
+    strncpy(move_old, "     ", 6);
     chess->start_game();
     chess->player_to_move = chess->WHITE;
     if (!strstr(input, "move")) {
@@ -36,14 +36,15 @@ void Uci::position_received(char *input) {
     // print_table();
 }
 
-void Uci::processCommands(char *input) {
+void Uci::processCommands(const char *cmd) {
+    static char input[1000] = {0};
     int movestogo = 40;
-    int wtime, btime;
+    int wtime = 0;
+    int btime = 0;
     int winc = 0;
     int binc = 0;
-    char *ret;
     chess->gui_depth = 0;
-    if (strstr(input, "uci")) {
+    if (strstr(cmd, "uci")) {
         printf("id name FZChess++\n");
         printf("id author Zoltan FAZEKAS\n");
         printf("option name OwnBook type check defult false\n");
@@ -56,8 +57,8 @@ void Uci::processCommands(char *input) {
         chess->debugfile = fopen("./debug.txt", "w");
         fclose(chess->debugfile);
     }
-    while (1) {
-        ret = fgets(input, 1000, stdin);
+    while (true) {
+    char *ret = fgets(input, 1000, stdin);
         if (ret && strstr(input, "stop")) {
             chess->stop_received = true;
         }

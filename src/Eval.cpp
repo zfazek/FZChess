@@ -9,12 +9,12 @@ Eval::Eval(Chess *ch) { chess = ch; }
 Eval::~Eval() {}
 
 // Evaluates material and king position, pawn structure, etc
-int Eval::evaluation_material(int dpt) {
-    int c, e;
+int Eval::evaluation_material(const int dpt) {
+    int c;
     int evaking;
-    e = 0;
-    int *pt = chess->tablelist[chess->move_number];
-    struct Chess::move *pm = chess->movelist + chess->move_number;
+    int e = 0;
+    const int *pt = chess->tablelist[chess->move_number];
+    const struct move *pm = chess->movelist + chess->move_number;
 
     // Calculate summa of material for end game threshold
     // sm = sum_material(player_to_move);
@@ -22,7 +22,7 @@ int Eval::evaluation_material(int dpt) {
 
     // Goes through the table
     for (int i = 0; i < 120; ++i) {
-        int figure = *(pt + i);
+        const int figure = *(pt + i);
         if (figure > 0 && figure < OFFBOARD) {
             // c=1 : own figure is found, c=-1 opposite figure is found
             if ((chess->player_to_move == chess->WHITE &&
@@ -114,7 +114,7 @@ int Eval::evaluation_material(int dpt) {
 
 // Evaluates material plus number of legal moves of both sides plus a random
 // number
-int Eval::evaluation(int e_legal_pointer, int dpt) {
+int Eval::evaluation(const int e_legal_pointer, const int dpt) {
     int lp = e_legal_pointer;
     chess->invert_player_to_move();
     chess->table->list_legal_moves();
@@ -123,11 +123,11 @@ int Eval::evaluation(int e_legal_pointer, int dpt) {
     // if (dpt % 2 == 0) lp = -lp;
     chess->invert_player_to_move();
     if (chess->legal_pointer == -1) { // No legal move
-        if (chess->table->is_attacked(
+        if (!chess->table->is_attacked(
                 chess->player_to_move == chess->WHITE
                     ? (chess->movelist + chess->move_number)->pos_black_king
                     : (chess->movelist + chess->move_number)->pos_white_king,
-                -chess->player_to_move) == false) {
+                -chess->player_to_move)) {
             // printf("DRAW: ");Util::flush();
             return DRAW;
         } else {
@@ -138,22 +138,20 @@ int Eval::evaluation(int e_legal_pointer, int dpt) {
     }
 
     // Adds random to evaluation
-    // random_number = (rand() % random_window);
-    int random_number = 0;
-    // return evaluation_material(dpt);
+    const int random_number = (rand() % random_window);
     return evaluation_material(dpt) + 2 * lp + random_number;
 }
 
-int Eval::evaluation_only_end_game(int dpt) {
+int Eval::evaluation_only_end_game(const int dpt) {
     chess->invert_player_to_move();
     chess->table->list_legal_moves();
     chess->invert_player_to_move();
     if (chess->legal_pointer == -1) { // No legal move
-        if (chess->table->is_attacked(
+        if (!chess->table->is_attacked(
                 chess->player_to_move == chess->WHITE
                     ? (chess->movelist + chess->move_number)->pos_black_king
                     : (chess->movelist + chess->move_number)->pos_white_king,
-                -chess->player_to_move) == false) {
+                -chess->player_to_move)) {
             // Stalemate
             // printf("DRAW: ");Util::flush();
             return DRAW;
@@ -167,10 +165,10 @@ int Eval::evaluation_only_end_game(int dpt) {
 }
 
 // Bonus for king's adjacent own pawns
-int Eval::evaluation_king(int field, int figure) {
+int Eval::evaluation_king(const int field, const int figure) {
     int e = 0;
-    int *pt = chess->tablelist[chess->move_number];
-    int *pdir = chess->table->dir_king;
+    const int *pt = chess->tablelist[chess->move_number];
+    const int *pdir = chess->table->dir_king;
     for (int k = 0; k < 8; ++k, ++pdir) {
         if (*(pt + field + *pdir) == (figure & 128) + chess->table->Pawn) {
             e += chess->table->eval->friendly_pawn;
@@ -179,12 +177,12 @@ int Eval::evaluation_king(int field, int figure) {
     return e;
 }
 
-int Eval::evaluation_pawn(int field, int figure, int sm) {
+int Eval::evaluation_pawn(const int field, const int figure, const int sm) {
     int e = 0;
 
     // punishing double pawns
     int dir = 0;
-    int *pt = chess->tablelist[chess->move_number];
+    const int *pt = chess->tablelist[chess->move_number];
     do {
         dir += 10;
         if (*(pt + field + dir) == figure) {
@@ -211,12 +209,11 @@ int Eval::evaluation_pawn(int field, int figure, int sm) {
 }
 
 // Calculates material for evaluating end game threshold
-int Eval::sum_material(int color) {
-    int i, figure, e;
-    e = 0;
-    //    int* pt = tablelist + move_number;
-    for (i = 0; i < 120; ++i) {
-        figure = chess->tablelist[chess->move_number][i];
+int Eval::sum_material(const int color) {
+    int e = 0;
+    // int* pt = tablelist + move_number;
+    for (int i = 0; i < 120; ++i) {
+        const int figure = chess->tablelist[chess->move_number][i];
         if (figure > 0 && figure < OFFBOARD) {
             if ((color == chess->WHITE && (figure & 128) == 0) ||
                 (color == chess->BLACK && (figure & 128) == 128)) {
