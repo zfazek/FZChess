@@ -80,9 +80,10 @@ class Chess {
         char input[1001];
         int FZChess; // 1:white, -1:black
 
-        unsigned long long nodes;
+        uint64_t nodes;
         jmp_buf env;
-        int start_time, stop_time, max_time, movetime;
+        int start_time, stop_time, movetime;
+        int max_time = 0;
         int stop_search;
         int depth, seldepth, curr_depth, curr_seldepth, gui_depth;
         int default_seldepth;
@@ -106,6 +107,11 @@ class Chess {
         //Stores the parameters of the given position
         struct move movelist[MAX_MOVES];
 
+        int DEBUG;
+        FILE *debugfile;
+        bool stop_received;
+
+        int n;
         void start_game();
         void make_move();
         int alfabeta(int dpt, int alfa, int beta);
@@ -116,11 +122,5 @@ class Chess {
         char* move2str(int move);
         void processCommands(char* input);
         int perft(int dpt);
-
-        int DEBUG;
-        FILE *debugfile;
-        bool stop_received;
-
-        int n;
 };
 

@@ -1,22 +1,22 @@
 #include "Hash.h"
+
 #include "Chess.h"
 #include "Util.h"
+
 #include <cstdlib>
 #include <cstdio>
 
-const unsigned int HASHSIZE = 1024 * 1024 * 64;
+const unsigned int HASHSIZE = 1024 * 1024 * 16;
 
 Hash::Hash() {
     init_hash();
 }
 
 Hash::~Hash() {
-    free(hashtable);
 }
 
 void Hash::reset_counters() {
     hash_nodes = 0;
-    hash_collision = 0;
 }
 
 void Hash::init_hash() {
@@ -34,20 +34,10 @@ void Hash::init_hash() {
     hash_side_black = hash_rand();
     for (i = 0; i < 120; i++) hash_enpassant[i] = hash_rand();
     for (i = 0; i < 15; i++) hash_castle[i] = hash_rand();
-    if ((hashtable = (hash_t*)malloc(sizeof(hash_t[HASHSIZE]))) == NULL) {
-        printf("HASH memory fault!\n");
-        exit(2);
-    }
-    /*
-    printf("hashsize: %d, sizeof: %d\n",
-            HASHSIZE,
-            sizeof(hash_t[HASHSIZE]));
-            */
-    Util::flush();
 }
 
 //Set the hash variable of the current position
-void Hash::set_hash(Chess* chess) {
+void Hash::set_hash(const Chess* chess) {
     int i, k;
     int field, figure;
     hash = 0;
@@ -74,39 +64,20 @@ void Hash::set_hash(Chess* chess) {
     hash_index = hash % HASHSIZE;
 }
 
-bool Hash::posInHashtable() {
+bool Hash::posInHashtable() const {
     return hashes.find(hash) != hashes.end();
-
-    /*
-    // if this position is in the hashtable
-    if ((hashtable + hash_index)->lock != hash &&
-            (hashtable + hash_index)->lock != 0) {
-        hash_collision++;
-        return false;
-    }
-    if ((hashtable + hash_index)->lock == hash) {
-        //printf("##Last Ply HASH FOUND##"); print_hash(hash, dpt);
-        return true;
-    }
-    return false;
-    */
 }
 
-int Hash::getU() {
-    return hashes[hash];
-    //return (hashtable + hash_index)->u;
+int Hash::getU() const {
+    return hashes.at(hash);
 }
 
-void Hash::setU(int u) {
+void Hash::setU(const int u) {
     hashes[hash] = u;
-    /*
-    (hashtable + hash_index)->lock = hash;
-    (hashtable + hash_index)->u = u;
-    */
 }
 
-unsigned long long Hash::rand64() {
-    unsigned long long output;
+uint64_t Hash::rand64() const {
+    uint64_t output;
     output = rand();
     output <<= 15;
     output ^= rand();
@@ -119,16 +90,16 @@ unsigned long long Hash::rand64() {
     return output;
 }
 
-unsigned long long Hash::hash_rand() {
+uint64_t Hash::hash_rand() const {
     int i;
-    unsigned long long r = 0LLU;
+    uint64_t r = 0LLU;
     for (i = 0; i < 32; i++) r ^= rand64() << i;
     return r;
 }
 
-void Hash :: printStatistics(int nodes) {
+void Hash::printStatistics(const int nodes) const {
     printf("Hash found %d, hash/nodes: %d%%\n",
             hash_nodes,
             100 * hash_nodes/nodes);
-    fflush(stdout);
+    Util::flush();
 }

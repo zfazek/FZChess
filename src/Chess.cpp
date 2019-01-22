@@ -1,7 +1,7 @@
 #include "Chess.h"
+
 #include <cstring>
 #include <cstdio>
-#include <cmath>
 
 using namespace std;
 
@@ -64,7 +64,7 @@ void Chess::make_move() {
     stop_search = false;
     for (;;) {
 #ifdef HASH
-        hash->hashes.clear();
+        hash->clear();
 #endif
         //Calculate summa of material for end game threshold
         sm = table->eval->sum_material(player_to_move);
@@ -93,14 +93,14 @@ void Chess::make_move() {
                 stop_search = true;
         if (depth > 30)
             stop_search = true;
-        printf("info depth %d seldepth %d time %d nodes %lld nps %lld\n",
+        printf("info depth %d seldepth %d time %d nodes %ld nps %ld\n",
                 depth, seldepth, time_elapsed, nodes,
-                (time_elapsed==0)?0:(long long)((1000.0*nodes/time_elapsed)));Util::flush();
+                (time_elapsed==0)?0:(uint64_t)((1000.0*nodes/time_elapsed)));Util::flush();
         if (DEBUG) {
             debugfile=fopen("./debug.txt", "a");
-            fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %llu nps %d\n",
+            fprintf(debugfile, "<- info depth %d seldepth %d time %d nodes %lu nps %lu\n",
                     depth, seldepth, time_elapsed, nodes,
-                    (time_elapsed==0)?0:(int)(1000*nodes/time_elapsed));
+                    (time_elapsed==0)?0:(uint64_t)(1000*nodes/time_elapsed));
             fclose(debugfile);
         }
         calculate_evarray_new();
@@ -182,7 +182,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             if (hash->posInHashtable()) {
                 u = hash->getU();
                 --move_number;
-                hash->hash_nodes++;
+                ++hash->hash_nodes;
             }
 
             //not in the hashtable. normal evaluating
@@ -258,7 +258,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                         uu =  1;
                     if (uu == 0 && u < 0)
                         uu = -1;
-                    printf("info multipv 1 depth %d seldepth %d time %d score mate %d nodes %llu pv ",
+                    printf("info multipv 1 depth %d seldepth %d time %d score mate %d nodes %lu pv ",
                             curr_depth, curr_seldepth, time_elapsed, uu, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(move_str, best_line[dpt].moves[b]));
@@ -266,7 +266,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     printf("\n");Util::flush();
                     mate_score = abs(u);
                 } else {
-                    printf("info multipv 1 depth %d seldepth %d time %d score cp %d nodes %llu pv ",
+                    printf("info multipv 1 depth %d seldepth %d time %d score cp %d nodes %lu pv ",
                             curr_depth, curr_seldepth, time_elapsed, u, nodes);
                     for (b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(move_str, best_line[dpt].moves[b]));
@@ -289,7 +289,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
 int Chess::perft(int dpt) {
     int i, nbr_legal;
     int alfarray[MAX_LEGAL_MOVES];
-    unsigned long long nodes = 0;
+    uint64_t nodes = 0;
 
     if (dpt == 0) return 1;
 

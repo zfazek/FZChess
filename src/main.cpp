@@ -1,4 +1,5 @@
 #include "Chess.h"
+
 #include <cstdio>
 #include <cstring>
 #include <cassert>
@@ -18,7 +19,7 @@ void test_move_h2h4() {
     printf("n: %d\n", chess.n);
     assert(strcmp(chess.move_str, "e7e6 ") == 0);
     //assert(chess.nodes == 136617 || chess.nodes == 163754 || chess.nodes == 208434);
-    assert(chess.nodes == 178371);
+    assert(chess.nodes == 201747);
 #ifdef HASH
     assert(20000 < chess.hash->hash_nodes);
 #endif
@@ -32,10 +33,10 @@ void test_perft_pos1(int depth) {
         chess.start_game();
         chess.table->setboard(input);
         int start_time = Util::get_ms();
-        unsigned long long nodes = chess.perft(i);
+        uint64_t nodes = chess.perft(i);
         int stop_time = Util::get_ms();
         int duration = stop_time - start_time;
-        printf("depth: %d nodes: %'llu time: %'dms knps: %'llu\n",
+        printf("depth: %d nodes: %'lu time: %'dms knps: %'lu\n",
                 i,
                 nodes,
                 duration,
@@ -62,10 +63,10 @@ void test_perft_startpos(int depth) {
         chess.uci->position_received(input);
         chess.max_time = 0;
         int start_time = Util::get_ms();
-        unsigned long long nodes = chess.perft(i);
+        uint64_t nodes = chess.perft(i);
         int stop_time = Util::get_ms();
         int duration = stop_time - start_time;
-        printf("depth: %d nodes: %'llu time: %'dms knps: %'llu\n",
+        printf("depth: %d nodes: %'lu time: %'d ms knps: %'lu\n",
                 i,
                 nodes,
                 duration,
@@ -91,7 +92,6 @@ void test_perft() {
 }
 
 void test_eval_depth_1() {
-    //char input[] = "position fen 4k2n/8/6p1/6P1/6p1/6P1/8/4K2N w - - 0 1 ";
     char input[] = "position fen 4k3/8/6p1/6P1/6p1/6P1/4K3/8 w - - 0 1";
     puts(input);
     Chess chess;
@@ -205,9 +205,9 @@ void test_bratko_kopec() {
     test_bratko_kopec_1();
     test_bratko_kopec_1a();
     test_bratko_kopec_1b();
-    */
-    //test_bratko_kopec_2();
+    test_bratko_kopec_2();
     test_bratko_kopec_10();
+    */
     test_bratko_kopec_12();
 }
 
@@ -282,7 +282,8 @@ int main(int argc, char* argv[]) {
         } else if (strcmp(argv[1], "3") == 0) {
             test_bratko_kopec();
         } else if (strcmp(argv[1], "4") == 0) {
-            //test_mate_in_2();
+            test_mate_in_2();
+            test_eval_depth_1();
             test_eval_depth_2();
         }
     } else {
