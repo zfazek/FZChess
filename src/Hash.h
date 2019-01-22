@@ -5,33 +5,31 @@
 class Chess;
 
 class Hash {
-    public:
-        uint64_t hash;
-        uint64_t hash_side_white;
-        uint64_t hash_side_black;
-        uint64_t hash_piece[2][7][120];
-        uint64_t hash_enpassant[120];
-        uint64_t hash_castle[15];
-        uint64_t hash_index;
+  public:
+    uint64_t hash;
+    uint64_t hash_side_white;
+    uint64_t hash_side_black;
+    uint64_t hash_piece[2][7][120];
+    uint64_t hash_enpassant[120];
+    uint64_t hash_castle[15];
+    uint64_t hash_index;
 
-        unsigned int hash_nodes;
+    unsigned int hash_nodes;
 
-        Hash();
-        ~Hash();
+    Hash();
+    ~Hash();
 
-        void set_hash(const Chess* chess);
-        uint64_t rand64() const;
-        uint64_t hash_rand() const;
-        void init_hash();
-        void reset_counters();
-        bool posInHashtable() const;
-        int getU() const;
-        void setU(const int u);
-        void printStatistics(const int nodes) const;
-        void clear() {
-            hashes.clear();
-        }
+    void set_hash(const Chess *chess);
+    uint64_t rand64() const;
+    uint64_t hash_rand() const;
+    void init_hash();
+    void reset_counters();
+    bool posInHashtable() const;
+    int getU() const;
+    void setU(const int u);
+    void printStatistics(const int nodes) const;
+    void clear() { hashes.clear(); }
 
-    private:
-        std::map<uint64_t, int> hashes;
+  private:
+    std::map<uint64_t, int> hashes;
 };

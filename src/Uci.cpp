@@ -1,21 +1,20 @@
 #include "Uci.h"
+#include "Chess.h"
 #include <cstdio>
 #include <cstring>
-#include "Chess.h"
 
-Uci::Uci(Chess* ch) {
-    chess = ch;
-}
+Uci::Uci(Chess *ch) { chess = ch; }
 
-Uci::~Uci() {
-}
+Uci::~Uci() {}
 
-void Uci::position_received(char* input) {
+void Uci::position_received(char *input) {
     char move_old[6];
-    strcpy(move_old,"     ");
+    strcpy(move_old, "     ");
     chess->start_game();
     chess->player_to_move = chess->WHITE;
-    if (! strstr(input, "move")) return;
+    if (!strstr(input, "move")) {
+        return;
+    }
     for (size_t i = 24; i < strlen(input) - 1; i++) {
         move_old[0] = input[i];
         i++;
@@ -34,15 +33,15 @@ void Uci::position_received(char* input) {
         chess->table->update_table(Util::str2move(move_old), false);
         chess->invert_player_to_move();
     }
-    //print_table();
+    // print_table();
 }
 
-void Uci::processCommands(char* input) {
+void Uci::processCommands(char *input) {
     int movestogo = 40;
     int wtime, btime;
-    int  winc = 0;
-    int  binc = 0;
-    char* ret;
+    int winc = 0;
+    int binc = 0;
+    char *ret;
     chess->gui_depth = 0;
     if (strstr(input, "uci")) {
         printf("id name FZChess++\n");
@@ -54,7 +53,7 @@ void Uci::processCommands(char* input) {
         chess->util->flush();
     }
     if (chess->DEBUG) {
-        chess->debugfile=fopen("./debug.txt", "w");
+        chess->debugfile = fopen("./debug.txt", "w");
         fclose(chess->debugfile);
     }
     while (1) {
@@ -65,11 +64,11 @@ void Uci::processCommands(char* input) {
         if (chess->th_make_move.joinable()) {
             chess->th_make_move.join();
         }
-        //printf("Process input: %s\n", input);util->flush();
+        // printf("Process input: %s\n", input);util->flush();
         if (chess->DEBUG) {
             chess->debugfile = fopen("./debug.txt", "w");
             fclose(chess->debugfile);
-            if ( ! strstr(input,"quit") ) {
+            if (!strstr(input, "quit")) {
                 chess->debugfile = fopen("./debug.txt", "a");
                 fprintf(chess->debugfile, "-> %s", input);
                 fclose(chess->debugfile);
@@ -82,31 +81,42 @@ void Uci::processCommands(char* input) {
         if (strstr(input, "position startpos")) {
             position_received(input);
         }
-        if (strstr(input, "position fen")) chess->table->setboard(input);
+        if (strstr(input, "position fen")) {
+            chess->table->setboard(input);
+        }
         if (strstr(input, "go")) {
             chess->FZChess = chess->player_to_move;
-            //if (strstr(input, "ponder")) continue;
+            // if (strstr(input, "ponder")) continue;
             chess->movetime = 0;
-            if (strstr(input, "movetime"))  {
-                sscanf(strstr(input, "movetime"),  "movetime %d",  &chess->max_time);
+            if (strstr(input, "movetime")) {
+                sscanf(strstr(input, "movetime"), "movetime %d",
+                       &chess->max_time);
                 chess->movetime = chess->max_time;
-            }
-            else {
-                if (strstr(input, "movestogo"))
-                    sscanf(strstr(input,"movestogo"),"movestogo %d",&movestogo);
-                if (strstr(input, "wtime"))
+            } else {
+                if (strstr(input, "movestogo")) {
+                    sscanf(strstr(input, "movestogo"), "movestogo %d",
+                           &movestogo);
+                }
+                if (strstr(input, "wtime")) {
                     sscanf(strstr(input, "wtime"), "wtime %d", &wtime);
-                if (strstr(input, "btime"))
+                }
+                if (strstr(input, "btime")) {
                     sscanf(strstr(input, "btime"), "btime %d", &btime);
-                if (strstr(input, "winc"))
+                }
+                if (strstr(input, "winc")) {
                     sscanf(strstr(input, "winc"), "winc %d", &winc);
-                if (strstr(input, "binc"))
+                }
+                if (strstr(input, "binc")) {
                     sscanf(strstr(input, "binc"), "binc %d", &binc);
-                if (chess->FZChess == chess->WHITE)
+                }
+                if (chess->FZChess == chess->WHITE) {
                     chess->max_time = (wtime + movestogo * winc) / movestogo;
-                else chess->max_time = (btime + movestogo * binc) / movestogo;
+                } else {
+                    chess->max_time = (btime + movestogo * binc) / movestogo;
+                }
                 if (strstr(input, "depth")) {
-                    sscanf(strstr(input, "depth"), "depth %d", &chess->gui_depth);
+                    sscanf(strstr(input, "depth"), "depth %d",
+                           &chess->gui_depth);
                     chess->max_time = 0;
                 }
                 if (strstr(input, "infinite")) {
@@ -116,7 +126,8 @@ void Uci::processCommands(char* input) {
             }
             if (chess->DEBUG) {
                 chess->debugfile = fopen("./debug.txt", "a");
-                fprintf(chess->debugfile, "max time: %d wtime: %d btime: %d winc: %d "
+                fprintf(chess->debugfile,
+                        "max time: %d wtime: %d btime: %d winc: %d "
                         "binc: %d movestogo: %d\n",
                         chess->max_time, wtime, btime, winc, binc, movestogo);
                 chess->util->flush();
