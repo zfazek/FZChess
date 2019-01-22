@@ -64,6 +64,80 @@ void test_perft_pos1(const int depth) {
     puts("");
 }
 
+void test_perft_pos2(const int depth) {
+    const char input[] = "position fen "
+                   "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";
+    puts(input);
+    for (int i = 1; i <= depth; i++) {
+        Chess chess;
+        chess.start_game();
+        chess.table->setboard(input);
+        int start_time = Util::get_ms();
+        uint64_t nodes = chess.perft(i);
+        int stop_time = Util::get_ms();
+        int duration = stop_time - start_time;
+        printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
+               duration, (duration == 0) ? 0 : (nodes / duration));
+        switch (i) {
+        case 1:
+            assert(nodes == 14);
+            break;
+        case 2:
+            assert(nodes == 191);
+            break;
+        case 3:
+            assert(nodes == 2812);
+            break;
+        case 4:
+            assert(nodes == 43238);
+            break;
+        case 5:
+            assert(nodes == 674624);
+            break;
+        default:
+            break;
+        }
+    }
+    puts("");
+}
+
+void test_perft_pos3(const int depth) {
+    const char input[] = "position fen "
+                   "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
+    puts(input);
+    for (int i = 1; i <= depth; i++) {
+        Chess chess;
+        chess.start_game();
+        chess.table->setboard(input);
+        int start_time = Util::get_ms();
+        uint64_t nodes = chess.perft(i);
+        int stop_time = Util::get_ms();
+        int duration = stop_time - start_time;
+        printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
+               duration, (duration == 0) ? 0 : (nodes / duration));
+        switch (i) {
+        case 1:
+            assert(nodes == 6);
+            break;
+        case 2:
+            assert(nodes == 264);
+            break;
+        case 3:
+            assert(nodes == 9467);
+            break;
+        case 4:
+            assert(nodes == 422333);
+            break;
+        case 5:
+            assert(nodes == 15833292);
+            break;
+        default:
+            break;
+        }
+    }
+    puts("");
+}
+
 void test_perft_startpos(const int depth) {
     const char input[] = "position startpos";
     puts(input);
@@ -105,9 +179,10 @@ void test_perft_startpos(const int depth) {
 void test_perft() {
     const time_t mytime = time(NULL);
     printf("%s", ctime(&mytime));
-    const int depth = 4;
-    test_perft_startpos(depth);
-    test_perft_pos1(depth);
+    test_perft_startpos(4);
+    test_perft_pos1(4);
+    test_perft_pos2(5);
+    test_perft_pos3(5);
 }
 
 void test_eval_depth_1() {
