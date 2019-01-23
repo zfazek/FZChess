@@ -205,7 +205,7 @@ void test_eval_depth_2() {
 }
 
 void test_bratko_kopec_1() {
-    // 2018.01.23.core i5, c++
+    // 2018.01.23. linode, c++
     // info depth 5 seldepth 5 time 16964 nodes 1865184 nps 109949
     const char input[] =
         "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - "
