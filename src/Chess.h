@@ -1,11 +1,10 @@
 #pragma once
 
+#include <setjmp.h>
+
 #include "Hash.h"
 #include "Table.h"
 #include "Uci.h"
-#include "Util.h"
-#include <setjmp.h>
-#include <thread>
 
 #define QUIESCENCE_SEARCH
 #define HASH
@@ -50,10 +49,9 @@ class Chess {
     Chess();
     ~Chess();
 
-    Hash *hash;
-    Util *util;
-    Uci *uci;
     Table *table;
+    Hash *hash;
+    Uci *uci;
 
     int WHITE; // TODO delete
     int BLACK; // TODO delete
@@ -67,6 +65,39 @@ class Chess {
     // Array of legal moves
     int legal_moves[MAX_LEGAL_MOVES];
 
+    char move_str[6];
+    int FZChess; // 1:white, -1:black
+
+    uint64_t nodes;
+    int max_time = 0;
+    int movetime;
+    int depth, seldepth, curr_depth, curr_seldepth, gui_depth;
+    int default_seldepth;
+    bool break_if_mate_found;
+    int sm;
+    int legal_pointer;
+    int nof_legal;
+    int mate_score;
+
+    struct move_t root_moves[MAX_LEGAL_MOVES];
+
+    // Stores the parameters of the given position
+    struct move movelist[MAX_MOVES];
+
+    int DEBUG;
+    FILE *debugfile;
+    bool stop_received;
+
+    void start_game();
+    void make_move();
+    void calculate_evarray();
+    void calculate_evarray_new();
+    void invert_player_to_move();
+    void processCommands(const char *input);
+    uint64_t perft(const int dpt);
+
+  private:
+
     // Array of best line
     int curr_line[MAX_LEGAL_MOVES];
 
@@ -79,44 +110,13 @@ class Chess {
     int eva_alfabeta_temp[MAX_LEGAL_MOVES];
 #endif
 
-    char move_str[6];
-    char input[1001];
-    int FZChess; // 1:white, -1:black
-
-    uint64_t nodes;
-    jmp_buf env;
-    int start_time, stop_time, movetime;
-    int max_time = 0;
-    int stop_search;
-    int depth, seldepth, curr_depth, curr_seldepth, gui_depth;
-    int default_seldepth;
     bool last_ply;
-    bool break_if_mate_found;
-    int sm;
-    int legal_pointer;
-    int nof_legal;
     int best_move;
-    int mate_score;
-    std::thread th_make_move;
     int sort_alfarray;
+    jmp_buf env;
+    int start_time, stop_time;
+    int stop_search;
 
-    struct move_t root_moves[MAX_LEGAL_MOVES];
-
-    // Stores the parameters of the given position
-    struct move movelist[MAX_MOVES];
-
-    int DEBUG;
-    FILE *debugfile;
-    bool stop_received;
-
-    int n;
-    void start_game();
-    void make_move();
     int alfabeta(int dpt, int alfa, int beta);
-    void calculate_evarray();
-    void calculate_evarray_new();
     void checkup();
-    void invert_player_to_move();
-    void processCommands(const char *input);
-    uint64_t perft(const int dpt);
 };

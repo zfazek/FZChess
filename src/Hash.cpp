@@ -3,16 +3,17 @@
 #include "Chess.h"
 #include "Util.h"
 
-#include <cstdio>
-#include <cstdlib>
+// static const unsigned int HASHSIZE = 1024 * 1024 * 16;
 
-// const unsigned int HASHSIZE = 1024 * 1024 * 16;
-
-Hash::Hash() { init_hash(); }
+Hash::Hash() {
+    init_hash();
+}
 
 Hash::~Hash() {}
 
-void Hash::reset_counters() { hash_nodes = 0; }
+void Hash::reset_counters() {
+    hash_nodes = 0;
+}
 
 void Hash::init_hash() {
     srand(time(0));
@@ -39,7 +40,6 @@ void Hash::init_hash() {
 
 // Set the hash variable of the current position
 void Hash::set_hash(const Chess *chess) {
-    int field, figure;
     hash = 0;
     // XOR the side to move
     if (chess->player_to_move == chess->WHITE) {
@@ -49,9 +49,9 @@ void Hash::set_hash(const Chess *chess) {
     }
     // XOR the figures;
     for (int k = 0; k < 120; k++) {
-        field = chess->tablelist[chess->move_number][k];
+        const int field = chess->tablelist[chess->move_number][k];
         if (field > EMPTY && field < OFFBOARD) {
-            figure = (field & 127);
+            const int figure = (field & 127);
             int i;
             if ((field & 128) == 128) {
                 i = 1;
@@ -68,11 +68,17 @@ void Hash::set_hash(const Chess *chess) {
     // hash_index = hash % HASHSIZE;
 }
 
-bool Hash::posInHashtable() const { return hashes.find(hash) != hashes.end(); }
+bool Hash::posInHashtable() const {
+    return hashes.find(hash) != hashes.end();
+}
 
-int Hash::getU() const { return hashes.at(hash); }
+int Hash::getU() const {
+    return hashes.at(hash);
+}
 
-void Hash::setU(const int u) { hashes[hash] = u; }
+void Hash::setU(const int u) {
+    hashes[hash] = u;
+}
 
 uint64_t Hash::rand64() const {
     uint64_t output;
@@ -89,16 +95,19 @@ uint64_t Hash::rand64() const {
 }
 
 uint64_t Hash::hash_rand() const {
-    int i;
     uint64_t r = 0LLU;
-    for (i = 0; i < 32; i++) {
+    for (int i = 0; i < 32; i++) {
         r ^= rand64() << i;
     }
     return r;
 }
 
 void Hash::printStatistics(const int nodes) const {
-    printf("Hash found %d, hash/nodes: %d%%\n", hash_nodes,
+    printf("Hash found %lu, hash/nodes: %lu%%\n", hash_nodes,
            100 * hash_nodes / nodes);
     Util::flush();
+}
+
+void Hash::clear() {
+    hashes.clear();
 }

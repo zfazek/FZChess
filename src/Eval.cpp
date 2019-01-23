@@ -1,10 +1,8 @@
 #include "Eval.h"
+
 #include "Chess.h"
-#include <cmath>
 
-using namespace std;
-
-Eval::Eval(Chess *ch) { chess = ch; }
+Eval::Eval(Chess *ch) : chess(ch) {}
 
 Eval::~Eval() {}
 
@@ -25,10 +23,8 @@ int Eval::evaluation_material(const int dpt) {
         const int figure = *(pt + i);
         if (figure > 0 && figure < OFFBOARD) {
             // c=1 : own figure is found, c=-1 opposite figure is found
-            if ((chess->player_to_move == chess->WHITE &&
-                 (figure & 128) == 0) ||
-                (chess->player_to_move == chess->BLACK &&
-                 (figure & 128) == 128)) {
+            if ((chess->player_to_move == chess->WHITE && (figure & 128) == 0) ||
+                (chess->player_to_move == chess->BLACK && (figure & 128) == 128)) {
                 c = 1;
             } else {
                 c = -1;
@@ -65,10 +61,8 @@ int Eval::evaluation_material(const int dpt) {
     // In the end game bonus if the enemy king is close
     if (chess->sm < end_game_threshold) {
         random_window = 2;
-        evaking =
-            3 * abs((pm->pos_white_king / 10) - (pm->pos_black_king / 10));
-        evaking +=
-            3 * abs((pm->pos_white_king % 10) - (pm->pos_black_king % 10));
+        evaking = 3 * abs((pm->pos_white_king / 10) - (pm->pos_black_king / 10));
+        evaking += 3 * abs((pm->pos_white_king % 10) - (pm->pos_black_king % 10));
         if ((dpt % 2) == 0) {
             e += evaking;
         } else {
@@ -79,16 +73,13 @@ int Eval::evaluation_material(const int dpt) {
         if ((chess->player_to_move == chess->WHITE) && ((dpt % 2) == 1)) {
             evaking = 5 * (abs(5 - (pm->pos_black_king / 10)) +
                            abs(5 - (pm->pos_black_king % 10)));
-        } else if ((chess->player_to_move == chess->WHITE) &&
-                   ((dpt % 2) == 0)) {
+        } else if ((chess->player_to_move == chess->WHITE) && ((dpt % 2) == 0)) {
             evaking = -5 * (abs(5 - (pm->pos_white_king / 10)) +
                             abs(5 - (pm->pos_white_king % 10)));
-        } else if ((chess->player_to_move == chess->BLACK) &&
-                   ((dpt % 2) == 0)) {
+        } else if ((chess->player_to_move == chess->BLACK) && ((dpt % 2) == 0)) {
             evaking = -5 * (abs(5 - (pm->pos_black_king / 10)) +
                             abs(5 - (pm->pos_black_king % 10)));
-        } else if ((chess->player_to_move == chess->BLACK) &&
-                   ((dpt % 2) == 1)) {
+        } else if ((chess->player_to_move == chess->BLACK) && ((dpt % 2) == 1)) {
             evaking = 5 * (abs(5 - (pm->pos_white_king / 10)) +
                            abs(5 - (pm->pos_white_king % 10)));
         }
@@ -138,7 +129,7 @@ int Eval::evaluation(const int e_legal_pointer, const int dpt) {
     }
 
     // Adds random to evaluation
-    const int random_number = (rand() % random_window);
+    const int random_number = 0; // rand() % (random_window + 1);
     return evaluation_material(dpt) + 2 * lp + random_number;
 }
 

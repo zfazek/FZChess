@@ -1,7 +1,10 @@
 #include "Uci.h"
-#include "Chess.h"
+
 #include <cstdio>
 #include <cstring>
+
+#include "Chess.h"
+#include "Util.h"
 
 Uci::Uci(Chess *ch) : chess(ch) {}
 
@@ -51,7 +54,7 @@ void Uci::processCommands(const char *cmd) {
         printf("option name Ponder type check default false\n");
         printf("option name MultiPV type spin default 1 min 1 max 1\n");
         printf("uciok\n");
-        chess->util->flush();
+        Util::flush();
     }
     if (chess->DEBUG) {
         chess->debugfile = fopen("./debug.txt", "w");
@@ -62,10 +65,10 @@ void Uci::processCommands(const char *cmd) {
         if (ret && strstr(input, "stop")) {
             chess->stop_received = true;
         }
-        if (chess->th_make_move.joinable()) {
-            chess->th_make_move.join();
+        if (th_make_move.joinable()) {
+            th_make_move.join();
         }
-        // printf("Process input: %s\n", input);util->flush();
+        // printf("Process input: %s\n", input);Util::flush();
         if (chess->DEBUG) {
             chess->debugfile = fopen("./debug.txt", "w");
             fclose(chess->debugfile);
@@ -77,7 +80,7 @@ void Uci::processCommands(const char *cmd) {
         }
         if (strstr(input, "isready")) {
             printf("readyok\n");
-            chess->util->flush();
+            Util::flush();
         }
         if (strstr(input, "position startpos")) {
             position_received(input);
@@ -131,11 +134,11 @@ void Uci::processCommands(const char *cmd) {
                         "max time: %d wtime: %d btime: %d winc: %d "
                         "binc: %d movestogo: %d\n",
                         chess->max_time, wtime, btime, winc, binc, movestogo);
-                chess->util->flush();
+                Util::flush();
                 fclose(chess->debugfile);
             }
             chess->stop_received = false;
-            chess->th_make_move = std::thread(&Chess::make_move, chess);
+            th_make_move = std::thread(&Chess::make_move, chess);
         }
     }
 }

@@ -1,14 +1,12 @@
 #include "Chess.h"
+#include "Util.h"
 
 #include <cassert>
 #include <cstdio>
 #include <cstring>
-#include <locale.h>
-#include <time.h>
 
 void test_move_h2h4() {
     Chess chess;
-    chess.n = 0;
     chess.start_game();
     const char input[] = "position startpos moves h2h4";
     chess.uci->position_received(input);
@@ -16,11 +14,8 @@ void test_move_h2h4() {
     chess.max_time = 0;
     chess.gui_depth = 4; // "go depth 4"
     chess.make_move();
-    printf("n: %d\n", chess.n);
     assert(strcmp(chess.move_str, "e7e6 ") == 0);
-    // assert(chess.nodes == 136617 || chess.nodes == 163754 || chess.nodes ==
-    // 208434);
-    assert(chess.nodes == 201747);
+    assert(chess.nodes == 201741);
 #ifdef HASH
     assert(20000 < chess.hash->hash_nodes);
 #endif
@@ -210,6 +205,8 @@ void test_eval_depth_2() {
 }
 
 void test_bratko_kopec_1() {
+    // 2018.01.23.core i5, c++
+    // info depth 5 seldepth 5 time 16964 nodes 1865184 nps 109949
     const char input[] =
         "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - "
         "- 0 1 bm Qd1+; id BK.01;";
@@ -307,14 +304,14 @@ void test_bratko_kopec_12() {
 }
 
 void test_bratko_kopec() {
+    test_bratko_kopec_1();
     /*
-  test_bratko_kopec_1();
-  test_bratko_kopec_1a();
-  test_bratko_kopec_1b();
-  test_bratko_kopec_2();
-  test_bratko_kopec_10();
-  */
+    test_bratko_kopec_1a();
+    test_bratko_kopec_1b();
+    test_bratko_kopec_2();
+    test_bratko_kopec_10();
     test_bratko_kopec_12();
+    */
 }
 
 void test_calculate_evarray(Chess &chess) {

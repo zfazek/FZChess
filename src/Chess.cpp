@@ -3,26 +3,8 @@
 #include <cstdio>
 #include <cstring>
 
-using namespace std;
-
-enum figures {
-    PAWN1,
-    PAWN2,
-    PAWN3,
-    PAWN4,
-    PAWN5,
-    PAWN6,
-    PAWN7,
-    PAWN8,
-    KNIGHT1,
-    KNIGHT2,
-    BISHOP1,
-    BISHOP2,
-    ROOK1,
-    ROOK2,
-    QUEEN,
-    KING
-};
+#include "Eval.h"
+#include "Util.h"
 
 struct best_lines {
     int length;
@@ -118,18 +100,14 @@ void Chess::make_move() {
         }
         printf("info depth %d seldepth %d time %d nodes %ld nps %ld\n", depth,
                seldepth, time_elapsed, nodes,
-               (time_elapsed == 0)
-                   ? 0
-                   : (uint64_t)((1000.0 * nodes / time_elapsed)));
+               (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         Util::flush();
         if (DEBUG) {
             debugfile = fopen("./debug.txt", "a");
             fprintf(debugfile,
                     "<- info depth %d seldepth %d time %d nodes %lu nps %lu\n",
                     depth, seldepth, time_elapsed, nodes,
-                    (time_elapsed == 0)
-                        ? 0
-                        : (uint64_t)(1000 * nodes / time_elapsed));
+                    (time_elapsed == 0) ? 0 : (uint64_t)(1000 * nodes / time_elapsed));
             fclose(debugfile);
         }
         calculate_evarray_new();
@@ -242,7 +220,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             else {
 #endif
                 if (table->third_occurance() ||
-                    table->not_enough_material() ||
+                    table->is_not_enough_material() ||
                     movelist[move_number].not_pawn_move >= 100) {
                     u = table->eval->DRAW;
                     --move_number;
@@ -261,7 +239,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         // Not last ply
         else {
             if (table->third_occurance() ||
-                table->not_enough_material() ||
+                table->is_not_enough_material() ||
                 movelist[move_number].not_pawn_move >= 100) {
                 u = table->eval->DRAW;
                 --move_number;

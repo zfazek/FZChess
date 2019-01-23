@@ -1,17 +1,18 @@
 #include "Table.h"
-#include "Chess.h"
-#include <cmath>
-#include <cstdio>
+
 #include <cstring>
 
-using namespace std;
+#include "Chess.h"
+#include "Eval.h"
+#include "Util.h"
 
-Table::Table(Chess *ch) {
-    chess = ch;
+Table::Table(Chess *ch) : chess(ch) {
     eval = new Eval(chess);
 }
 
-Table::~Table() { delete eval; }
+Table::~Table() {
+    delete eval;
+}
 
 // Resets the parameters and the table
 void Table::reset_movelist() {
@@ -532,7 +533,7 @@ bool Table::is_attacked(const int field, const int color) {
 }
 
 // Checks not enough material
-bool Table::not_enough_material() {
+bool Table::is_not_enough_material() {
     int white_knight = 0;
     int white_bishop = 0;
     int black_knight = 0;

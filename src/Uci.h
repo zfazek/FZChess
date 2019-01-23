@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 class Chess;
 
 class Uci {
@@ -12,4 +14,5 @@ class Uci {
 
   private:
     Chess *chess;
+    std::thread th_make_move;
 };
