@@ -67,7 +67,7 @@ void Table::reset_movelist() {
     chess->move_number = 0;
 }
 
-void Table::update_table(const int move, bool print, bool fake) {
+void Table::update_table(const int move, const bool print, const bool fake) {
     int n, x_from, y_from, x_to, y_to;
     int figure_from, figure_to, square_from, square_to;
     char promotion = ' ';
@@ -75,10 +75,10 @@ void Table::update_table(const int move, bool print, bool fake) {
     // Copies the table for the next move and updates later according to the
     // move
     int *pt1 = chess->tablelist[chess->move_number];
-    struct move *pm1 = chess->movelist + chess->move_number;
-    ++chess->move_number;
+    struct position_t *pm1 = chess->movelist + chess->move_number;
+    chess->move_number++;
     int *pt2 = chess->tablelist[chess->move_number];
-    struct move *pm2 = chess->movelist + chess->move_number;
+    struct position_t *pm2 = chess->movelist + chess->move_number;
     memcpy(pt2, pt1, 120 * sizeof(int));
     x_from = (move & 0xe000) / 256 / 32;
     y_from = (move & 0x1c00) / 256 / 4;
@@ -198,7 +198,7 @@ void Table::update_table(const int move, bool print, bool fake) {
             if (chess->move_number == 1) {
                 pm2->not_pawn_move = 1;
 
-                // not_pawn_move++
+                // not_pawn_move
             } else {
                 pm2->not_pawn_move = pm1->not_pawn_move + 1;
             }
@@ -480,10 +480,10 @@ bool Table::is_attacked(const int field, const int color) {
     } else {
         color_offset = 0;
     }
-    for (int k = 0; k < 4; ++k) {
+    for (int k = 0; k < 4; k++) {
         int kk = 1;
         while (*(ptablelist + field + kk * dir_rook[k]) == EMPTY) {
-            ++kk;
+            kk++;
         }
         coord = field + kk * dir_rook[k];
         if (ptablelist[coord] == Queen + color_offset) {
@@ -496,10 +496,10 @@ bool Table::is_attacked(const int field, const int color) {
             return true;
         }
     }
-    for (int k = 0; k < 4; ++k) {
+    for (int k = 0; k < 4; k++) {
         int kk = 1;
         while (*(ptablelist + field + kk * dir_bishop[k]) == EMPTY) {
-            ++kk;
+            kk++;
         }
         coord = field + kk * dir_bishop[k];
         if (ptablelist[coord] == Queen + color_offset) {
@@ -512,7 +512,7 @@ bool Table::is_attacked(const int field, const int color) {
             return true;
         }
     }
-    for (int k = 0; k < 8; ++k) {
+    for (int k = 0; k < 8; k++) {
         if (*(ptablelist + field + dir_knight[k]) == Knight + color_offset) {
             return true;
         }
@@ -538,7 +538,7 @@ bool Table::is_not_enough_material() {
     int white_bishop = 0;
     int black_knight = 0;
     int black_bishop = 0;
-    for (int i = 0; i < 120; ++i) {
+    for (int i = 0; i < 120; i++) {
         int c = chess->tablelist[chess->move_number][i];
         if (c == 0 || c == OFFBOARD) {
             continue;
@@ -562,13 +562,13 @@ bool Table::is_not_enough_material() {
             return false;
         }
         if (c == WhiteKnight) {
-            ++white_knight;
+            white_knight++;
         } else if (c == BlackKnight) {
-            ++black_knight;
+            black_knight++;
         } else if (c == WhiteBishop) {
-            ++white_bishop;
+            white_bishop++;
         } else if (c == BlackBishop) {
-            ++black_bishop;
+            black_bishop++;
         }
     }
     if (white_bishop == 2) {
@@ -593,95 +593,65 @@ void Table::castling() {
     if (chess->player_to_move == chess->WHITE) {
         // Checks the conditions of castling
         // e1g1
-        if (t[28] == WhiteRook) {
-            if (t[25] == WhiteKing) {
-                if ((chess->movelist[chess->move_number].castle & 1) == 1) {
-                    if (!is_attacked(25, WHITE)) {
-                        if (!is_attacked(26, WHITE)) {
-                            if (!is_attacked(27, WHITE)) {
-                                if (t[26] == EMPTY) {
-                                    if (t[27] == EMPTY) {
-                                        ++chess->legal_pointer;
-                                        chess->legal_moves
-                                            [chess->legal_pointer] = 0x80c0;
-                                        is_really_legal();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if (t[28] == WhiteRook &&
+                t[25] == WhiteKing &&
+                (chess->movelist[chess->move_number].castle & 1) == 1 &&
+                !is_attacked(25, WHITE) &&
+                !is_attacked(26, WHITE) &&
+                !is_attacked(27, WHITE) &&
+                t[26] == EMPTY &&
+                t[27] == EMPTY) {
+            chess->legal_pointer++;
+            chess->legal_moves
+                [chess->legal_pointer] = 0x80c0;
+            is_really_legal();
         }
         // e1c1
-        if (t[25] == WhiteKing) {
-            if (t[21] == WhiteRook) {
-                if ((chess->movelist[chess->move_number].castle & 2) == 2) {
-                    if (!is_attacked(25, WHITE)) {
-                        if (!is_attacked(24, WHITE)) {
-                            if (!is_attacked(23, WHITE)) {
-                                if (t[24] == EMPTY) {
-                                    if (t[23] == EMPTY) {
-                                        if (t[22] == EMPTY) {
-                                            ++chess->legal_pointer;
-                                            chess->legal_moves
-                                                [chess->legal_pointer] = 0x8040;
-                                            is_really_legal();
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if (t[25] == WhiteKing &&
+                t[21] == WhiteRook &&
+                (chess->movelist[chess->move_number].castle & 2) == 2 &&
+                !is_attacked(25, WHITE) &&
+                !is_attacked(24, WHITE) &&
+                !is_attacked(23, WHITE) &&
+                t[24] == EMPTY &&
+                t[23] == EMPTY &&
+                t[22] == EMPTY) {
+            chess->legal_pointer++;
+            chess->legal_moves
+                [chess->legal_pointer] = 0x8040;
+            is_really_legal();
         }
 
         // if (chess->player_to_move == BLACK)
     } else {
-        if ((chess->movelist[chess->move_number].castle & 4) == 4) {
-            if (!is_attacked(95, BLACK)) {
-                if (!is_attacked(96, BLACK)) {
-                    if (!is_attacked(97, BLACK)) {
-                        if (t[96] == EMPTY) {
-                            if (t[97] == EMPTY) {
-                                if (t[98] == BlackRook) {
-                                    if (t[95] == BlackKing) {
-                                        ++chess->legal_pointer;
-                                        // e8g8
-                                        chess->legal_moves
-                                            [chess->legal_pointer] = 0x9cdc;
-                                        is_really_legal();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if ((chess->movelist[chess->move_number].castle & 4) == 4 &&
+                !is_attacked(95, BLACK) &&
+                !is_attacked(96, BLACK) &&
+                !is_attacked(97, BLACK) &&
+                t[96] == EMPTY &&
+                t[97] == EMPTY &&
+                t[98] == BlackRook &&
+                t[95] == BlackKing) {
+            chess->legal_pointer++;
+            // e8g8
+            chess->legal_moves
+                [chess->legal_pointer] = 0x9cdc;
+            is_really_legal();
         }
         // e8c8
-        if (t[95] == BlackKing) {
-            if (t[91] == BlackRook) {
-                if ((chess->movelist[chess->move_number].castle & 8) == 8) {
-                    if (!is_attacked(95, BLACK)) {
-                        if (!is_attacked(94, BLACK)) {
-                            if (!is_attacked(93, BLACK)) {
-                                if (t[94] == EMPTY) {
-                                    if (t[93] == EMPTY) {
-                                        if (t[92] == EMPTY) {
-                                            ++chess->legal_pointer;
-                                            chess->legal_moves
-                                                [chess->legal_pointer] = 0x9c5c;
-                                            is_really_legal();
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if (t[95] == BlackKing &&
+                t[91] == BlackRook &&
+                (chess->movelist[chess->move_number].castle & 8) == 8 &&
+                !is_attacked(95, BLACK) &&
+                !is_attacked(94, BLACK) &&
+                !is_attacked(93, BLACK) &&
+                t[94] == EMPTY &&
+                t[93] == EMPTY &&
+                t[92] == EMPTY) {
+            chess->legal_pointer++;
+            chess->legal_moves
+                [chess->legal_pointer] = 0x9c5c;
+            is_really_legal();
         }
     }
 }
@@ -696,7 +666,7 @@ bool Table::third_occurance() {
     while (i >= 0 && occurance < 2) {
         // printf("Third occurance: i: %d\n", i);Util::flush();
         bool equal = true;
-        for (int j = 0; j < 120; ++j) {
+        for (int j = 0; j < 120; j++) {
             if (chess->tablelist[chess->move_number][j] !=
                 chess->tablelist[i][j]) {
                 equal = false;
@@ -704,7 +674,7 @@ bool Table::third_occurance() {
             }
         }
         if (equal) {
-            ++occurance;
+            occurance++;
         }
         i -= 2;
     }
@@ -730,7 +700,7 @@ void Table::list_legal_moves() {
     --ptt;
     for (int i = 0; i < 12; i++) {
         for (int j = 0; j < 10; j++) {
-            ++ptt;
+            ptt++;
             field = *ptt;
             if (field == OFFBOARD) {
                 continue;
@@ -748,7 +718,7 @@ void Table::list_legal_moves() {
                         // If white pawn is in the 7th rank->promotion
                         if (i - 1 == 7) {
                             // Calculates Queen promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -760,7 +730,7 @@ void Table::list_legal_moves() {
 
 #ifdef PERFT
                             // Calculates Rook promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -771,7 +741,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
 
                             // Calculates Bishop promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -783,7 +753,7 @@ void Table::list_legal_moves() {
 
 #endif
                             // Calculates Knight promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -794,7 +764,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
                         } else {
                             // Normal pawn move
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -807,7 +777,7 @@ void Table::list_legal_moves() {
                         // If white pawn is in the 2nd rank
                         if (i - 1 == 2) {
                             if (*(ptt + 20) == EMPTY) {
-                                ++chess->legal_pointer;
+                                chess->legal_pointer++;
                                 move = 0;
                                 move |= (j - 1) * 0x2000;
                                 move |= 0x0400;
@@ -823,7 +793,7 @@ void Table::list_legal_moves() {
                     if ((*(ptt + 9) & 128) == 128 && *(ptt + 9) != OFFBOARD) {
                         if (i - 1 == 7) {
                             // With Queen promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -835,7 +805,7 @@ void Table::list_legal_moves() {
 
 #ifdef PERFT
                             // With Rook promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -846,7 +816,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
 
                             // With Bishop promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -858,7 +828,7 @@ void Table::list_legal_moves() {
 
 #endif
                             // With Knight promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -869,7 +839,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
                         } else {
                             // Normal capture
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -884,7 +854,7 @@ void Table::list_legal_moves() {
                     if ((*(ptt + 11) & 128) == 128 && *(ptt + 11) != OFFBOARD) {
                         if (i - 1 == 7) {
                             // With Queen promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -896,7 +866,7 @@ void Table::list_legal_moves() {
 
 #ifdef PERFT
                             // With Rook promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -907,7 +877,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
 
                             // With Bishop promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -919,7 +889,7 @@ void Table::list_legal_moves() {
 
 #endif
                             // With Knight promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 6 * 0x0400;
@@ -930,7 +900,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
                         } else {
                             // Normal capture
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -948,7 +918,7 @@ void Table::list_legal_moves() {
 
                         // If it is the right field
                         if (en_pass == i * 10 + j + 9) {
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 4 * 0x0400;
@@ -962,7 +932,7 @@ void Table::list_legal_moves() {
 
                         // If it is the right field
                         if (en_pass == i * 10 + j + 11) {
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 4 * 0x0400;
@@ -979,7 +949,7 @@ void Table::list_legal_moves() {
                     if (*(ptt - 10) == EMPTY) {
                         if (i - 1 == 2) {
                             // With Queen promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
@@ -991,7 +961,7 @@ void Table::list_legal_moves() {
 
 #ifdef PERFT
                             // With Rook promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
@@ -1002,7 +972,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
 
                             // With Bishop promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
@@ -1014,7 +984,7 @@ void Table::list_legal_moves() {
 
 #endif
                             // With Knight promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 1 * 0x0400;
@@ -1024,7 +994,7 @@ void Table::list_legal_moves() {
                             chess->legal_moves[chess->legal_pointer] = move;
                             is_really_legal();
                         } else {
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1035,7 +1005,7 @@ void Table::list_legal_moves() {
                         }
                         if (i - 1 == 7) {
                             if (*(ptt - 20) == EMPTY) {
-                                ++chess->legal_pointer;
+                                chess->legal_pointer++;
                                 move = 0;
                                 move |= (j - 1) * 0x2000;
                                 move |= 6 * 0x0400;
@@ -1049,7 +1019,7 @@ void Table::list_legal_moves() {
                     if (*(ptt - 9) > 0 && *(ptt - 9) < 128) {
                         if (i - 1 == 2) {
                             // With Queen promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1061,7 +1031,7 @@ void Table::list_legal_moves() {
 
 #ifdef PERFT
                             // With Rook promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1072,7 +1042,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
 
                             // With Bishop promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1084,7 +1054,7 @@ void Table::list_legal_moves() {
 
 #endif
                             // With Knight promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1094,7 +1064,7 @@ void Table::list_legal_moves() {
                             chess->legal_moves[chess->legal_pointer] = move;
                             is_really_legal();
                         } else {
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1107,7 +1077,7 @@ void Table::list_legal_moves() {
                     if (*(ptt - 11) > 0 && *(ptt - 11) < 128) {
                         if (i - 1 == 2) {
                             // With Queen promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1119,7 +1089,7 @@ void Table::list_legal_moves() {
 
 #ifdef PERFT
                             // With Rook promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1130,7 +1100,7 @@ void Table::list_legal_moves() {
                             is_really_legal();
 
                             // With Bishop promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1142,7 +1112,7 @@ void Table::list_legal_moves() {
 
 #endif
                             // With Knight promotion
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1152,7 +1122,7 @@ void Table::list_legal_moves() {
                             chess->legal_moves[chess->legal_pointer] = move;
                             is_really_legal();
                         } else {
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= (i - 2) * 0x0400;
@@ -1166,7 +1136,7 @@ void Table::list_legal_moves() {
                         (chess->movelist + chess->move_number)->en_passant;
                     if (en_pass > 1) {
                         if (en_pass == i * 10 + j - 9) {
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 3 * 0x0400;
@@ -1178,7 +1148,7 @@ void Table::list_legal_moves() {
                     }
                     if (en_pass > 1) {
                         if (en_pass == i * 10 + j - 11) {
-                            ++chess->legal_pointer;
+                            chess->legal_pointer++;
                             move = 0;
                             move |= (j - 1) * 0x2000;
                             move |= 3 * 0x0400;
@@ -1192,7 +1162,7 @@ void Table::list_legal_moves() {
                     // kk : distance
                     // k : number of directions of possible knight moves
                     kk = 1;
-                    for (int k = 0; k < 8; ++k) {
+                    for (int k = 0; k < 8; k++) {
                         if (*(ptt + dir_knight[k]) != OFFBOARD) {
                             append_legal_moves(dir_knight[k], i, j, kk);
                         }
@@ -1201,38 +1171,38 @@ void Table::list_legal_moves() {
                     // Appends castling moves if possible
                     castling();
                     kk = 1;
-                    for (int k = 0; k < 8; ++k) {
+                    for (int k = 0; k < 8; k++) {
                         if (*(ptt + dir_king[k]) != OFFBOARD) {
                             append_legal_moves(dir_king[k], i, j, kk);
                         }
                     }
                 } else if (figure == Queen) {
-                    for (int k = 0; k < 8; ++k) {
+                    for (int k = 0; k < 8; k++) {
                         kk = 1;
                         end_direction = false;
 
                         // Increases kk while queen can move in that direction
                         while (!end_direction && *(ptt + kk * (dir_king[k])) < OFFBOARD) {
                             append_legal_moves(dir_king[k], i, j, kk);
-                            ++kk;
+                            kk++;
                         }
                     }
                 } else if (figure == Bishop) {
-                    for (int k = 0; k < 4; ++k) {
+                    for (int k = 0; k < 4; k++) {
                         kk = 1;
                         end_direction = false;
                         while (!end_direction && *(ptt + kk * (dir_bishop[k])) < OFFBOARD) {
                             append_legal_moves(dir_bishop[k], i, j, kk);
-                            ++kk;
+                            kk++;
                         }
                     }
                 } else if (figure == Rook) {
-                    for (int k = 0; k < 4; ++k) {
+                    for (int k = 0; k < 4; k++) {
                         kk = 1;
                         end_direction = false;
                         while (!end_direction && *(ptt + kk * (dir_rook[k])) < OFFBOARD) {
                             append_legal_moves(dir_rook[k], i, j, kk);
-                            ++kk;
+                            kk++;
                         }
                     }
                 }
@@ -1263,12 +1233,13 @@ void Table::is_really_legal() {
 
 // Co-function of append_legal_moves()
 void Table::append_legal_moves_inner(const int dir_piece, const int i, const int j, const int kk) {
-    ++chess->legal_pointer;
+    chess->legal_pointer++;
     int move = 0;
     move |= (j - 1) * 0x2000;
     move |= (i - 2) * 0x0400;
-    move |= (j - 1 + kk * convA(dir_piece)) * 0x0020;
-    move |= (i - 2 + kk * conv0(dir_piece)) * 0x0004;
+    // move |= (j - 1 + kk * convA(dir_piece)) * 0x0020;
+    move |= (j - 1 + kk * conv[21 + dir_piece][0]) * 0x0020;
+    move |= (i - 2 + kk * conv[21 + dir_piece][1]) * 0x0004;
     chess->legal_moves[chess->legal_pointer] = move;
     is_really_legal();
 }
@@ -1294,110 +1265,4 @@ void Table::append_legal_moves(const int dir_piece, const int i, const int j, co
             append_legal_moves_inner(dir_piece, i, j, kk);
         }
     }
-}
-
-// Function to calculate x vector from direction (k) for move notation
-int Table::convA(const int k) {
-    if (k == -21) {
-        return -1;
-    }
-    if (k == -19) {
-        return 1;
-    }
-    if (k == -12) {
-        return -2;
-    }
-    if (k == -11) {
-        return -1;
-    }
-    if (k == -10) {
-        return 0;
-    }
-    if (k == -9) {
-        return 1;
-    }
-    if (k == -8) {
-        return 2;
-    }
-    if (k == -1) {
-        return -1;
-    }
-    if (k == 1) {
-        return 1;
-    }
-    if (k == 8) {
-        return -2;
-    }
-    if (k == 9) {
-        return -1;
-    }
-    if (k == 10) {
-        return 0;
-    }
-    if (k == 11) {
-        return 1;
-    }
-    if (k == 12) {
-        return 2;
-    }
-    if (k == 19) {
-        return -1;
-    }
-    if (k == 21) {
-        return 1;
-    }
-    return 0;
-}
-
-// Function to calculate y vector from direction (k) for move notation
-int Table::conv0(const int k) {
-    if (k == -21) {
-        return -2;
-    }
-    if (k == -19) {
-        return -2;
-    }
-    if (k == -12) {
-        return -1;
-    }
-    if (k == -11) {
-        return -1;
-    }
-    if (k == -10) {
-        return -1;
-    }
-    if (k == -9) {
-        return -1;
-    }
-    if (k == -8) {
-        return -1;
-    }
-    if (k == -1) {
-        return 0;
-    }
-    if (k == 1) {
-        return 0;
-    }
-    if (k == 8) {
-        return 1;
-    }
-    if (k == 9) {
-        return 1;
-    }
-    if (k == 10) {
-        return 1;
-    }
-    if (k == 11) {
-        return 1;
-    }
-    if (k == 12) {
-        return 1;
-    }
-    if (k == 19) {
-        return 2;
-    }
-    if (k == 21) {
-        return 2;
-    }
-    return 0;
 }

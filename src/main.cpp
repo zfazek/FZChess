@@ -205,8 +205,8 @@ void test_eval_depth_2() {
 }
 
 void test_bratko_kopec_1() {
-    // 2018.01.23. linode, c++
-    // info depth 5 seldepth 5 time 16964 nodes 1865184 nps 109949
+    // 2018.01.23. linode, c++: info depth 5 seldepth 5 time 16964 nodes 1865184 nps 109949
+    // 2018.01.23. core i5 c++: info depth 5 seldepth 5 time 8952 nodes 1865184 nps 208353
     const char input[] =
         "position fen 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - "
         "- 0 1 bm Qd1+; id BK.01;";
@@ -367,6 +367,7 @@ void test_mate_in_2() {
 }
 
 void test() {
+    /*
     {
         Chess chess;
         chess.nof_legal = 40;
@@ -374,6 +375,7 @@ void test() {
         test_calculate_evarray(chess);
         test_calculate_evarray_new(chess);
     }
+    */
     test_move_h2h4();
 }
 

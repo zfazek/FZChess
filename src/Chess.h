@@ -17,7 +17,7 @@
 #define MAX_LEGAL_MOVES 128
 
 // Parameters of the given position
-struct move {
+struct position_t {
     int color;
     int move_from;
     int move_to;
@@ -82,7 +82,7 @@ class Chess {
     struct move_t root_moves[MAX_LEGAL_MOVES];
 
     // Stores the parameters of the given position
-    struct move movelist[MAX_MOVES];
+    struct position_t movelist[MAX_MOVES];
 
     int DEBUG;
     FILE *debugfile;

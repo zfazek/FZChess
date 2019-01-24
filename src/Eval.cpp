@@ -12,7 +12,7 @@ int Eval::evaluation_material(const int dpt) {
     int evaking;
     int e = 0;
     const int *pt = chess->tablelist[chess->move_number];
-    const struct move *pm = chess->movelist + chess->move_number;
+    const struct position_t *pm = chess->movelist + chess->move_number;
 
     // Calculate summa of material for end game threshold
     // sm = sum_material(player_to_move);

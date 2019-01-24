@@ -10,15 +10,15 @@ class Table {
   public:
     Eval *eval;
 
-    const int WHITE = 1;
-    const int BLACK = -1;
+    static constexpr int WHITE = 1;
+    static constexpr int BLACK = -1;
 
-    const int Pawn = 1;
-    const int Knight = 2;
-    const int Bishop = 3;
-    const int Rook = 4;
-    const int Queen = 5;
-    const int King = 6;
+    static constexpr int Pawn = 1;
+    static constexpr int Knight = 2;
+    static constexpr int Bishop = 3;
+    static constexpr int Rook = 4;
+    static constexpr int Queen = 5;
+    static constexpr int King = 6;
 
     // Possible direction of figure's move
     const int dir_rook[4] = {-10, -1, 1, 10};
@@ -35,7 +35,7 @@ class Table {
     void setboard(const char *fen_position);
     bool is_attacked(const int field, const int color);
     bool is_not_enough_material();
-    void update_table(const int move, bool print, bool fake = false);
+    void update_table(const int move, const bool print, const bool fake = false);
     bool third_occurance();
 
   private:
@@ -44,19 +44,19 @@ class Table {
     int end_direction;
 
     // Values representing the figures in the table
-    const int WhitePawn = 1;
-    const int WhiteKnight = 2;
-    const int WhiteBishop = 3;
-    const int WhiteRook = 4;
-    const int WhiteQueen = 5;
-    const int WhiteKing = 6;
+    static constexpr int WhitePawn = 1;
+    static constexpr int WhiteKnight = 2;
+    static constexpr int WhiteBishop = 3;
+    static constexpr int WhiteRook = 4;
+    static constexpr int WhiteQueen = 5;
+    static constexpr int WhiteKing = 6;
 
-    const int BlackPawn = 0x81;
-    const int BlackKnight = 0x82;
-    const int BlackBishop = 0x83;
-    const int BlackRook = 0x84;
-    const int BlackQueen = 0x85;
-    const int BlackKing = 0x86;
+    static constexpr int BlackPawn = 0x81;
+    static constexpr int BlackKnight = 0x82;
+    static constexpr int BlackBishop = 0x83;
+    static constexpr int BlackRook = 0x84;
+    static constexpr int BlackQueen = 0x85;
+    static constexpr int BlackKing = 0x86;
 
     // For printing and for notation
     const int graphical_figure[14][2] = {
@@ -76,10 +76,55 @@ class Table {
         {191, 88},  // "X"
     };
 
+    // Array to calculate x vector from direction (k) for move notation
+    const int conv[43][2] = {
+        { -1, -2},
+        {  0,  0},
+        {  1, -2},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        { -2, -1},
+        { -1, -1},
+        {  0, -1},
+        {  1, -1},
+        {  2, -1},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        { -1,  0},
+        {  0,  0},
+        {  1,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        { -2,  1},
+        { -1,  1},
+        {  0,  1},
+        {  1,  1},
+        {  2,  1},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        {  0,  0},
+        { -1,  2},
+        {  0,  2},
+        {  1,  2},
+    };
+
     void is_really_legal();
     void append_legal_moves(const int dir_piece, const int i, const int j, const int kk);
     void append_legal_moves_inner(const int dir_piece, const int i, const int j, const int kk);
-    int convA(const int k);
-    int conv0(const int k);
     void castling();
 };
