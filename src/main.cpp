@@ -15,7 +15,7 @@ void test_move_h2h4() {
     chess.gui_depth = 4; // "go depth 4"
     chess.make_move();
     assert(strcmp(chess.move_str, "e7e6 ") == 0);
-    assert(chess.nodes == 201741);
+    assert(chess.nodes == 201685);
 #ifdef HASH
     assert(20000 < chess.hash->hash_nodes);
 #endif
@@ -315,23 +315,23 @@ void test_bratko_kopec() {
 }
 
 void test_calculate_evarray(Chess &chess) {
-    for (int i = 0; i < chess.nof_legal; i++) {
+    for (int i = 0; i < chess.nof_legal_root_moves; i++) {
         chess.root_moves[i].move = 100 - i;
         chess.root_moves[i].value = i;
     }
     chess.calculate_evarray();
-    for (int i = 0; i < chess.nof_legal - 1; i++) {
+    for (int i = 0; i < chess.nof_legal_root_moves - 1; i++) {
         assert(chess.root_moves[i].value >= chess.root_moves[i + 1].value);
     }
 }
 
 void test_calculate_evarray_new(Chess &chess) {
-    for (int i = 0; i < chess.nof_legal; i++) {
+    for (int i = 0; i < chess.nof_legal_root_moves; i++) {
         chess.root_moves[i].move = 100 - i;
         chess.root_moves[i].value = i;
     }
     /*
-  for (int i = 0; i < chess.nof_legal; i++) {
+  for (int i = 0; i < chess.nof_legal_root_moves; i++) {
       printf("%2d. %2d %2d\n",
               i + 1,
               chess.root_moves[i].move,
@@ -340,14 +340,14 @@ void test_calculate_evarray_new(Chess &chess) {
   */
     chess.calculate_evarray_new();
     /*
-  for (int i = 0; i < chess.nof_legal; i++) {
+  for (int i = 0; i < chess.nof_legal_root_moves; i++) {
       printf("%2d. %2d %2d\n",
               i + 1,
               chess.root_moves[i].move,
               chess.root_moves[i].value);
   }
   */
-    for (int i = 0; i < chess.nof_legal - 1; i++) {
+    for (int i = 0; i < chess.nof_legal_root_moves - 1; i++) {
         assert(chess.root_moves[i].value >= chess.root_moves[i + 1].value);
     }
 }
@@ -370,7 +370,7 @@ void test() {
     /*
     {
         Chess chess;
-        chess.nof_legal = 40;
+        chess.nof_legal_root_moves = 40;
         chess.depth = 2;
         test_calculate_evarray(chess);
         test_calculate_evarray_new(chess);

@@ -5,7 +5,9 @@
 #include <sys/timeb.h>
 
 // Flushes the output stream
-void Util::flush() { fflush(stdout); }
+void Util::flush() {
+    fflush(stdout);
+}
 
 int Util::get_ms() {
     struct timeb timebuffer;

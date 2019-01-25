@@ -11,7 +11,7 @@
 #define ALFABETA
 #define PERFT
 
-//#define SORT_ALFARRAY
+// #define SORT_ALFARRAY
 
 #define MAX_MOVES 1000
 #define MAX_LEGAL_MOVES 128
@@ -76,7 +76,7 @@ class Chess {
     bool break_if_mate_found;
     int sm;
     int legal_pointer;
-    int nof_legal;
+    int nof_legal_root_moves;
     int mate_score;
 
     struct move_t root_moves[MAX_LEGAL_MOVES];
@@ -96,6 +96,13 @@ class Chess {
     void processCommands(const char *input);
     uint64_t perft(const int dpt);
 
+#ifdef SORT_ALFARRAY
+
+    // Array of sorted legal moves
+    int eva_alfabeta_temp[MAX_LEGAL_MOVES];
+#endif
+    int sort_alfarray;
+
   private:
 
     // Array of best line
@@ -104,15 +111,8 @@ class Chess {
     // Array of best move of iterative deepening
     int best_iterative[MAX_LEGAL_MOVES];
 
-#ifdef SORT_ALFARRAY
-
-    // Array of sorted legal moves
-    int eva_alfabeta_temp[MAX_LEGAL_MOVES];
-#endif
-
     bool last_ply;
     int best_move;
-    int sort_alfarray;
     jmp_buf env;
     int start_time, stop_time;
     int stop_search;

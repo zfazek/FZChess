@@ -20,6 +20,9 @@ class Table {
     static constexpr int Queen = 5;
     static constexpr int King = 6;
 
+    static constexpr int WhiteColor = 0;
+    static constexpr int BlackColor = 128;
+
     // Possible direction of figure's move
     const int dir_rook[4] = {-10, -1, 1, 10};
     const int dir_knight[8] = {-21, -19, -12, -8, 8, 12, 19, 21};
@@ -40,8 +43,8 @@ class Table {
 
   private:
     Chess *chess;
-    int *pt, *ptt;
-    int end_direction;
+    int *pt;
+    bool end_direction;
 
     // Values representing the figures in the table
     static constexpr int WhitePawn = 1;
