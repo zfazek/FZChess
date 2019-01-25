@@ -1207,12 +1207,6 @@ void Table::is_really_legal() {
                     chess->player_to_move)) {
         --chess->legal_pointer;
     }
-#ifdef SORT_ALFARRAY
-    else if (chess->depth != 1 && chess->sort_alfarray) {
-        // printf("EVA\n");Util::flush();
-        chess->eva_alfabeta_temp[chess->legal_pointer] = eval->evaluation_material(chess->depth);
-    }
-#endif
     --chess->move_number;
 }
 

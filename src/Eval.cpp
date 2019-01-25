@@ -1,10 +1,15 @@
 #include "Eval.h"
 
 #include "Chess.h"
+#include "Hash.h"
 
-Eval::Eval(Chess *ch) : chess(ch) {}
+Eval::Eval(Chess *ch) : chess(ch) {
+    hash = new Hash();
+}
 
-Eval::~Eval() {}
+Eval::~Eval() {
+    delete hash;
+}
 
 // Evaluates material and king position, pawn structure, etc
 int Eval::evaluation_material(const int dpt) {
@@ -103,15 +108,28 @@ int Eval::evaluation_material(const int dpt) {
     return e;
 }
 
-// Evaluates material plus number of legal moves of both sides plus a random
-// number
+// Evaluates material plus number of legal moves of both sides plus a random number
 int Eval::evaluation(const int e_legal_pointer, const int dpt) {
+    hash->set_hash(chess);
+    if (hash->posInHashtable()) {
+        ++hash->hash_nodes;
+        return hash->getU();
+    }
+
+    // not in the hashtable. normal evaluating
+    if (chess->table->third_occurance() ||
+        chess->table->is_not_enough_material() ||
+        chess->movelist[chess->move_number].not_pawn_move >= 100) {
+        hash->setU(chess->table->eval->DRAW);
+        return chess->table->eval->DRAW;
+    }
+    chess->table->list_legal_moves();
+
     int lp = e_legal_pointer;
     chess->invert_player_to_move();
     chess->table->list_legal_moves();
     // printf("lp own: %d, lp opposite: %d\n", lp, chess->legal_pointer);
     lp -= chess->legal_pointer;
-    // if (dpt % 2 == 0) lp = -lp;
     chess->invert_player_to_move();
     if (chess->legal_pointer == -1) { // No legal move
         if (!chess->table->is_attacked(
@@ -130,7 +148,11 @@ int Eval::evaluation(const int e_legal_pointer, const int dpt) {
 
     // Adds random to evaluation
     const int random_number = 0; // rand() % (random_window + 1);
-    return evaluation_material(dpt) + 2 * lp + random_number;
+    const int u = evaluation_material(dpt) + 2 * lp + random_number;
+
+    // if this position is not in the hashtable->insert it to hashtable
+    hash->setU(u);
+    return u;
 }
 
 int Eval::evaluation_only_end_game(const int dpt) {

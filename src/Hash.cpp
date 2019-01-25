@@ -3,8 +3,6 @@
 #include "Chess.h"
 #include "Util.h"
 
-// static const unsigned int HASHSIZE = 1024 * 1024 * 16;
-
 Hash::Hash() {
     init_hash();
 }
@@ -65,7 +63,6 @@ void Hash::set_hash(const Chess *chess) {
     hash ^= hash_enpassant[chess->movelist[chess->move_number].en_passant];
     // XOR the castling possibilities
     hash ^= hash_castle[chess->movelist[chess->move_number].castle];
-    // hash_index = hash % HASHSIZE;
 }
 
 bool Hash::posInHashtable() const {

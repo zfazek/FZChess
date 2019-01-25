@@ -9,7 +9,7 @@ void Util::flush() {
     fflush(stdout);
 }
 
-int Util::get_ms() {
+uint64_t Util::get_ms() {
     struct timeb timebuffer;
     ftime(&timebuffer);
     if (timebuffer.millitm != 0) {

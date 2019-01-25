@@ -1,9 +1,11 @@
 #include "Chess.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 
 #include "Eval.h"
+#include "Hash.h"
 #include "Util.h"
 
 struct best_lines {
@@ -13,9 +15,6 @@ struct best_lines {
 } best_line[99];
 
 Chess::Chess() {
-#ifdef HASH
-    hash = new Hash();
-#endif
     uci = new Uci(this);
     table = new Table(this);
     stop_received = false;
@@ -25,9 +24,6 @@ Chess::Chess() {
 }
 
 Chess::~Chess() {
-#ifdef HASH
-    delete hash;
-#endif
     delete uci;
     delete table;
 }
@@ -47,26 +43,18 @@ void Chess::invert_player_to_move() {
 
 void Chess::make_move() {
     const int MAX = 22767;
-    int time_elapsed;
-    int time_current_depth_start, time_current_depth_stop, time_remaining;
-    sort_alfarray = true;
+    uint64_t time_elapsed;
+    uint64_t time_current_depth_start, time_current_depth_stop, time_remaining;
     nodes = 0;
-#ifdef HASH
-    hash->reset_counters();
-#endif
-    // max_time = 20 * 1000;
+    table->eval->hash->reset_counters();
+    table->eval->hash->clear();
     start_time = Util::get_ms();
     stop_time = start_time + max_time;
     depth = 1;
-    // gui_depth = 2; max_time=0;
     stop_search = false;
     for (;;) {
-#ifdef HASH
-        hash->clear();
-#endif
         // Calculate summa of material for end game threshold
-        sm = table->eval->sum_material(player_to_move);
-        seldepth = depth + 8;
+        // sm = table->eval->sum_material(player_to_move);
         if (depth > 4) {
             seldepth = depth + 4;
         }
@@ -86,28 +74,27 @@ void Chess::make_move() {
                 --move_number;
             }
         }
-        time_elapsed = Util::get_ms() - start_time;
         time_current_depth_stop = Util::get_ms();
         time_remaining = stop_time - time_current_depth_stop;
 
         // If there is no time for another depth search
         if (movetime == 0 && max_time != 0) {
-            if ((time_current_depth_stop - time_current_depth_start) * 5 >
-                time_remaining) {
+            if ((time_current_depth_stop - time_current_depth_start) * 5 > time_remaining) {
                 stop_search = true;
             }
         }
         if (depth > 30) {
             stop_search = true;
         }
-        printf("info depth %d seldepth %d time %d nodes %ld nps %ld\n", depth,
+        time_elapsed = Util::get_ms() - start_time;
+        printf("info depth %d seldepth %d time %lu nodes %ld nps %ld\n", depth,
                seldepth, time_elapsed, nodes,
                (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         Util::flush();
         if (DEBUG) {
             debugfile = fopen("./debug.txt", "a");
             fprintf(debugfile,
-                    "<- info depth %d seldepth %d time %d nodes %lu nps %lu\n",
+                    "<- info depth %d seldepth %d time %lu nodes %lu nps %lu\n",
                     depth, seldepth, time_elapsed, nodes,
                     (time_elapsed == 0) ? 0 : (uint64_t)(1000 * nodes / time_elapsed));
             fclose(debugfile);
@@ -125,6 +112,9 @@ void Chess::make_move() {
         // printf("alfabeta: %d\n", a);Util::flush();
         // printf("best %s\n", best_move);Util::flush();
         best_iterative[depth] = best_move;
+        if (depth == 1 && nof_legal_root_moves == 1) {
+            break;
+        }
         if (stop_search) {
             break;
         }
@@ -140,9 +130,7 @@ void Chess::make_move() {
     }
     printf("\nbestmove %s\n", Util::move2str(move_str, best_move));
     Util::flush();
-#ifdef HASH
-    hash->printStatistics(nodes);
-#endif
+    table->eval->hash->printStatistics(nodes);
     // Update the table without printing it
     table->update_table(best_move, false);
     invert_player_to_move();
@@ -154,7 +142,6 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
     int alfarray[MAX_LEGAL_MOVES];
     int value = -22767;
 
-    // if (dpt >=depth) printf("info depth %d seldepth %d\n", dpt, seldepth);Util::flush();
     table->list_legal_moves();
     if (legal_pointer == -1) {
         if (!table->is_attacked(player_to_move == WHITE
@@ -178,10 +165,15 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             alfarray[i] = root_moves[i].move;
         }
     } else {
+        if (sort_alfarray) {
+            sort_legal_moves(nbr_legal, dpt);
+        }
         for (int i = 0; i < nbr_legal; ++i) {
             alfarray[i] = legal_moves[i];
         }
     }
+
+    // main loop, checking all the legal moves
     for (int i = 0; i < nbr_legal; ++i) {
         ++nodes;
         if ((nodes & 1023) == 0) {
@@ -194,47 +186,18 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         }
         curr_seldepth = dpt;
         if (dpt == 1) {
-            // if (strcmp(Util::move2str(move_str, alfarray[i]), "d6d1 ") == 0) continue;
-            printf("info currmove %s currmovenumber %d\n",
-                   Util::move2str(move_str, alfarray[i]), i + 1);
+            printf("info currmove %s currmovenumber %d\n", Util::move2str(move_str, alfarray[i]), i + 1);
             Util::flush();
         }
         table->update_table(alfarray[i], false);
         curr_line[dpt] = alfarray[i];
 
         // If last ply->evaluating
-        if ((dpt >= depth && movelist[move_number].further == 0) ||
-            dpt >= seldepth) {
+        if ((dpt >= depth && movelist[move_number].further == 0) || dpt >= seldepth) {
             last_ply = true;
-#ifdef HASH
-            hash->set_hash(this);
-            if (hash->posInHashtable()) {
-                u = hash->getU();
-                --move_number;
-                ++hash->hash_nodes;
-            }
-
-            // not in the hashtable. normal evaluating
-            else {
-#endif
-                if (table->third_occurance() ||
-                    table->is_not_enough_material() ||
-                    movelist[move_number].not_pawn_move >= 100) {
-                    u = table->eval->DRAW;
-                    --move_number;
-                } else {
-                    table->list_legal_moves();
-                    u = table->eval->evaluation(legal_pointer, dpt);
-                    --move_number;
-                }
-#ifdef HASH
-                // if this position is not in the hashtable->insert it to hashtable
-                hash->setU(u);
-            }
-#endif
-        }
-        // Not last ply
-        else {
+            u = table->eval->evaluation(legal_pointer, dpt);
+            --move_number;
+        } else { // Not last ply
             if (table->third_occurance() ||
                 table->is_not_enough_material() ||
                 movelist[move_number].not_pawn_move >= 100) {
@@ -277,10 +240,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
             }
             if (dpt == 1) {
                 best_move = alfarray[i];
-#ifdef HASH
-                hash->printStatistics(nodes);
-#endif
-                int time_elapsed = Util::get_ms() - start_time;
+                table->eval->hash->printStatistics(nodes);
+                uint64_t time_elapsed = Util::get_ms() - start_time;
                 // If checkmate is found
                 if (abs(u) > 20000) {
                     if (u > 0) {
@@ -294,7 +255,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     if (uu == 0 && u < 0) {
                         uu = -1;
                     }
-                    printf("info multipv 1 depth %d seldepth %d time %d score "
+                    printf("info multipv 1 depth %d seldepth %d time %lu score "
                            "mate %d "
                            "nodes %lu pv ",
                            curr_depth, curr_seldepth, time_elapsed, uu, nodes);
@@ -306,13 +267,12 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     Util::flush();
                     mate_score = abs(u);
                 } else {
-                    printf("info multipv 1 depth %d seldepth %d time %d score "
+                    printf("info multipv 1 depth %d seldepth %d time %lu score "
                            "cp %d "
                            "nodes %lu pv ",
                            curr_depth, curr_seldepth, time_elapsed, u, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
-                        printf("%s ", Util::move2str(move_str,
-                                                     best_line[dpt].moves[b]));
+                        printf("%s ", Util::move2str(move_str, best_line[dpt].moves[b]));
                     }
                     printf("\n");
                     Util::flush();
@@ -358,6 +318,20 @@ uint64_t Chess::perft(const int dpt) {
         --move_number;
     }
     return nodes;
+}
+
+void Chess::sort_legal_moves(const int nbr_legal, const int dpt) {
+    for (int i = 0; i < nbr_legal; i++) {
+        const int move = legal_moves[i];
+        table->update_table(move, false);
+        const int u = table->eval->evaluation_material(dpt);
+        sorted_legal_moves[i] = {move, u};
+        --move_number;
+    }
+    std::sort(sorted_legal_moves, sorted_legal_moves + nbr_legal);
+    for (int i = 0; i < nbr_legal; i++) {
+        legal_moves[i] = sorted_legal_moves[i].move;
+    }
 }
 
 // Sorts legal moves

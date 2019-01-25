@@ -1,4 +1,6 @@
 #include "Chess.h"
+#include "Eval.h"
+#include "Hash.h"
 #include "Util.h"
 
 #include <cassert>
@@ -16,9 +18,7 @@ void test_move_h2h4() {
     chess.make_move();
     assert(strcmp(chess.move_str, "e7e6 ") == 0);
     assert(chess.nodes == 201685);
-#ifdef HASH
-    assert(20000 < chess.hash->hash_nodes);
-#endif
+    assert(20000 < chess.table->eval->hash->hash_nodes);
 }
 
 void test_perft_pos1(const int depth) {
@@ -212,6 +212,7 @@ void test_bratko_kopec_1() {
         "- 0 1 bm Qd1+; id BK.01;";
     puts(input);
     Chess chess;
+    chess.sort_alfarray = true;
     chess.start_game();
     chess.table->setboard(input);
     chess.max_time = 0;
@@ -266,6 +267,7 @@ void test_bratko_kopec_2() {
         "- 0 1 bm d5; id BK.02;";
     puts(input);
     Chess chess;
+    chess.sort_alfarray = true;
     chess.start_game();
     chess.table->setboard(input);
     chess.max_time = 0;
@@ -304,11 +306,11 @@ void test_bratko_kopec_12() {
 }
 
 void test_bratko_kopec() {
-    test_bratko_kopec_1();
+    test_bratko_kopec_2();
     /*
+    test_bratko_kopec_1();
     test_bratko_kopec_1a();
     test_bratko_kopec_1b();
-    test_bratko_kopec_2();
     test_bratko_kopec_10();
     test_bratko_kopec_12();
     */
@@ -405,6 +407,7 @@ int main(int argc, char *argv[]) {
             }
         }
         Chess chess;
+        chess.sort_alfarray = true;
         chess.start_game();
         chess.processCommands(input);
     }

@@ -1,9 +1,13 @@
 #pragma once
 
+
 class Chess;
+class Hash;
 
 class Eval {
   public:
+    Hash *hash;
+
     Eval(Chess *chess);
     ~Eval();
 

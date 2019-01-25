@@ -1,17 +1,14 @@
 #pragma once
 
 #include <setjmp.h>
+#include <cstdint>
 
-#include "Hash.h"
 #include "Table.h"
 #include "Uci.h"
 
 #define QUIESCENCE_SEARCH
-#define HASH
 #define ALFABETA
 #define PERFT
-
-// #define SORT_ALFARRAY
 
 #define MAX_MOVES 1000
 #define MAX_LEGAL_MOVES 128
@@ -42,6 +39,10 @@ struct position_t {
 struct move_t {
     int move;
     int value;
+
+    bool operator<(const struct move_t& o) {
+        return value > o.value;
+    }
 };
 
 class Chess {
@@ -50,7 +51,6 @@ class Chess {
     ~Chess();
 
     Table *table;
-    Hash *hash;
     Uci *uci;
 
     int WHITE; // TODO delete
@@ -64,6 +64,7 @@ class Chess {
 
     // Array of legal moves
     int legal_moves[MAX_LEGAL_MOVES];
+    struct move_t sorted_legal_moves[MAX_LEGAL_MOVES];
 
     char move_str[6];
     int FZChess; // 1:white, -1:black
@@ -114,9 +115,10 @@ class Chess {
     bool last_ply;
     int best_move;
     jmp_buf env;
-    int start_time, stop_time;
+    uint64_t start_time, stop_time;
     int stop_search;
 
     int alfabeta(int dpt, int alfa, int beta);
     void checkup();
+    void sort_legal_moves(const int nbr_legal, const int dpt);
 };
