@@ -1,15 +1,15 @@
-#include "Util.h"
+#include "utils.h"
 
-#include <cstdio>
-#include <cstring>
+#include <stdio.h>
+#include <string.h>
 #include <sys/timeb.h>
 
 // Flushes the output stream
-void Util::flush() {
+void flush() {
     fflush(stdout);
 }
 
-uint64_t Util::get_ms() {
+uint64_t get_ms() {
     struct timeb timebuffer;
     ftime(&timebuffer);
     if (timebuffer.millitm != 0) {
@@ -18,7 +18,7 @@ uint64_t Util::get_ms() {
     return 0;
 }
 
-int Util::str2move(const char move_old[6]) {
+int str2move(const char move_old[6]) {
     int x_from, y_from, x_to, y_to, move_hi, move_lo;
     x_from = move_old[0] - 'a';
     y_from = move_old[1] - '1';
@@ -49,7 +49,7 @@ int Util::str2move(const char move_old[6]) {
     return move_hi * 256 + move_lo;
 }
 
-char *Util::move2str(char *move_str, const int move) {
+char *move2str(char *move_str, const int move) {
     strncpy(move_str, "     ", 6);
     move_str[0] = (move & 0xe000) / 256 / 32 + 'a';
     move_str[1] = (move & 0x1c00) / 256 / 4 + '1';

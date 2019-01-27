@@ -24,7 +24,7 @@ int Eval::evaluation_material(const int dpt) {
     random_window = 10;
 
     // Goes through the table
-    for (int i = 0; i < 120; ++i) {
+    for (int i = 20; i < 100; ++i) {
         const int figure = *(pt + i);
         if (figure > 0 && figure < OFFBOARD) {
             // c=1 : own figure is found, c=-1 opposite figure is found
@@ -89,9 +89,6 @@ int Eval::evaluation_material(const int dpt) {
                            abs(5 - (pm->pos_white_king % 10)));
         }
         e += evaking;
-        // printf("player_to_move: %d, dpt: %d, pos_white_king: %d,
-        // pos_black_king: %d, evaking: %d\n", player_to_move, dpt,
-        // pm->pos_white_king, pm->pos_black_king, evaking);Util::flush();
     } else {
 #ifdef CASTLING_PUNISHMENT
 
@@ -128,7 +125,6 @@ int Eval::evaluation(const int e_legal_pointer, const int dpt) {
     int lp = e_legal_pointer;
     chess->invert_player_to_move();
     chess->table->list_legal_moves();
-    // printf("lp own: %d, lp opposite: %d\n", lp, chess->legal_pointer);
     lp -= chess->legal_pointer;
     chess->invert_player_to_move();
     if (chess->legal_pointer == -1) { // No legal move
@@ -137,11 +133,8 @@ int Eval::evaluation(const int e_legal_pointer, const int dpt) {
                     ? (chess->movelist + chess->move_number)->pos_black_king
                     : (chess->movelist + chess->move_number)->pos_white_king,
                 -chess->player_to_move)) {
-            // printf("DRAW: ");Util::flush();
             return DRAW;
         } else {
-            // printf("WON: ");Util::flush();
-            // dpt : #1 (checkmate in one move) is better than #2
             return WON - dpt;
         }
     }
@@ -166,11 +159,9 @@ int Eval::evaluation_only_end_game(const int dpt) {
                     : (chess->movelist + chess->move_number)->pos_white_king,
                 -chess->player_to_move)) {
             // Stalemate
-            // printf("DRAW: ");Util::flush();
             return DRAW;
         } else {
             // Mate
-            // printf("WON: ");Util::flush();
             return WON - dpt;
         }
     }
@@ -225,7 +216,7 @@ int Eval::evaluation_pawn(const int field, const int figure, const int sm) {
 int Eval::sum_material(const int color) {
     int e = 0;
     // int* pt = tablelist + move_number;
-    for (int i = 0; i < 120; ++i) {
+    for (int i = 20; i < 100; ++i) {
         const int figure = chess->tablelist[chess->move_number][i];
         if (figure > 0 && figure < OFFBOARD) {
             if ((color == chess->WHITE && (figure & 128) == 0) ||

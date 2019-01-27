@@ -1,2 +1,9 @@
-add_executable(
-    fzchess++ main.cpp Chess.cpp Hash.cpp Util.cpp Eval.cpp Uci.cpp Table.cpp)
+add_executable(fzchess
+    main.cpp
+    Chess.cpp
+    Hash.cpp
+    Eval.cpp
+    Uci.cpp
+    Table.cpp
+    utils.c
+)

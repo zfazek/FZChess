@@ -1,7 +1,10 @@
 #include "Chess.h"
 #include "Eval.h"
 #include "Hash.h"
-#include "Util.h"
+
+extern "C" {
+#include "utils.h"
+}
 
 #include <cassert>
 #include <cstdio>
@@ -14,11 +17,11 @@ void test_move_h2h4() {
     chess.uci->position_received(input);
     // chess.max_time = 300000 / 40;
     chess.max_time = 0;
-    chess.gui_depth = 4; // "go depth 4"
+    chess.gui_depth = 4;
     chess.make_move();
-    assert(strcmp(chess.move_str, "e7e6 ") == 0);
-    assert(chess.nodes == 201685);
-    assert(20000 < chess.table->eval->hash->hash_nodes);
+    assert(strcmp(chess.move_str, "h7h5 ") == 0);
+    assert(chess.nodes == 43814);
+    assert(10000 < chess.table->eval->hash->hash_nodes);
 }
 
 void test_perft_pos1(const int depth) {
@@ -30,9 +33,9 @@ void test_perft_pos1(const int depth) {
         Chess chess;
         chess.start_game();
         chess.table->setboard(input);
-        int start_time = Util::get_ms();
+        int start_time = get_ms();
         uint64_t nodes = chess.perft(i);
-        int stop_time = Util::get_ms();
+        int stop_time = get_ms();
         int duration = stop_time - start_time;
         printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
                duration, (duration == 0) ? 0 : (nodes / duration));
@@ -67,9 +70,9 @@ void test_perft_pos2(const int depth) {
         Chess chess;
         chess.start_game();
         chess.table->setboard(input);
-        int start_time = Util::get_ms();
+        int start_time = get_ms();
         uint64_t nodes = chess.perft(i);
-        int stop_time = Util::get_ms();
+        int stop_time = get_ms();
         int duration = stop_time - start_time;
         printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
                duration, (duration == 0) ? 0 : (nodes / duration));
@@ -104,9 +107,9 @@ void test_perft_pos3(const int depth) {
         Chess chess;
         chess.start_game();
         chess.table->setboard(input);
-        int start_time = Util::get_ms();
+        int start_time = get_ms();
         uint64_t nodes = chess.perft(i);
-        int stop_time = Util::get_ms();
+        int stop_time = get_ms();
         int duration = stop_time - start_time;
         printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
                duration, (duration == 0) ? 0 : (nodes / duration));
@@ -142,9 +145,9 @@ void test_perft_startpos(const int depth) {
         chess.nodes = 0;
         chess.uci->position_received(input);
         chess.max_time = 0;
-        int start_time = Util::get_ms();
+        int start_time = get_ms();
         uint64_t nodes = chess.perft(i);
-        int stop_time = Util::get_ms();
+        int stop_time = get_ms();
         int duration = stop_time - start_time;
         printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
                duration, (duration == 0) ? 0 : (nodes / duration));

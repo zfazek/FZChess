@@ -1,7 +1,10 @@
 #include "Hash.h"
 
 #include "Chess.h"
-#include "Util.h"
+
+extern "C" {
+#include "utils.h"
+}
 
 Hash::Hash() {
     init_hash();
@@ -46,16 +49,11 @@ void Hash::set_hash(const Chess *chess) {
         hash ^= hash_side_black;
     }
     // XOR the figures;
-    for (int k = 0; k < 120; k++) {
+    for (int k = 20; k < 100; k++) {
         const int field = chess->tablelist[chess->move_number][k];
         if (field > EMPTY && field < OFFBOARD) {
             const int figure = (field & 127);
-            int i;
-            if ((field & 128) == 128) {
-                i = 1;
-            } else {
-                i = 0;
-            }
+            const int i = (field & 128) >> 7;
             hash ^= hash_piece[i][figure][k];
         }
     }
@@ -102,7 +100,7 @@ uint64_t Hash::hash_rand() const {
 void Hash::printStatistics(const int nodes) const {
     printf("Hash found %lu, hash/nodes: %lu%%\n", hash_nodes,
            100 * hash_nodes / nodes);
-    Util::flush();
+    flush();
 }
 
 void Hash::clear() {
