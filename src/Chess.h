@@ -40,7 +40,7 @@ struct move_t {
     int move;
     int value;
 
-    bool operator<(const struct move_t& o) {
+    bool operator<(const struct move_t& o) const {
         return value > o.value;
     }
 };
@@ -85,10 +85,9 @@ class Chess {
     // Stores the parameters of the given position
     struct position_t movelist[MAX_MOVES];
 
-    int DEBUG;
-    FILE *debugfile;
     bool stop_received;
 
+    void open_debug_file();
     void start_game();
     void make_move();
     void calculate_evarray();

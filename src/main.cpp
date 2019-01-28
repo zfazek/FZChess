@@ -20,8 +20,8 @@ void test_move_h2h4() {
     chess.gui_depth = 4;
     chess.make_move();
     assert(strcmp(chess.move_str, "h7h5 ") == 0);
-    assert(chess.nodes == 43814);
-    assert(10000 < chess.table->eval->hash->hash_nodes);
+    assert(chess.nodes == 34298);
+    assert(7000 < chess.table->eval->hash->hash_nodes);
 }
 
 void test_perft_pos1(const int depth) {
@@ -385,7 +385,6 @@ void test() {
 }
 
 int main(int argc, char *argv[]) {
-    setlocale(LC_ALL, "");
     if (argc > 1) {
         if (strcmp(argv[1], "1") == 0) {
             test();
@@ -410,6 +409,7 @@ int main(int argc, char *argv[]) {
             }
         }
         Chess chess;
+        open_debug_file();
         chess.sort_alfarray = true;
         chess.start_game();
         chess.processCommands(input);

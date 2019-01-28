@@ -1,21 +1,46 @@
 #include "utils.h"
 
-#include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
-#include <sys/timeb.h>
+#include <sys/time.h>
 
-// Flushes the output stream
+FILE *debugfile;
+char debugfile_name[128];
+int DEBUG = 1;
+
 void flush() {
     fflush(stdout);
 }
 
-uint64_t get_ms() {
-    struct timeb timebuffer;
-    ftime(&timebuffer);
-    if (timebuffer.millitm != 0) {
-        return (timebuffer.time * 1000) + timebuffer.millitm;
+void open_debug_file() {
+    if (DEBUG) {
+        snprintf(debugfile_name, sizeof(debugfile_name),
+                "/home/zfazek/git/FZChess/build/src/%lu.log", get_ms() / 1000);
+        debugfile = fopen(debugfile_name, "w");
+        if (debugfile) {
+            fclose(debugfile);
+        }
     }
-    return 0;
+}
+
+void LOG(const char *format, ...) {
+    if (DEBUG) {
+        debugfile = fopen(debugfile_name, "a");
+        if (debugfile) {
+            va_list args;
+            va_start(args, format);
+            vfprintf(debugfile, format, args);
+            va_end(args);
+            fclose(debugfile);
+        }
+    }
+}
+
+uint64_t get_ms() {
+    struct timeval te;
+    gettimeofday(&te, NULL);
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000;
+    return milliseconds;
 }
 
 int str2move(const char move_old[6]) {

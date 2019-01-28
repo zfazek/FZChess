@@ -17,7 +17,6 @@ void Uci::position_received(const char *input) {
     static char move_old[6];
     strncpy(move_old, "     ", 6);
     chess->start_game();
-    chess->player_to_move = chess->WHITE;
     if (!strstr(input, "move")) {
         return;
     }
@@ -58,10 +57,8 @@ void Uci::processCommands(const char *cmd) {
         printf("option name MultiPV type spin default 1 min 1 max 1\n");
         printf("uciok\n");
         flush();
-    }
-    if (chess->DEBUG) {
-        chess->debugfile = fopen("./debug.txt", "w");
-        fclose(chess->debugfile);
+        LOG("-> uci\n");
+        LOG("uciok\n");
     }
     while (true) {
     char *ret = fgets(input, 1000, stdin);
@@ -72,18 +69,11 @@ void Uci::processCommands(const char *cmd) {
             th_make_move.join();
         }
         // printf("Process input: %s\n", input);flush();
-        if (chess->DEBUG) {
-            chess->debugfile = fopen("./debug.txt", "w");
-            fclose(chess->debugfile);
-            if (!strstr(input, "quit")) {
-                chess->debugfile = fopen("./debug.txt", "a");
-                fprintf(chess->debugfile, "-> %s", input);
-                fclose(chess->debugfile);
-            }
-        }
+        LOG("-> %s", input);
         if (strstr(input, "isready")) {
             printf("readyok\n");
             flush();
+            LOG("readyok\n");
         }
         if (strstr(input, "position startpos")) {
             position_received(input);
@@ -131,15 +121,9 @@ void Uci::processCommands(const char *cmd) {
                     chess->max_time = 0;
                 }
             }
-            if (chess->DEBUG) {
-                chess->debugfile = fopen("./debug.txt", "a");
-                fprintf(chess->debugfile,
-                        "max time: %d wtime: %d btime: %d winc: %d "
-                        "binc: %d movestogo: %d\n",
-                        chess->max_time, wtime, btime, winc, binc, movestogo);
-                flush();
-                fclose(chess->debugfile);
-            }
+            LOG("max time: %d wtime: %d btime: %d winc: %d "
+                "binc: %d movestogo: %d\n",
+                chess->max_time, wtime, btime, winc, binc, movestogo);
             chess->stop_received = false;
             th_make_move = std::thread(&Chess::make_move, chess);
         }

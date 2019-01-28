@@ -21,7 +21,6 @@ Chess::Chess() {
     uci = new Uci(this);
     table = new Table(this);
     stop_received = false;
-    DEBUG = 0;
     WHITE = 1;
     BLACK = -1;
 }
@@ -34,7 +33,7 @@ Chess::~Chess() {
 void Chess::start_game() { // new
     table->reset_movelist();
     player_to_move = WHITE;
-    default_seldepth = 8;
+    default_seldepth = 6;
     break_if_mate_found = true;
     // table->print_table();
 }
@@ -94,14 +93,9 @@ void Chess::make_move() {
                seldepth, time_elapsed, nodes,
                (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         flush();
-        if (DEBUG) {
-            debugfile = fopen("./debug.txt", "a");
-            fprintf(debugfile,
-                    "<- info depth %d seldepth %d time %lu nodes %lu nps %lu\n",
-                    depth, seldepth, time_elapsed, nodes,
-                    (time_elapsed == 0) ? 0 : (uint64_t)(1000 * nodes / time_elapsed));
-            fclose(debugfile);
-        }
+        LOG("info depth %d seldepth %d time %lu nodes %ld nps %ld\n", depth,
+            seldepth, time_elapsed, nodes,
+            (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         calculate_evarray_new();
         for (int i = 0; i < nof_legal_root_moves; i++) {
             printf("(%s:%d) ", move2str(move_str, root_moves[i].move),
@@ -133,6 +127,7 @@ void Chess::make_move() {
     }
     printf("\nbestmove %s\n", move2str(move_str, best_move));
     flush();
+    LOG("bestmove %s\n\n", move2str(move_str, best_move));
     table->eval->hash->printStatistics(nodes);
     // Update the table without printing it
     table->update_table(best_move, false);
@@ -263,8 +258,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                            "nodes %lu pv ",
                            curr_depth, curr_seldepth, time_elapsed, uu, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
-                        printf("%s ", move2str(move_str,
-                                                     best_line[dpt].moves[b]));
+                        printf("%s ", move2str(move_str, best_line[dpt].moves[b]));
                     }
                     printf("\n");
                     flush();
