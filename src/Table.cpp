@@ -335,7 +335,7 @@ void Table::setboard(const char *input) {
     size_t n = strlen("position fen ");
     int x = 1;
     int y = 9;
-    static char move_old[6] = "     ";
+    char move_old[6] = "     ";
     chess->start_game();
     int move_number = 1;
     chess->move_number = 1;
@@ -470,8 +470,8 @@ void Table::setboard(const char *input) {
 
 // Returns if the figure of color is attacked or not
 bool Table::is_attacked(const int field, const int color) {
-    int *ptablelist = chess->tablelist[chess->move_number];
-    static int QueenColor, RookColor, KingColor, BishopColor, KnightColor;
+    const int * const ptablelist = chess->tablelist[chess->move_number];
+    int QueenColor, RookColor, KingColor, BishopColor, KnightColor;
     if (color == Chess::WHITE) {
         if (ptablelist[field + 9] == BlackPawn || ptablelist[field + 11] == BlackPawn) {
             return true;
@@ -595,61 +595,53 @@ void Table::castling() {
         if (t[28] == WhiteRook &&
                 t[25] == WhiteKing &&
                 (chess->movelist[chess->move_number].castle & 1) == 1 &&
-                !is_attacked(25, Chess::WHITE) &&
-                !is_attacked(26, Chess::WHITE) &&
-                !is_attacked(27, Chess::WHITE) &&
                 t[26] == EMPTY &&
-                t[27] == EMPTY) {
+                t[27] == EMPTY &&
+                !is_attacked(25, Chess::WHITE) &&
+                !is_attacked(26, Chess::WHITE)) {
             chess->legal_pointer++;
-            chess->legal_moves
-                [chess->legal_pointer] = 0x80c0;
+            chess->legal_moves[chess->legal_pointer] = 0x80c0;
             is_really_legal();
         }
         // e1c1
         if (t[25] == WhiteKing &&
                 t[21] == WhiteRook &&
                 (chess->movelist[chess->move_number].castle & 2) == 2 &&
-                !is_attacked(25, Chess::WHITE) &&
-                !is_attacked(24, Chess::WHITE) &&
-                !is_attacked(23, Chess::WHITE) &&
                 t[24] == EMPTY &&
                 t[23] == EMPTY &&
-                t[22] == EMPTY) {
+                t[22] == EMPTY &&
+                !is_attacked(25, Chess::WHITE) &&
+                !is_attacked(24, Chess::WHITE)) {
             chess->legal_pointer++;
-            chess->legal_moves
-                [chess->legal_pointer] = 0x8040;
+            chess->legal_moves[chess->legal_pointer] = 0x8040;
             is_really_legal();
         }
 
         // if (chess->player_to_move == Chess::BLACK)
     } else {
         if ((chess->movelist[chess->move_number].castle & 4) == 4 &&
-                !is_attacked(95, Chess::BLACK) &&
-                !is_attacked(96, Chess::BLACK) &&
-                !is_attacked(97, Chess::BLACK) &&
                 t[96] == EMPTY &&
                 t[97] == EMPTY &&
                 t[98] == BlackRook &&
-                t[95] == BlackKing) {
+                t[95] == BlackKing &&
+                !is_attacked(95, Chess::BLACK) &&
+                !is_attacked(96, Chess::BLACK)) {
             chess->legal_pointer++;
             // e8g8
-            chess->legal_moves
-                [chess->legal_pointer] = 0x9cdc;
+            chess->legal_moves[chess->legal_pointer] = 0x9cdc;
             is_really_legal();
         }
         // e8c8
         if (t[95] == BlackKing &&
                 t[91] == BlackRook &&
                 (chess->movelist[chess->move_number].castle & 8) == 8 &&
-                !is_attacked(95, Chess::BLACK) &&
-                !is_attacked(94, Chess::BLACK) &&
-                !is_attacked(93, Chess::BLACK) &&
                 t[94] == EMPTY &&
                 t[93] == EMPTY &&
-                t[92] == EMPTY) {
+                t[92] == EMPTY &&
+                !is_attacked(95, Chess::BLACK) &&
+                !is_attacked(94, Chess::BLACK)) {
             chess->legal_pointer++;
-            chess->legal_moves
-                [chess->legal_pointer] = 0x9c5c;
+            chess->legal_moves[chess->legal_pointer] = 0x9c5c;
             is_really_legal();
         }
     }

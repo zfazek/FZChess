@@ -25,29 +25,31 @@ int Eval::evaluation_material(const int dpt) {
 
     // Goes through the table
     for (int i = 20; i < 100; ++i) {
-        const int figure = *(pt + i);
-        if (figure > 0 && figure < OFFBOARD) {
+        const int field = *(pt + i);
+        if (field > 0 && field < OFFBOARD) {
             // c=1 : own figure is found, c=-1 opposite figure is found
-            if ((chess->player_to_move == chess->WHITE && (figure & 128) == 0) ||
-                (chess->player_to_move == chess->BLACK && (figure & 128) == 128)) {
+            const int figure_color = field & 128;
+            if ((chess->player_to_move == chess->WHITE && figure_color == 0) ||
+                (chess->player_to_move == chess->BLACK && figure_color == 128)) {
                 c = 1;
             } else {
                 c = -1;
             }
 
             // Evaulates King position (friendly pawn structure)
-            if ((figure & 127) == chess->table->King &&
+            const int figure = field & 127;
+            if (figure == chess->table->King &&
                 chess->move_number > 6) {
-                e += c * evaluation_king(i, figure);
+                e += c * evaluation_king(i, field);
             }
 
             // Evaulates Pawn structures
-            if ((figure & 127) == chess->table->Pawn) {
-                e += c * evaluation_pawn(i, figure, chess->sm);
+            if (figure == chess->table->Pawn) {
+                e += c * evaluation_pawn(i, field, chess->sm);
             }
 
-            // Calculates figure material values
-            e += c * figure_value[(figure & 127)];
+            // Calculates field material values
+            e += c * figure_value[figure];
         }
     }
 
@@ -169,44 +171,44 @@ int Eval::evaluation_only_end_game(const int dpt) {
 }
 
 // Bonus for king's adjacent own pawns
-int Eval::evaluation_king(const int field, const int figure) {
+int Eval::evaluation_king(const int idx, const int field) {
     int e = 0;
     const int *pt = chess->tablelist[chess->move_number];
     const int *pdir = chess->table->dir_king;
     for (int k = 0; k < 8; ++k, ++pdir) {
-        if (*(pt + field + *pdir) == (figure & 128) + chess->table->Pawn) {
+        if (*(pt + idx + *pdir) == (field & 128) + chess->table->Pawn) {
             e += chess->table->eval->friendly_pawn;
         }
     }
     return e;
 }
 
-int Eval::evaluation_pawn(const int field, const int figure, const int sm) {
+int Eval::evaluation_pawn(const int idx, const int field, const int sm) {
     int e = 0;
 
     // punishing double pawns
     int dir = 0;
-    const int *pt = chess->tablelist[chess->move_number];
+    int *pt = chess->tablelist[chess->move_number] + idx;
     do {
         dir += 10;
-        if (*(pt + field + dir) == figure) {
+        if (*(pt + dir) == field) {
             e += double_pawn;
         }
-    } while (*(pt + field + dir) != OFFBOARD);
+    } while (dir <= 20 && *(pt + dir) != OFFBOARD);
     dir = 0;
     do {
         dir -= 10;
-        if (*(pt + field + dir) == figure) {
+        if (*(pt + dir) == field) {
             e += double_pawn;
         }
-    } while (*(pt + field + dir) != OFFBOARD);
+    } while (dir >= -20 && *(pt + dir) != OFFBOARD);
 
     // Bonus for pawn advantage
     if (sm < 2000) {
-        if ((figure & 128) == 0) {
-            e += (field / 10) * pawn_advantage;
+        if ((field & 128) == 0) {
+            e += (idx / 10) * pawn_advantage;
         } else {
-            e += (11 - (field / 10)) * pawn_advantage;
+            e += (11 - (idx / 10)) * pawn_advantage;
         }
     }
     return e;
@@ -217,11 +219,12 @@ int Eval::sum_material(const int color) {
     int e = 0;
     // int* pt = tablelist + move_number;
     for (int i = 20; i < 100; ++i) {
-        const int figure = chess->tablelist[chess->move_number][i];
-        if (figure > 0 && figure < OFFBOARD) {
-            if ((color == chess->WHITE && (figure & 128) == 0) ||
-                (color == chess->BLACK && (figure & 128) == 128)) {
-                e += figure_value[(figure & 127)];
+        const int field = chess->tablelist[chess->move_number][i];
+        if (field > 0 && field < OFFBOARD) {
+            const int figure_color = field & 128;
+            if ((color == chess->WHITE && figure_color == 0) ||
+                (color == chess->BLACK && figure_color == 128)) {
+                e += figure_value[(field & 127)];
             }
         }
     }

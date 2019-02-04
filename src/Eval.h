@@ -36,6 +36,6 @@ class Eval {
     // empty, pawn, knight, bishop, rook, queen, king
     const int figure_value[7] = {0, 100, 330, 330, 500, 900, 0};
 
-    int evaluation_king(const int field, const int figure);
-    int evaluation_pawn(const int field, const int figure, const int sm);
+    int evaluation_king(const int idx, const int field);
+    int evaluation_pawn(const int idx, const int field, const int sm);
 };

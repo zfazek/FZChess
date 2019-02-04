@@ -89,6 +89,8 @@ char *move2str(const int move) {
         } else if ((move & 0x0001) == 0x0001) {
             move_str[4] = 'n';
         }
+    } else {
+        move_str[4] = ' ';
     }
     return move_str;
 }
