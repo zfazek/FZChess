@@ -272,9 +272,10 @@ void Table::update_table(const int move, const bool print, const bool fake) {
 
 #ifdef QUIESCENCE_SEARCH
     if (!fake) {
-        if (is_attacked(chess->player_to_move == Chess::WHITE ? pm2->pos_black_king
-                                                       : pm2->pos_white_king,
-                        -chess->player_to_move)) {
+        if (is_attacked(chess->player_to_move == Chess::WHITE
+                    ? pm2->pos_black_king
+                    : pm2->pos_white_king,
+                    -chess->player_to_move)) {
             pm2->further = 2;
         }
     }
@@ -1204,9 +1205,9 @@ void Table::list_legal_moves() {
 void Table::is_really_legal() {
     update_table(chess->legal_moves[chess->legal_pointer], false, true);
     if (is_attacked(chess->player_to_move == Chess::WHITE
-                        ? chess->movelist[chess->move_number].pos_white_king
-                        : chess->movelist[chess->move_number].pos_black_king,
-                    chess->player_to_move)) {
+                ? chess->movelist[chess->move_number].pos_white_king
+                : chess->movelist[chess->move_number].pos_black_king,
+                chess->player_to_move)) {
         --chess->legal_pointer;
     }
     --chess->move_number;

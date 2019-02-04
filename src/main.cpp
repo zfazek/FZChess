@@ -24,116 +24,19 @@ void test_move_h2h4() {
     assert(7000 < chess.table->eval->hash->hash_nodes);
 }
 
-void test_perft_pos1(const int depth) {
-    const char input[] = "position fen "
-                   "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w "
-                   "KQkq - 0 1";
-    puts(input);
+void test_perft_pos(const char *input, const int depth, const uint64_t *expected_nodes) {
     for (int i = 1; i <= depth; i++) {
         Chess chess;
         chess.start_game();
         chess.table->setboard(input);
-        int start_time = get_ms();
+        uint64_t start_time = get_ms();
         uint64_t nodes = chess.perft(i);
-        int stop_time = get_ms();
-        int duration = stop_time - start_time;
-        printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
-               duration, (duration == 0) ? 0 : (nodes / duration));
-        switch (i) {
-        case 1:
-            assert(nodes == 48);
-            break;
-        case 2:
-            assert(nodes == 2039);
-            break;
-        case 3:
-            assert(nodes == 97862);
-            break;
-        case 4:
-            assert(nodes == 4085603);
-            break;
-        case 5:
-            assert(nodes == 193690690);
-            break;
-        default:
-            break;
-        }
+        uint64_t stop_time = get_ms();
+        uint64_t duration = stop_time - start_time;
+        printf("depth: %d nodes: %lu time: %lu ms knps: %lu\n", i, nodes,
+               duration, duration == 0 ? 0 : nodes / duration);
+        assert(nodes == expected_nodes[i - 1]);
     }
-    puts("");
-}
-
-void test_perft_pos2(const int depth) {
-    const char input[] = "position fen "
-                   "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";
-    puts(input);
-    for (int i = 1; i <= depth; i++) {
-        Chess chess;
-        chess.start_game();
-        chess.table->setboard(input);
-        int start_time = get_ms();
-        uint64_t nodes = chess.perft(i);
-        int stop_time = get_ms();
-        int duration = stop_time - start_time;
-        printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
-               duration, (duration == 0) ? 0 : (nodes / duration));
-        switch (i) {
-        case 1:
-            assert(nodes == 14);
-            break;
-        case 2:
-            assert(nodes == 191);
-            break;
-        case 3:
-            assert(nodes == 2812);
-            break;
-        case 4:
-            assert(nodes == 43238);
-            break;
-        case 5:
-            assert(nodes == 674624);
-            break;
-        default:
-            break;
-        }
-    }
-    puts("");
-}
-
-void test_perft_pos3(const int depth) {
-    const char input[] = "position fen "
-                   "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
-    puts(input);
-    for (int i = 1; i <= depth; i++) {
-        Chess chess;
-        chess.start_game();
-        chess.table->setboard(input);
-        int start_time = get_ms();
-        uint64_t nodes = chess.perft(i);
-        int stop_time = get_ms();
-        int duration = stop_time - start_time;
-        printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
-               duration, (duration == 0) ? 0 : (nodes / duration));
-        switch (i) {
-        case 1:
-            assert(nodes == 6);
-            break;
-        case 2:
-            assert(nodes == 264);
-            break;
-        case 3:
-            assert(nodes == 9467);
-            break;
-        case 4:
-            assert(nodes == 422333);
-            break;
-        case 5:
-            assert(nodes == 15833292);
-            break;
-        default:
-            break;
-        }
-    }
-    puts("");
 }
 
 void test_perft_startpos(const int depth) {
@@ -145,12 +48,12 @@ void test_perft_startpos(const int depth) {
         chess.nodes = 0;
         chess.uci->position_received(input);
         chess.max_time = 0;
-        int start_time = get_ms();
+        uint64_t start_time = get_ms();
         uint64_t nodes = chess.perft(i);
-        int stop_time = get_ms();
-        int duration = stop_time - start_time;
-        printf("depth: %d nodes: %lu time: %d ms knps: %lu\n", i, nodes,
-               duration, (duration == 0) ? 0 : (nodes / duration));
+        uint64_t stop_time = get_ms();
+        uint64_t duration = stop_time - start_time;
+        printf("depth: %d nodes: %lu time: %lu ms knps: %lu\n", i, nodes,
+               duration, duration == 0 ? 0 : nodes / duration);
         switch (i) {
         case 1:
             assert(nodes == 20);
@@ -178,9 +81,25 @@ void test_perft() {
     const time_t mytime = time(NULL);
     printf("%s", ctime(&mytime));
     test_perft_startpos(4);
-    test_perft_pos1(4);
-    test_perft_pos2(5);
-    test_perft_pos3(5);
+    {
+        const char input[] = "position fen "
+            "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w "
+            "KQkq - 0 1";
+        const uint64_t expected_nodes[] = {48, 2039, 97862, 4085603, 193690690};
+        test_perft_pos(input, 4, expected_nodes);
+    }
+    {
+        const char input[] = "position fen "
+            "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";
+        const uint64_t expected_nodes[] = {14, 191, 2812, 43238, 674624};
+        test_perft_pos(input, 5, expected_nodes);
+    }
+    {
+        const char input[] = "position fen "
+            "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
+        const uint64_t expected_nodes[] = {6, 264, 9467, 422333, 15833292};
+        test_perft_pos(input, 4, expected_nodes);
+    }
 }
 
 void test_eval_depth_1() {
@@ -202,8 +121,19 @@ void test_eval_depth_2() {
     chess.start_game();
     chess.table->setboard(input);
     chess.max_time = 0;
-    chess.gui_depth = 2;
+    chess.gui_depth = 5;
     chess.default_seldepth = 0;
+    chess.make_move();
+}
+
+void test_speed() {
+    const char input[] = "position fen r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
+    puts(input);
+    Chess chess;
+    chess.start_game();
+    chess.table->setboard(input);
+    chess.max_time = 0;
+    chess.gui_depth = 2;
     chess.make_move();
 }
 
@@ -256,7 +186,6 @@ void test_bratko_kopec_1b() {
     chess.table->setboard(input);
     chess.max_time = 0;
     chess.gui_depth = 1;
-    // chess.default_seldepth = 0;
     chess.make_move();
     assert(strcmp(move2str(chess.best_move), "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
@@ -274,7 +203,6 @@ void test_bratko_kopec_2() {
     chess.start_game();
     chess.table->setboard(input);
     chess.max_time = 0;
-    chess.default_seldepth = 8;
     chess.gui_depth = 5;
     chess.make_move();
     assert(strcmp(move2str(chess.best_move), "d4d5 ") == 0);
@@ -372,23 +300,17 @@ void test_mate_in_2() {
 }
 
 void test() {
-    /*
-    {
-        Chess chess;
-        chess.nof_legal_root_moves = 40;
-        chess.depth = 2;
-        test_calculate_evarray(chess);
-        test_calculate_evarray_new(chess);
-    }
-    */
     test_move_h2h4();
 }
 
 int main(int argc, char *argv[]) {
     if (argc > 1) {
-        if (strcmp(argv[1], "1") == 0) {
+        if (strcmp(argv[1], "0") == 0) {
+            test_speed();
+        } else if (strcmp(argv[1], "1") == 0) {
             test();
         } else if (strcmp(argv[1], "2") == 0) {
+            test_perft_startpos(4);
             test_perft();
         } else if (strcmp(argv[1], "3") == 0) {
             test_bratko_kopec();

@@ -101,7 +101,7 @@ class Chess {
     // Array of sorted legal moves
     int eva_alfabeta_temp[MAX_LEGAL_MOVES];
 #endif
-    int sort_alfarray;
+    bool  sort_alfarray = true;
 
   private:
 
