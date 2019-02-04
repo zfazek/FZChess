@@ -53,8 +53,8 @@ class Chess {
     Table *table;
     Uci *uci;
 
-    int WHITE; // TODO delete
-    int BLACK; // TODO delete
+    static constexpr int WHITE = 1;
+    static constexpr int BLACK = -1;
 
     int move_number;
     int player_to_move; // 1:white, -1:black
@@ -66,12 +66,12 @@ class Chess {
     int legal_moves[MAX_LEGAL_MOVES];
     struct move_t sorted_legal_moves[MAX_LEGAL_MOVES];
 
-    char move_str[6];
     int FZChess; // 1:white, -1:black
 
     uint64_t nodes;
     int max_time = 0;
     int movetime;
+    int best_move;
     int depth, seldepth, curr_depth, curr_seldepth, gui_depth;
     int default_seldepth;
     bool break_if_mate_found;
@@ -112,7 +112,6 @@ class Chess {
     int best_iterative[MAX_LEGAL_MOVES];
 
     bool last_ply;
-    int best_move;
     jmp_buf env;
     uint64_t start_time, stop_time;
     int stop_search;

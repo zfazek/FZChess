@@ -21,8 +21,6 @@ Chess::Chess() {
     uci = new Uci(this);
     table = new Table(this);
     stop_received = false;
-    WHITE = 1;
-    BLACK = -1;
 }
 
 Chess::~Chess() {
@@ -98,7 +96,7 @@ void Chess::make_move() {
             (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         calculate_evarray_new();
         for (int i = 0; i < nof_legal_root_moves; i++) {
-            printf("(%s:%d) ", move2str(move_str, root_moves[i].move),
+            printf("(%s:%d) ", move2str(root_moves[i].move),
                    root_moves[i].value);
             if (i % 8 == 7) {
                 puts("");
@@ -125,9 +123,9 @@ void Chess::make_move() {
         ++depth;
         // if (depth == 1) depth = 5;
     }
-    printf("\nbestmove %s\n", move2str(move_str, best_move));
+    printf("\nbestmove %s\n", move2str(best_move));
     flush();
-    LOG("bestmove %s\n\n", move2str(move_str, best_move));
+    LOG("bestmove %s\n\n", move2str(best_move));
     table->eval->hash->printStatistics(nodes);
     // Update the table without printing it
     table->update_table(best_move, false);
@@ -184,7 +182,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         }
         curr_seldepth = dpt;
         if (dpt == 1) {
-            printf("info currmove %s currmovenumber %d\n", move2str(move_str, alfarray[i]), i + 1);
+            printf("info currmove %s currmovenumber %d\n", move2str(alfarray[i]), i + 1);
             flush();
         }
         table->update_table(alfarray[i], false);
@@ -258,7 +256,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                            "nodes %lu pv ",
                            curr_depth, curr_seldepth, time_elapsed, uu, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
-                        printf("%s ", move2str(move_str, best_line[dpt].moves[b]));
+                        printf("%s ", move2str(best_line[dpt].moves[b]));
                     }
                     printf("\n");
                     flush();
@@ -269,7 +267,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                            "nodes %lu pv ",
                            curr_depth, curr_seldepth, time_elapsed, u, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
-                        printf("%s ", move2str(move_str, best_line[dpt].moves[b]));
+                        printf("%s ", move2str(best_line[dpt].moves[b]));
                     }
                     printf("\n");
                     flush();

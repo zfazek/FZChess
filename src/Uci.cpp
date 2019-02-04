@@ -15,11 +15,11 @@ Uci::~Uci() {}
 
 void Uci::position_received(const char *input) {
     static char move_old[6];
-    strncpy(move_old, "     ", 6);
-    chess->start_game();
     if (!strstr(input, "move")) {
         return;
     }
+    strncpy(move_old, "     ", 6);
+    chess->start_game();
     for (size_t i = 24; i < strlen(input) - 1; i++) {
         move_old[0] = input[i];
         i++;

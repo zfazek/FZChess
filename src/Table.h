@@ -10,9 +10,6 @@ class Table {
   public:
     Eval *eval;
 
-    static constexpr int WHITE = 1;
-    static constexpr int BLACK = -1;
-
     static constexpr int Pawn = 1;
     static constexpr int Knight = 2;
     static constexpr int Bishop = 3;

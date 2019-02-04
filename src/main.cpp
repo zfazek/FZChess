@@ -19,7 +19,7 @@ void test_move_h2h4() {
     chess.max_time = 0;
     chess.gui_depth = 4;
     chess.make_move();
-    assert(strcmp(chess.move_str, "h7h5 ") == 0);
+    assert(strcmp(move2str(chess.best_move), "h7h5 ") == 0);
     assert(chess.nodes == 34298);
     assert(7000 < chess.table->eval->hash->hash_nodes);
 }
@@ -223,7 +223,7 @@ void test_bratko_kopec_1() {
     chess.default_seldepth = 0;
     chess.break_if_mate_found = false; // remove
     chess.make_move();
-    assert(strcmp(chess.move_str, "d6d1 ") == 0);
+    assert(strcmp(move2str(chess.best_move), "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
     assert(chess.root_moves[0].value == 21995);
 }
@@ -240,7 +240,7 @@ void test_bratko_kopec_1a() {
     chess.gui_depth = 6;
     chess.default_seldepth = 0;
     chess.make_move();
-    assert(strcmp(chess.move_str, "d6d1 ") == 0);
+    assert(strcmp(move2str(chess.best_move), "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
     assert(chess.root_moves[0].value == 21995);
     assert(chess.depth == 5);
@@ -258,7 +258,7 @@ void test_bratko_kopec_1b() {
     chess.gui_depth = 1;
     // chess.default_seldepth = 0;
     chess.make_move();
-    assert(strcmp(chess.move_str, "d6d1 ") == 0);
+    assert(strcmp(move2str(chess.best_move), "d6d1 ") == 0);
     assert(chess.mate_score == 21995);
     assert(chess.root_moves[0].value == 21995);
     assert(chess.depth == 1);
@@ -277,7 +277,7 @@ void test_bratko_kopec_2() {
     chess.default_seldepth = 8;
     chess.gui_depth = 5;
     chess.make_move();
-    assert(strcmp(chess.move_str, "d4d5 ") == 0);
+    assert(strcmp(move2str(chess.best_move), "d4d5 ") == 0);
 }
 
 void test_bratko_kopec_10() {
@@ -291,7 +291,7 @@ void test_bratko_kopec_10() {
     chess.max_time = 0;
     chess.gui_depth = 5;
     chess.make_move();
-    assert(strcmp(chess.move_str, "c6e5 ") == 0);
+    assert(strcmp(move2str(chess.best_move), "c6e5 ") == 0);
 }
 
 void test_bratko_kopec_12() {
@@ -305,7 +305,7 @@ void test_bratko_kopec_12() {
     chess.max_time = 0;
     chess.gui_depth = 2;
     chess.make_move();
-    assert(strcmp(chess.move_str, "d7f5 ") == 0);
+    assert(strcmp(move2str(chess.best_move), "d7f5 ") == 0);
 }
 
 void test_bratko_kopec() {
