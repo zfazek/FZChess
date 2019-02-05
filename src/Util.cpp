@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "Util.h"
 
 #include <stdarg.h>
 #include <string.h>
@@ -8,11 +8,11 @@ FILE *debugfile;
 char debugfile_name[128];
 int DEBUG = 1;
 
-void flush() {
+void Util::flush() {
     fflush(stdout);
 }
 
-void open_debug_file() {
+void Util::open_debug_file() {
     if (DEBUG) {
         snprintf(debugfile_name, sizeof(debugfile_name),
                 "/tmp/%lu.log", get_ms() / 1000);
@@ -23,7 +23,7 @@ void open_debug_file() {
     }
 }
 
-void LOG(const char *format, ...) {
+void Util::LOG(const char *format, ...) {
     if (DEBUG) {
         debugfile = fopen(debugfile_name, "a");
         if (debugfile) {
@@ -36,14 +36,14 @@ void LOG(const char *format, ...) {
     }
 }
 
-uint64_t get_ms() {
+uint64_t Util::get_ms() {
     struct timeval te;
     gettimeofday(&te, NULL);
     long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000;
     return milliseconds;
 }
 
-int str2move(const char move_old[6]) {
+int Util::str2move(const char move_old[6]) {
     const int x_from = move_old[0] - 'a';
     const int y_from = move_old[1] - '1';
     const int x_to = move_old[2] - 'a';
@@ -73,7 +73,7 @@ int str2move(const char move_old[6]) {
     return move_hi * 256 + move_lo;
 }
 
-char *move2str(const int move) {
+char *Util::move2str(const int move) {
     static char move_str[] = "     ";
     move_str[0] = (move & 0xe000) / 256 / 32 + 'a';
     move_str[1] = (move & 0x1c00) / 256 / 4 + '1';

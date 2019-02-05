@@ -1,10 +1,7 @@
 #include "Hash.h"
 
 #include "Chess.h"
-
-extern "C" {
-#include "utils.h"
-}
+#include "Util.h"
 
 Hash::Hash() {
     init_hash();
@@ -100,7 +97,7 @@ uint64_t Hash::hash_rand() const {
 void Hash::printStatistics(const int nodes) const {
     printf("Hash found %lu, hash/nodes: %lu%%\n", hash_nodes,
            100 * hash_nodes / nodes);
-    flush();
+    Util::flush();
 }
 
 void Hash::clear() {

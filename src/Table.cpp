@@ -4,10 +4,7 @@
 
 #include "Chess.h"
 #include "Eval.h"
-
-extern "C" {
-#include "utils.h"
-}
+#include "Util.h"
 
 Table::Table(Chess *ch) : chess(ch) {
     eval = new Eval(chess);
@@ -327,7 +324,7 @@ void Table::print_table() {
     printf("Further invest.: %d\n",
            chess->movelist[chess->move_number].further);
     printf("\n");
-    flush();
+    Util::flush();
 }
 
 // FEN interpreter
@@ -450,7 +447,7 @@ void Table::setboard(const char *input) {
     if (strstr(input, "moves")) {
         size_t m = strlen(input) - 1;
         for (size_t i = strstr(input, "moves") - input + 6; i < m; i++) {
-            // printf("i: %d, input[i]: %c\n", i, input[i]);flush();
+            // printf("i: %d, input[i]: %c\n", i, input[i]);Util::flush();
             move_old[0] = input[i++];
             move_old[1] = input[i++];
             move_old[2] = input[i++];
@@ -460,8 +457,8 @@ void Table::setboard(const char *input) {
             } else {
                 move_old[4] = '\0';
             }
-            // printf("move: %s\n", move);flush();
-            update_table(str2move(move_old), false);
+            // printf("move: %s\n", move);Util::flush();
+            update_table(Util::str2move(move_old), false);
             chess->invert_player_to_move();
         }
     }
@@ -582,7 +579,7 @@ bool Table::is_not_enough_material() {
     if (black_knight + black_bishop > 1) {
         return false;
     }
-    // printf("not enough material\n");flush();
+    // printf("not enough material\n");Util::flush();
     return true;
 }
 
@@ -655,7 +652,7 @@ bool Table::third_occurance() {
     }
     int i = chess->move_number - 2;
     while (i >= 0 && occurance < 2) {
-        // printf("Third occurance: i: %d\n", i);flush();
+        // printf("Third occurance: i: %d\n", i);Util::flush();
         bool equal = true;
         for (int j = 20; j < 100; j++) {
             if (chess->tablelist[chess->move_number][j] != chess->tablelist[i][j]) {

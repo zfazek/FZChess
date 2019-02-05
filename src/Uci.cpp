@@ -4,10 +4,7 @@
 #include <cstring>
 
 #include "Chess.h"
-
-extern "C" {
-#include "utils.h"
-}
+#include "Util.h"
 
 Uci::Uci(Chess *ch) : chess(ch) {}
 
@@ -35,7 +32,7 @@ void Uci::position_received(const char *input) {
         } else {
             move_old[4] = '\0';
         }
-        chess->table->update_table(str2move(move_old), false);
+        chess->table->update_table(Util::str2move(move_old), false);
         chess->invert_player_to_move();
     }
     // print_table();
@@ -56,9 +53,9 @@ void Uci::processCommands(const char *cmd) {
         printf("option name Ponder type check default false\n");
         printf("option name MultiPV type spin default 1 min 1 max 1\n");
         printf("uciok\n");
-        flush();
-        LOG("-> uci\n");
-        LOG("uciok\n");
+        Util::flush();
+        Util::LOG("-> uci\n");
+        Util::LOG("uciok\n");
     }
     while (true) {
     char *ret = fgets(input, 1000, stdin);
@@ -68,12 +65,12 @@ void Uci::processCommands(const char *cmd) {
         if (th_make_move.joinable()) {
             th_make_move.join();
         }
-        // printf("Process input: %s\n", input);flush();
-        LOG("-> %s", input);
+        // printf("Process input: %s\n", input);Util::flush();
+        Util::LOG("-> %s", input);
         if (strstr(input, "isready")) {
             printf("readyok\n");
-            flush();
-            LOG("readyok\n");
+            Util::flush();
+            Util::LOG("readyok\n");
         }
         if (strstr(input, "position startpos")) {
             position_received(input);
@@ -121,7 +118,7 @@ void Uci::processCommands(const char *cmd) {
                     chess->max_time = 0;
                 }
             }
-            LOG("max time: %d wtime: %d btime: %d winc: %d "
+            Util::LOG("max time: %d wtime: %d btime: %d winc: %d "
                 "binc: %d movestogo: %d\n",
                 chess->max_time, wtime, btime, winc, binc, movestogo);
             chess->stop_received = false;
