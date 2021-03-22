@@ -1,8 +1,8 @@
 #include "Util.h"
 
-#include <stdarg.h>
-#include <string.h>
-#include <sys/time.h>
+#include <cstdarg>
+#include <cstdio>
+#include <chrono>
 
 FILE *debugfile;
 char debugfile_name[128];
@@ -15,7 +15,7 @@ void Util::flush() {
 void Util::open_debug_file() {
     if (DEBUG) {
         snprintf(debugfile_name, sizeof(debugfile_name),
-                "/tmp/%lu.log", get_ms() / 1000);
+                 "/tmp/%lu.log", get_ms() / 1000);
         debugfile = fopen(debugfile_name, "w");
         if (debugfile) {
             fclose(debugfile);
@@ -37,9 +37,8 @@ void Util::LOG(const char *format, ...) {
 }
 
 uint64_t Util::get_ms() {
-    struct timeval te;
-    gettimeofday(&te, NULL);
-    long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000;
+    uint64_t milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>
+            (std::chrono::system_clock::now().time_since_epoch()).count();
     return milliseconds;
 }
 

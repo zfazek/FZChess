@@ -1,7 +1,8 @@
 #pragma once
 
-#include <setjmp.h>
+#include <csetjmp>
 #include <cstdint>
+#include <memory>
 
 #include "Table.h"
 #include "Uci.h"
@@ -30,6 +31,7 @@ struct position_t {
     int white_double_bishops;
     int black_double_bishops;
     int further;
+
 #ifdef POS_FIGURE
     int pos_white_figure[16];
     int pos_black_figure[16];
@@ -47,17 +49,23 @@ struct move_t {
 
 class Chess {
   public:
-    Chess();
-    ~Chess();
-
-    Table *table;
-    Uci *uci;
-
     static constexpr int WHITE = 1;
     static constexpr int BLACK = -1;
 
-    int move_number;
-    int player_to_move; // 1:white, -1:black
+    Chess();
+
+    void open_debug_file();
+    void start_game();
+    void make_move();
+    void calculate_evarray();
+    void calculate_evarray_new();
+    void invert_player_to_move();
+    void processCommands(const char *input) const;
+    uint64_t perft(const int dpt);
+
+public:
+    std::unique_ptr<Table> table;
+    std::unique_ptr<Uci> uci;
 
     // Array of moves. Each time the whole table is stored
     int tablelist[MAX_MOVES][120];
@@ -67,6 +75,8 @@ class Chess {
     struct move_t sorted_legal_moves[MAX_LEGAL_MOVES];
 
     int FZChess; // 1:white, -1:black
+    int move_number;
+    int player_to_move; // 1:white, -1:black
 
     uint64_t nodes;
     int max_time = 0;
@@ -80,43 +90,31 @@ class Chess {
     int nof_legal_root_moves;
     int mate_score;
 
-    struct move_t root_moves[MAX_LEGAL_MOVES];
-
     // Stores the parameters of the given position
     struct position_t movelist[MAX_MOVES];
+    struct move_t root_moves[MAX_LEGAL_MOVES];
 
-    bool stop_received;
-
-    void open_debug_file();
-    void start_game();
-    void make_move();
-    void calculate_evarray();
-    void calculate_evarray_new();
-    void invert_player_to_move();
-    void processCommands(const char *input);
-    uint64_t perft(const int dpt);
+    bool stop_received = false;
+    bool sort_alfarray = true;
 
 #ifdef SORT_ALFARRAY
 
     // Array of sorted legal moves
     int eva_alfabeta_temp[MAX_LEGAL_MOVES];
 #endif
-    bool  sort_alfarray = true;
 
   private:
+    int alfabeta(int dpt, int alfa, int beta);
+    void checkup();
+    void sort_legal_moves(const int nbr_legal, const int dpt);
 
     // Array of best line
     int curr_line[MAX_LEGAL_MOVES];
 
     // Array of best move of iterative deepening
     int best_iterative[MAX_LEGAL_MOVES];
-
     bool last_ply;
     jmp_buf env;
     uint64_t start_time, stop_time;
     int stop_search;
-
-    int alfabeta(int dpt, int alfa, int beta);
-    void checkup();
-    void sort_legal_moves(const int nbr_legal, const int dpt);
 };

@@ -15,14 +15,8 @@ struct best_lines {
 } best_line[99];
 
 Chess::Chess() {
-    uci = new Uci(this);
-    table = new Table(this);
-    stop_received = false;
-}
-
-Chess::~Chess() {
-    delete uci;
-    delete table;
+    uci = std::make_unique<Uci>(this);
+    table = std::make_unique<Table>(this);
 }
 
 void Chess::start_game() { // new
@@ -84,13 +78,19 @@ void Chess::make_move() {
             stop_search = true;
         }
         time_elapsed = Util::get_ms() - start_time;
-        printf("info depth %d seldepth %d time %lu nodes %ld nps %ld\n", depth,
-               seldepth, time_elapsed, nodes,
+        printf("info depth %d seldepth %d time %lu nodes %ld nps %ld\n",
+               depth,
+               seldepth,
+               time_elapsed,
+               nodes,
                (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         Util::flush();
-        Util::LOG("info depth %d seldepth %d time %lu nodes %ld nps %ld\n", depth,
-            seldepth, time_elapsed, nodes,
-            (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
+        Util::LOG("info depth %d seldepth %d time %lu nodes %ld nps %ld\n",
+                  depth,
+                  seldepth,
+                  time_elapsed,
+                  nodes,
+                  (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         calculate_evarray_new();
         for (int i = 0; i < nof_legal_root_moves; i++) {
             printf("(%s:%d) ", Util::move2str(root_moves[i].move),
@@ -248,9 +248,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     if (uu == 0 && u < 0) {
                         uu = -1;
                     }
-                    printf("info multipv 1 depth %d seldepth %d time %lu score "
-                           "mate %d "
-                           "nodes %lu pv ",
+                    printf("info multipv 1 depth %d seldepth %d time %lu score mate %d nodes %lu pv ",
                            curr_depth, curr_seldepth, time_elapsed, uu, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(best_line[dpt].moves[b]));
@@ -259,9 +257,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     Util::flush();
                     mate_score = abs(u);
                 } else {
-                    printf("info multipv 1 depth %d seldepth %d time %lu score "
-                           "cp %d "
-                           "nodes %lu pv ",
+                    printf("info multipv 1 depth %d seldepth %d time %lu score cp %d nodes %lu pv ",
                            curr_depth, curr_seldepth, time_elapsed, u, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(best_line[dpt].moves[b]));
@@ -391,7 +387,7 @@ void Chess::checkup() {
     }
 }
 
-void Chess::processCommands(const char *input) {
+void Chess::processCommands(const char *input) const {
     if (strstr(input, "uci")) {
         uci->processCommands(input);
     }

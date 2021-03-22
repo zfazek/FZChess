@@ -7,8 +7,6 @@ Hash::Hash() {
     init_hash();
 }
 
-Hash::~Hash() {}
-
 void Hash::reset_counters() {
     hash_nodes = 0;
 }

@@ -1,14 +1,19 @@
 #pragma once
 
+#include <memory>
+
+#include "Hash.h"
+
 class Chess;
-class Hash;
 
 class Eval {
   public:
-    Hash *hash;
-
     Eval(Chess *chess);
-    ~Eval();
+
+    int evaluation(const int e_legal_pointer, const int dpt);
+    int evaluation_material(const int dpt);
+    int evaluation_only_end_game(const int dpt);
+    int sum_material(const int color);
 
     const int DRAW = 0;
     const int LOST = -22000;
@@ -22,10 +27,7 @@ class Eval {
     const int friendly_pawn = 20;
     const int pawn_advantage = 10;
 
-    int evaluation(const int e_legal_pointer, const int dpt);
-    int evaluation_material(const int dpt);
-    int evaluation_only_end_game(const int dpt);
-    int sum_material(const int color);
+    std::unique_ptr<Hash> hash;
 
   private:
     Chess *chess;

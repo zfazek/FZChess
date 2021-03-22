@@ -1,11 +1,11 @@
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+
 #include "Chess.h"
 #include "Eval.h"
 #include "Hash.h"
 #include "Util.h"
-
-#include <cassert>
-#include <cstdio>
-#include <cstring>
 
 void test_move_h2h4() {
     Chess chess;
@@ -321,7 +321,7 @@ int main(int argc, char *argv[]) {
         // Waiting for GUI
         char *ret;
         char input[1001];
-        while (1) {
+        while (true) {
             ret = fgets(input, 1000, stdin);
             if (ret && strstr(input, "uci")) {
                 break;

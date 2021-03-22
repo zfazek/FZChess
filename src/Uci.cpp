@@ -8,8 +8,6 @@
 
 Uci::Uci(Chess *ch) : chess(ch) {}
 
-Uci::~Uci() {}
-
 void Uci::position_received(const char *input) {
     static char move_old[6];
     if (!strstr(input, "move")) {
@@ -38,7 +36,7 @@ void Uci::position_received(const char *input) {
     // print_table();
 }
 
-void Uci::processCommands(const char *cmd) {
+[[noreturn]] void Uci::processCommands(const char *cmd) {
     static char input[1000] = {0};
     int movestogo = 40;
     int wtime = 0;
@@ -58,7 +56,7 @@ void Uci::processCommands(const char *cmd) {
         Util::LOG("uciok\n");
     }
     while (true) {
-    char *ret = fgets(input, 1000, stdin);
+        char *ret = fgets(input, 1000, stdin);
         if (ret && strstr(input, "stop")) {
             chess->stop_received = true;
         }
@@ -119,8 +117,8 @@ void Uci::processCommands(const char *cmd) {
                 }
             }
             Util::LOG("max time: %d wtime: %d btime: %d winc: %d "
-                "binc: %d movestogo: %d\n",
-                chess->max_time, wtime, btime, winc, binc, movestogo);
+                      "binc: %d movestogo: %d\n",
+                      chess->max_time, wtime, btime, winc, binc, movestogo);
             chess->stop_received = false;
             th_make_move = std::thread(&Chess::make_move, chess);
         }

@@ -7,11 +7,7 @@
 #include "Util.h"
 
 Table::Table(Chess *ch) : chess(ch) {
-    eval = new Eval(chess);
-}
-
-Table::~Table() {
-    delete eval;
+    eval = std::make_unique<Eval>(chess);
 }
 
 // Resets the parameters and the table

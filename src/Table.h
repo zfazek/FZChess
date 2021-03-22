@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #define EMPTY 0x00
 #define OFFBOARD 0xff
 
@@ -8,7 +10,7 @@ class Eval;
 
 class Table {
   public:
-    Eval *eval;
+    std::unique_ptr<Eval> eval;
 
     static constexpr int Pawn = 1;
     static constexpr int Knight = 2;
@@ -27,7 +29,6 @@ class Table {
     const int dir_king[8] = {-11, -10, -9, -1, 1, 9, 10, 11};
 
     Table(Chess *chess);
-    ~Table();
 
     void list_legal_moves();
     void print_table();

@@ -1,14 +1,9 @@
 #include "Eval.h"
 
 #include "Chess.h"
-#include "Hash.h"
 
 Eval::Eval(Chess *ch) : chess(ch) {
-    hash = new Hash();
-}
-
-Eval::~Eval() {
-    delete hash;
+    hash = std::make_unique<Hash>();
 }
 
 // Evaluates material and king position, pawn structure, etc

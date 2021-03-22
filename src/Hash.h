@@ -10,7 +10,6 @@ class Hash {
     uint64_t hash_nodes;
 
     Hash();
-    ~Hash();
 
     void set_hash(const Chess *chess);
     void reset_counters();
