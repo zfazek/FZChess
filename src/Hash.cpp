@@ -1,5 +1,7 @@
 #include "Hash.h"
 
+#include <iostream>
+
 #include "Chess.h"
 #include "Util.h"
 
@@ -93,9 +95,10 @@ uint64_t Hash::hash_rand() const {
 }
 
 void Hash::printStatistics(const int nodes) const {
-    printf("Hash found %lu, hash/nodes: %lu%%\n", hash_nodes,
-           100 * hash_nodes / nodes);
-    Util::flush();
+    if (nodes == 0) {
+        return;
+    }
+    std::cout << "Hash found " << hash_nodes << ", hash/nodes: " << 100 * hash_nodes / nodes << "%" << std::endl;
 }
 
 void Hash::clear() {

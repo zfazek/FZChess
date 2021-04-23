@@ -1,5 +1,7 @@
 #include "Eval.h"
 
+#include <cstdlib>
+
 #include "Chess.h"
 
 Eval::Eval(Chess *ch) : chess(ch) {

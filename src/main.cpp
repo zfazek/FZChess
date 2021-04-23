@@ -328,7 +328,6 @@ int main(int argc, char *argv[]) {
             }
         }
         Chess chess;
-        Util::open_debug_file();
         chess.sort_alfarray = true;
         chess.start_game();
         chess.processCommands(input);

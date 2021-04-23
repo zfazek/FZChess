@@ -5,7 +5,6 @@
 #include <cstring>
 
 #include "Eval.h"
-#include "Hash.h"
 #include "Util.h"
 
 struct best_lines {
@@ -22,7 +21,7 @@ Chess::Chess() {
 void Chess::start_game() { // new
     table->reset_movelist();
     player_to_move = WHITE;
-    default_seldepth = 6;
+    default_seldepth = 0;
     break_if_mate_found = true;
     // table->print_table();
 }
@@ -46,11 +45,11 @@ void Chess::make_move() {
     for (;;) {
         // Calculate summa of material for end game threshold
         // sm = table->eval->sum_material(player_to_move);
-        if (depth > 4) {
-            seldepth = depth + 4;
-        }
+//        if (depth > 4) {
+//            seldepth = depth + 4;
+//        } else {
         seldepth = depth + default_seldepth;
-        printf("%d %d\n", depth, seldepth);
+//        printf("%d %d\n", depth, seldepth);
         Util::flush();
 
         // Calculates the time of the move
@@ -58,8 +57,11 @@ void Chess::make_move() {
         time_current_depth_start = Util::get_ms();
         printf("info depth %d\n", depth);
         Util::flush();
-        alfabeta(1, -MAX, MAX);
-        setjmp(env);
+        try {
+            alfabeta(1, -MAX, MAX);
+        } catch (...) {
+
+        }
         if (stop_search) {
             for (int i = 0; i < curr_seldepth - 1; i++) {
                 --move_number;
@@ -78,19 +80,13 @@ void Chess::make_move() {
             stop_search = true;
         }
         time_elapsed = Util::get_ms() - start_time;
-        printf("info depth %d seldepth %d time %lu nodes %ld nps %ld\n",
+        printf("info depth %d seldepth %d time %llu nodes %llu nps %llu\n",
                depth,
                seldepth,
                time_elapsed,
                nodes,
                (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         Util::flush();
-        Util::LOG("info depth %d seldepth %d time %lu nodes %ld nps %ld\n",
-                  depth,
-                  seldepth,
-                  time_elapsed,
-                  nodes,
-                  (time_elapsed == 0) ? 0 : (uint64_t)((1000.0 * nodes / time_elapsed)));
         calculate_evarray_new();
         for (int i = 0; i < nof_legal_root_moves; i++) {
             printf("(%s:%d) ", Util::move2str(root_moves[i].move),
@@ -122,7 +118,6 @@ void Chess::make_move() {
     }
     printf("\nbestmove %s\n", Util::move2str(best_move));
     Util::flush();
-    Util::LOG("bestmove %s\n\n", Util::move2str(best_move));
     table->eval->hash->printStatistics(nodes);
     // Update the table without printing it
     table->update_table(best_move, false);
@@ -172,12 +167,8 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
         if ((nodes & 1023) == 0) {
             checkup();
         }
-        if (dpt > depth) {
-            curr_depth = depth;
-        } else {
-            curr_depth = dpt;
-        }
-        curr_seldepth = dpt;
+        curr_depth = std::max(dpt, depth);
+        curr_seldepth = seldepth;
         if (dpt == 1) {
             printf("info currmove %s currmovenumber %d\n", Util::move2str(alfarray[i]), i + 1);
             Util::flush();
@@ -248,7 +239,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     if (uu == 0 && u < 0) {
                         uu = -1;
                     }
-                    printf("info multipv 1 depth %d seldepth %d time %lu score mate %d nodes %lu pv ",
+                    printf("info multipv 1 depth %d seldepth %d time %llu score mate %d nodes %llu pv ",
                            curr_depth, curr_seldepth, time_elapsed, uu, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(best_line[dpt].moves[b]));
@@ -257,7 +248,7 @@ int Chess::alfabeta(int dpt, int alfa, int beta) {
                     Util::flush();
                     mate_score = abs(u);
                 } else {
-                    printf("info multipv 1 depth %d seldepth %d time %lu score cp %d nodes %lu pv ",
+                    printf("info multipv 1 depth %d seldepth %d time %llu score cp %d nodes %llu pv ",
                            curr_depth, curr_seldepth, time_elapsed, u, nodes);
                     for (int b = 1; b <= best_line[dpt].length; ++b) {
                         printf("%s ", Util::move2str(best_line[dpt].moves[b]));
@@ -383,7 +374,7 @@ void Chess::calculate_evarray_new() {
 void Chess::checkup() {
     if ((max_time != 0 && Util::get_ms() >= stop_time) || stop_received) {
         stop_search = true;
-        longjmp(env, 0);
+    throw 1;
     }
 }
 

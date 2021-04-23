@@ -1,6 +1,7 @@
 #include "Table.h"
 
 #include <cstring>
+#include <cstdlib>
 
 #include "Chess.h"
 #include "Eval.h"

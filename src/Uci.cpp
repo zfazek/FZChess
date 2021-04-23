@@ -52,8 +52,6 @@ void Uci::position_received(const char *input) {
         printf("option name MultiPV type spin default 1 min 1 max 1\n");
         printf("uciok\n");
         Util::flush();
-        Util::LOG("-> uci\n");
-        Util::LOG("uciok\n");
     }
     while (true) {
         char *ret = fgets(input, 1000, stdin);
@@ -64,11 +62,9 @@ void Uci::position_received(const char *input) {
             th_make_move.join();
         }
         // printf("Process input: %s\n", input);Util::flush();
-        Util::LOG("-> %s", input);
         if (strstr(input, "isready")) {
             printf("readyok\n");
             Util::flush();
-            Util::LOG("readyok\n");
         }
         if (strstr(input, "position startpos")) {
             position_received(input);
@@ -84,6 +80,7 @@ void Uci::position_received(const char *input) {
                 sscanf(strstr(input, "movetime"), "movetime %d",
                        &chess->max_time);
                 chess->movetime = chess->max_time;
+                chess->gui_depth = 0;
             } else {
                 if (strstr(input, "movestogo")) {
                     sscanf(strstr(input, "movestogo"), "movestogo %d",
@@ -103,8 +100,10 @@ void Uci::position_received(const char *input) {
                 }
                 if (chess->FZChess == chess->WHITE) {
                     chess->max_time = (wtime + movestogo * winc) / movestogo;
+                    chess->gui_depth = 0;
                 } else {
                     chess->max_time = (btime + movestogo * binc) / movestogo;
+                    chess->gui_depth = 0;
                 }
                 if (strstr(input, "depth")) {
                     sscanf(strstr(input, "depth"), "depth %d",
@@ -116,9 +115,6 @@ void Uci::position_received(const char *input) {
                     chess->max_time = 0;
                 }
             }
-            Util::LOG("max time: %d wtime: %d btime: %d winc: %d "
-                      "binc: %d movestogo: %d\n",
-                      chess->max_time, wtime, btime, winc, binc, movestogo);
             chess->stop_received = false;
             th_make_move = std::thread(&Chess::make_move, chess);
         }

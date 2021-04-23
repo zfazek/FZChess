@@ -1,6 +1,5 @@
 #pragma once
 
-#include <csetjmp>
 #include <cstdint>
 #include <memory>
 
@@ -54,7 +53,6 @@ class Chess {
 
     Chess();
 
-    void open_debug_file();
     void start_game();
     void make_move();
     void calculate_evarray();
@@ -114,7 +112,6 @@ public:
     // Array of best move of iterative deepening
     int best_iterative[MAX_LEGAL_MOVES];
     bool last_ply;
-    jmp_buf env;
     uint64_t start_time, stop_time;
     int stop_search;
 };

@@ -4,36 +4,8 @@
 #include <cstdio>
 #include <chrono>
 
-FILE *debugfile;
-char debugfile_name[128];
-int DEBUG = 1;
-
 void Util::flush() {
     fflush(stdout);
-}
-
-void Util::open_debug_file() {
-    if (DEBUG) {
-        snprintf(debugfile_name, sizeof(debugfile_name),
-                 "/tmp/%lu.log", get_ms() / 1000);
-        debugfile = fopen(debugfile_name, "w");
-        if (debugfile) {
-            fclose(debugfile);
-        }
-    }
-}
-
-void Util::LOG(const char *format, ...) {
-    if (DEBUG) {
-        debugfile = fopen(debugfile_name, "a");
-        if (debugfile) {
-            va_list args;
-            va_start(args, format);
-            vfprintf(debugfile, format, args);
-            va_end(args);
-            fclose(debugfile);
-        }
-    }
 }
 
 uint64_t Util::get_ms() {
